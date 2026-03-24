@@ -1,14 +1,16 @@
 version: '3.8'
 
 services:
-
+  
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
   kafka:
     image: confluentinc/cp-kafka:latest
+    container_name: kafka_broker
     depends_on:
       - zookeeper
     ports:
@@ -19,15 +21,23 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   neo4j:
-    image: neo4j:latest
+    image: neo4j:latest # Use the latest Neo4J community edition
+    container_name: neo4j_knowledge_graph
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - "7474:7474" # HTTP port for Neo4j Browser
+      - "7687:7687" # Bolt for Python driver
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/import
+      - neo4j_plugins:/plugins
     environment:
-      NEO4J_AUTH: neo4j/password
+      NEO4J_AUTH: ${NEO4J_AUTH}
+    restart: always
 
   event-engine:
     build: ./event-engine
+    container_name: event_engine_service
     depends_on:
       - kafka
     volumes:
@@ -35,6 +45,9 @@ services:
 
   knowledge-graph:
     build: ./knowledge-graph
+    container_name: knowledge_graph_service
+    env_file:
+      - .env
     depends_on:
       - kafka
       - neo4j

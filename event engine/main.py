@@ -33,10 +33,10 @@ def get_timeline(conn):
 
     return cursor.fetchall()
 
-def process_issue(conn, issue_id):
+def process_issue(conn, issue_id, timestamp):
     cursor = conn.cursor()
-
-    events = []
+    nodes = []
+    edges = []
 
     # --- issue ---
     cursor.execute("""
@@ -53,21 +53,36 @@ def process_issue(conn, issue_id):
     #    6: issue_type = "Epic"
     #    7: issue_type = "Story"
     #    _ : issue_type = "Unknown"
-    events.append({
-        "event_type": "Issue", # TODO: Include? or at least solve
-        "issue_id": issue["issue_id"],
-        "title": issue["summary"],
-        "status": issue["status"],
-        "description": issue["description"],
-        "created_date": issue["created_date"],
-        "updated_date": issue["updated_date"],
-        "resolved_date": issue["resolved_date"]
+    nodes.append({
+        "type": "Issue",
+        "id": issue["issue_id"],
+        "properties": {
+            "title": issue["summary"],
+            "status": issue["status"],
+            "description": issue["description"],
+            "created_date": issue["created_date"],
+            "updated_date": issue["updated_date"],
+            "resolved_date": issue["resolved_date"]
+        }
     })
 
-    events.append({
-        "event_type": "Developer",
-        "name": issue["assignee"],
-    })
+    # Only create and link the developer if it is in the table
+    if issue["assignee"] is not None:
+        nodes.append({
+            "type": "Developer",
+            "id": issue["assignee"],
+            "properties": {
+                "name": issue["assignee"]
+            }
+        })
+        edges.append({
+            "source": f"Issue:{issue_id}",
+            "target": f"Developer:{issue['assignee']}",
+            "label": "AssignedTo",
+            "properties": {
+                "timestamp": timestamp
+            }
+        })
 
     # --- issue_link ---
     cursor.execute("""
@@ -75,11 +90,13 @@ def process_issue(conn, issue_id):
         WHERE source_issue_id = ?
     """, (issue_id,))
     for link in cursor.fetchall():
-        events.append({
-            "event_type": "IssueLink",
-            "from_issue": link["source_issue_id"],
-            "to_issue": link["target_issue_id"],
-            "label": link["outward_label"]
+        edges.append({
+            "source": f"Issue:{link['source_issue_id']}",
+            "target": f"Issue:{link['target_issue_id']}",
+            "label": link["outward_label"],
+            "properties": {
+                "timestamp": timestamp
+            }
         })
 
     # --- issue_fix_version ---
@@ -88,18 +105,34 @@ def process_issue(conn, issue_id):
         WHERE issue_id = ?
     """, (issue_id,))
     for ifv in cursor.fetchall():
-        events.append({
-            "event_type": "Release",
-            "issue_id": issue_id,
-            "release": ifv["fix_version"]
+        nodes.append({
+            "type": "Release",
+            "id": ifv["fix_version"],
+            "properties": {
+                "name": ifv["fix_version"]
+            }
         })
+        edges.append({
+            "source": f"Issue:{issue_id}",
+            "target": f"Release:{ifv['fix_version']}",
+            "label": "FixedIn",
+            "properties": {
+                "timestamp": timestamp
+            }
+        })
+
+    events = {
+        "nodes": nodes,
+        "edges": edges
+    }
 
     return events
 
-def process_change_set(conn, commit_hash, known_issues):
+def process_change_set(conn, commit_hash, timestamp):
     cursor = conn.cursor()
 
-    events = []
+    nodes = []
+    edges = []
 
     # --- change_set ---
     cursor.execute("""
@@ -108,16 +141,29 @@ def process_change_set(conn, commit_hash, known_issues):
     """, (commit_hash,))
     cs = cursor.fetchone()
 
-    events.append({
-        "event_type": "Commit",
-        "commit_hash": cs["commit_hash"],
-        "message": cs["message"],
-        "timestamp": cs["committed_date"]
+    nodes.append({
+        "type": "Commit",
+        "id": cs["commit_hash"],
+        "properties": {
+            "message": cs["message"],
+            "committed_date": cs["committed_date"]
+        }
     })
 
-    events.append({
-        "event_type": "Developer",
-        "name": cs["author"],
+    nodes.append({
+        "type": "Developer",
+        "id": cs["author"],
+        "properties": {
+            "name": cs["author"]
+        }
+    })
+    edges.append({
+        "source": f"Commit:{commit_hash}",
+        "target": f"Developer:{cs['author']}",
+        "label": "CreatedBy",
+        "properties": {
+            "timestamp": timestamp
+        }
     })
 
     # --- change_set_link ---
@@ -128,13 +174,14 @@ def process_change_set(conn, commit_hash, known_issues):
     for link in cursor.fetchall():
         issue_id = link["issue_id"]
 
-        # Only link when issue already appeared to prevent errors
-        if issue_id in known_issues:
-            events.append({
-                "event_type": "CommitLinkedToIssue",
-                "commit_hash": commit_hash,
-                "issue_id": issue_id
-            })
+        edges.append({
+            "source": f"Commit:{commit_hash}",
+            "target": f"Issue:{issue_id}",
+            "label": "BelongsTo",
+            "properties": {
+                "timestamp": timestamp
+            }
+        })
 
     # --- code_change ---
     cursor.execute("""
@@ -142,19 +189,29 @@ def process_change_set(conn, commit_hash, known_issues):
         WHERE commit_hash = ?
     """, (commit_hash,))
     for cc in cursor.fetchall():
-        events.append({
-            "event_type": "Code",
-            "file_path": cc["file_path"],
-            "is_deleted": cc["is_deleted"]
+        nodes.append({
+            "type": "Code",
+            "id": cc["file_path"],
+            "properties": {
+                "file_path": cc["file_path"],
+                "is_deleted": cc["is_deleted"]
+            }
         })
 
         # Save the link between the code and commit
-        events.append({
-            "event_type": "CommitToCode",
-            "code_file": cc["file_path"],
-            "commit_hash": commit_hash,
-            "label": cc["change_type"]
+        edges.append({
+            "source": f"Commit:{commit_hash}",
+            "target": f"Code:{cc['file_path']}",
+            "label": cc["change_type"],
+            "properties": {
+                "timestamp": timestamp
+            }
         })
+
+    events = {
+        "nodes": nodes,
+        "edges": edges
+    }
 
     return events
 
@@ -173,18 +230,19 @@ def process_timeline_auto(conn, interval=5):
         source_table = row["source_table"]
         entity_id = row["id"]
 
+        timestamp = datetime.now().isoformat()
+
         if source_table == "issue":
-            events = process_issue(conn, entity_id)
+            event = process_issue(conn, entity_id, timestamp)
             #known_issues.add(entity_id)
 
         elif source_table == "change_set":
-            events = process_change_set(conn, entity_id) #, known_issues)
+            event = process_change_set(conn, entity_id, timestamp) #, known_issues)
 
         else:
             continue  # safety
 
-        for event in events:
-            send_event(event)
+        send_event(event)
         
         time.sleep(interval)
 
@@ -205,18 +263,19 @@ def process_timeline_manual(conn):
             source_table = row["source_table"]
             entity_id = row["id"]
 
+            timestamp = datetime.now().isoformat()
+
             if source_table == "issue":
-                events = process_issue(conn, entity_id)
+                event = process_issue(conn, entity_id, timestamp)
                 #known_issues.add(entity_id)
 
             elif source_table == "change_set":
-                events = process_change_set(conn, entity_id) #, known_issues)
+                event = process_change_set(conn, entity_id, timestamp) #, known_issues)
 
             else:
                 continue  # safety
 
-            for event in events:
-                send_event(event)
+            send_event(event)
 
         elif cmd == "exit":
             break
@@ -234,46 +293,6 @@ def send_event(event):
     producer.send(TOPIC, event)
     producer.flush()
     print(f"Sent: {event}")
-
-
-# -------------------------------
-# Automatic replay mode
-# -------------------------------
-
-#def replay_events(interval=5):
-#    print("Starting streaming replay...")
-#
-#    for event in stream_events():
-#        send_event(event)
-#        time.sleep(interval)
-
-
-# -------------------------------
-# Manual mode
-# -------------------------------
-
-#def manual_mode():
-#    print("\nManual mode:")
-#    print("Commands: send_next, exit")
-#
-#    event_generator = stream_events()
-#
-#    while True:
-#        cmd = input("> ")
-#
-#        if cmd == "send_next":
-#            try:
-#                event = next(event_generator)
-#                send_event(event)
-#            except StopIteration:
-#                print("No more events.")
-#
-#        elif cmd == "exit":
-#            break
-#
-#        else:
-#            print("Unknown command")
-
 
 # -------------------------------
 # MAIN
