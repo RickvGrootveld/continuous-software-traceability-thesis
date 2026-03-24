@@ -1,3 +1,4 @@
 datasets
 .env
 test.sqlite3
+cassandra.db
