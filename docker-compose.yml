@@ -7,16 +7,27 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.5.0
     container_name: kafka_broker
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
+      - "9092:9092" 
     environment:
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      # This checks if the port is actually open and accepting connections
+      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   neo4j:
     image: neo4j:latest # Use the latest Neo4J community edition
@@ -31,21 +42,31 @@ services:
     #  - neo4j_plugins:/plugins
     environment:
       NEO4J_AUTH: ${NEO4J_AUTH}
+      NEO4J_PLUGINS: '["apoc"]'
+      # allow apoc to execute
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
     restart: always
 
-  event-engine:
-    build: ./event-engine
+  event_engine_service:
+    build: ./event_engine_service
     container_name: event_engine_service
+    environment:
+      - PYTHONUNBUFFERED=1
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     volumes:
       - ./cassandra.db:/app/cassandra.db
 
-  knowledge-graph:
-    build: ./knowledge-graph
+  knowledge_graph_service:
+    build: ./knowledge_graph_service
     container_name: knowledge_graph_service
+    environment:
+      - PYTHONUNBUFFERED=1
     env_file:
       - .env
     depends_on:
-      - kafka
-      - neo4j
+      kafka:
+        condition: service_healthy
+      neo4j:
+        condition: service_started

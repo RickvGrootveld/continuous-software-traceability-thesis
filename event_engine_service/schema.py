@@ -1,22 +1,4 @@
-# -------------------------------
-# Extract events from the database
-# -------------------------------
 
-
-def get_timeline(conn):
-    """
-    Applies ASC ordering to make sure all the events in the dataset are
-    in chronological order.
-    """
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT source_table, id, created_date
-        FROM issue_commit_chronological
-        ORDER BY created_date ASC
-    """)
-
-    return cursor.fetchall()
 
 def process_issue(conn, issue_id, timestamp):
     cursor = conn.cursor()

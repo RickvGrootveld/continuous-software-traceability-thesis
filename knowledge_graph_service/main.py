@@ -2,7 +2,7 @@ import json
 import time
 from kafka import KafkaConsumer
 
-from knowledge_graph import KnowledgeGraph, insert_into_neo4j, insert_events, link_nodes
+from knowledge_graph import KnowledgeGraph, insert_nodes, link_nodes
 
 TOPIC = "events"
 
@@ -26,13 +26,13 @@ def consume(kg: KnowledgeGraph):
         with kg.driver.session() as session:
             try:
                 # execute_write() automatically retries the unit of work by an error
-                session.execute_write(insert_events, nodes)
+                session.execute_write(insert_nodes, nodes)
                 session.execute_write(link_nodes, edges)
             except Exception as e:
                 print(f"Error occurred while inserting record: {e}")
 
 if __name__ == "__main__":
-    time.sleep(10)  # wait for services
+    #time.sleep(10)  # wait for services
     kg = KnowledgeGraph()
     consume(kg)
     kg.close()

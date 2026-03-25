@@ -1,19 +1,39 @@
 import sqlite3
 import json
 import time
-import threading
 from datetime import datetime
 from kafka import KafkaProducer
 
-from schema import get_timeline, process_issue, process_change_set
+from schema import process_issue, process_change_set
 
 DB_PATH = "cassandra.db"
 TOPIC = "events"
 
 producer = KafkaProducer(
-    bootstrap_servers="kafka:9092",
+    bootstrap_servers=["kafka:9092"],
     value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
+
+
+# -------------------------------
+# Extract events from the database
+# -------------------------------
+
+def get_timeline(conn):
+    """
+    Applies ASC ordering to make sure all the events in the dataset are
+    in chronological order.
+    """
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT source_table, id, created_date
+        FROM issue_commit_chronological
+        ORDER BY created_date ASC
+    """)
+
+    return cursor.fetchall()
 
 # -------------------------------
 # Automatic replay mode
@@ -24,9 +44,8 @@ def process_timeline_auto(conn, interval=5):
 
     timeline = get_timeline(conn)
 
-    #known_issues = set()
-
     for row in timeline:
+        
         source_table = row["source_table"]
         entity_id = row["id"]
 
@@ -34,16 +53,15 @@ def process_timeline_auto(conn, interval=5):
 
         if source_table == "issue":
             event = process_issue(conn, entity_id, timestamp)
-            #known_issues.add(entity_id)
 
         elif source_table == "change_set":
-            event = process_change_set(conn, entity_id, timestamp) #, known_issues)
+            event = process_change_set(conn, entity_id, timestamp)
 
         else:
             continue  # safety
-
-        send_event(event)
         
+        send_event(event)
+
         time.sleep(interval)
 
 # -------------------------------
@@ -67,10 +85,9 @@ def process_timeline_manual(conn):
 
             if source_table == "issue":
                 event = process_issue(conn, entity_id, timestamp)
-                #known_issues.add(entity_id)
 
             elif source_table == "change_set":
-                event = process_change_set(conn, entity_id, timestamp) #, known_issues)
+                event = process_change_set(conn, entity_id, timestamp)
 
             else:
                 continue  # safety
@@ -98,16 +115,21 @@ def send_event(event):
 # MAIN
 # -------------------------------
 
+#if __name__ == "__main__":
+#    time.sleep(10)  # wait for Kafka
+#
+#    print("Select mode:")
+#    print("1 - Automatic replay (5 sec interval)")
+#    print("2 - Manual mode")
+#
+#    mode = input("> ")
+#
+#    if mode == "1":
+#        process_timeline_auto(sqlite3.connect(DB_PATH))
+#    elif mode == "2":
+#        process_timeline_manual(sqlite3.connect(DB_PATH))
+
 if __name__ == "__main__":
-    time.sleep(10)  # wait for Kafka
+    #time.sleep(10)  # wait for Kafka
 
-    print("Select mode:")
-    print("1 - Automatic replay (5 sec interval)")
-    print("2 - Manual mode")
-
-    mode = input("> ")
-
-    if mode == "1":
-        process_timeline_auto(sqlite3.connect(DB_PATH))
-    elif mode == "2":
-        process_timeline_manual(sqlite3.connect(DB_PATH))
+    process_timeline_auto(sqlite3.connect(DB_PATH))
