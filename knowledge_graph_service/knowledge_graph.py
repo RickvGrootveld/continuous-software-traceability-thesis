@@ -12,32 +12,6 @@ class KnowledgeGraph:
     def close(self):
         self.driver.close()
 
-
-#def update_into_neo4j(tx, record):
-#    label = record.get("event_type")
-#    query = """
-#    MERGE (n:{label} {id: $id})
-#    SET n += $props
-#    """
-#    tx.run(query, id=record.get("id"), props=record)
-#
-#def delete_from_neo4j(tx, record_id):
-#    label = record_id.get("event_type")
-#    query = """
-#    MATCH (n:{label} {id: $id})
-#    DETACH DELETE n
-#    """
-#    tx.run(query, id=record_id)
-#
-#def insert_into_neo4j(tx, label, id_key, properties):
-#    query = """
-#    MERGE (n:{label} {{{id_key}: $props.{id_key}}})
-#    SET n += $props
-#    """
-#    tx.run(query, props=properties)
-
-# expects that there are no NULL types
-
 def insert_nodes(tx, nodes: list):
     query = """
     UNWIND $nodes AS node

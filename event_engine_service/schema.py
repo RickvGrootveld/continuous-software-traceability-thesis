@@ -47,7 +47,8 @@ def process_issue(conn, issue_id, timestamp):
             "target": f"Developer:{issue['assignee']}",
             "label": "AssignedTo",
             "properties": {
-                "timestamp": timestamp
+                "timestamp": timestamp,
+                "system": "dataset"
             }
         })
 
@@ -62,7 +63,8 @@ def process_issue(conn, issue_id, timestamp):
             "target": f"Issue:{link['target_issue_id']}",
             "label": link["outward_label"],
             "properties": {
-                "timestamp": timestamp
+                "timestamp": timestamp,
+                "system": "dataset"
             }
         })
 
@@ -84,7 +86,8 @@ def process_issue(conn, issue_id, timestamp):
             "target": f"Release:{ifv['fix_version']}",
             "label": "FixedIn",
             "properties": {
-                "timestamp": timestamp
+                "timestamp": timestamp,
+                "system": "dataset"
             }
         })
 
@@ -129,7 +132,8 @@ def process_change_set(conn, commit_hash, timestamp):
         "target": f"Developer:{cs['author']}",
         "label": "CreatedBy",
         "properties": {
-            "timestamp": timestamp
+            "timestamp": timestamp,
+            "system": "dataset"
         }
     })
 
@@ -146,7 +150,8 @@ def process_change_set(conn, commit_hash, timestamp):
             "target": f"Issue:{issue_id}",
             "label": "BelongsTo",
             "properties": {
-                "timestamp": timestamp
+                "timestamp": timestamp,
+                "system": "dataset"
             }
         })
 
@@ -171,7 +176,8 @@ def process_change_set(conn, commit_hash, timestamp):
             "target": f"Code:{cc['file_path']}",
             "label": cc["change_type"],
             "properties": {
-                "timestamp": timestamp
+                "timestamp": timestamp,
+                "system": "dataset"
             }
         })
 

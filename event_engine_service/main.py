@@ -15,10 +15,6 @@ producer = KafkaProducer(
 )
 
 
-# -------------------------------
-# Extract events from the database
-# -------------------------------
-
 def get_timeline(conn):
     """
     Applies ASC ordering to make sure all the events in the dataset are
@@ -35,17 +31,14 @@ def get_timeline(conn):
 
     return cursor.fetchall()
 
-# -------------------------------
 # Automatic replay mode
-# -------------------------------
-
 def process_timeline_auto(conn, interval=5):
     print("Starting streaming replay...")
 
     timeline = get_timeline(conn)
 
     for row in timeline:
-        
+
         source_table = row["source_table"]
         entity_id = row["id"]
 
@@ -64,10 +57,7 @@ def process_timeline_auto(conn, interval=5):
 
         time.sleep(interval)
 
-# -------------------------------
 # Manual replay mode
-# -------------------------------
-
 def process_timeline_manual(conn):
     print("\nManual mode:")
     print("Commands: send_next, exit")
@@ -100,36 +90,13 @@ def process_timeline_manual(conn):
         else:
             print("Unknown command")
 
-
-
-# -------------------------------
 # Send event to Kafka
-# -------------------------------
-
 def send_event(event):
     producer.send(TOPIC, event)
     producer.flush()
     print(f"Sent: {event}")
 
-# -------------------------------
 # MAIN
-# -------------------------------
-
-#if __name__ == "__main__":
-#    time.sleep(10)  # wait for Kafka
-#
-#    print("Select mode:")
-#    print("1 - Automatic replay (5 sec interval)")
-#    print("2 - Manual mode")
-#
-#    mode = input("> ")
-#
-#    if mode == "1":
-#        process_timeline_auto(sqlite3.connect(DB_PATH))
-#    elif mode == "2":
-#        process_timeline_manual(sqlite3.connect(DB_PATH))
-
 if __name__ == "__main__":
-    #time.sleep(10)  # wait for Kafka
-
     process_timeline_auto(sqlite3.connect(DB_PATH))
+    #process_timeline_manual(sqlite3.connect(DB_PATH))
