@@ -1,6 +1,12 @@
-
+"""
+This file converts the dataset entities into the entities of the schema in the graph.
+"""
 
 def process_issue(conn, issue_id, timestamp):
+    """
+    Converts the issues into the right specialization according to the schema. 
+    Also the developer and release entities are created.
+    """
     cursor = conn.cursor()
     nodes = []
     edges = []
@@ -99,6 +105,10 @@ def process_issue(conn, issue_id, timestamp):
     return events
 
 def process_change_set(conn, commit_hash, timestamp):
+    """
+    Converts the change_set records in the dataset into commits.
+    Also creates the developers and files that are connected to the change set.
+    """
     cursor = conn.cursor()
 
     nodes = []

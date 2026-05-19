@@ -2,28 +2,11 @@ from typing import List, Dict
 
 from neo4j import GraphDatabase
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-
-# ------------------------
-# Neo4j
-# ------------------------
-
 NEO4J_URI = "bolt://neo4j:7687"
 NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = "password"
 
-# ------------------------
-# Sliding Window
-# ------------------------
-
 WINDOW_SECONDS = 10
-
-# ------------------------
-# Retrieval
-# ------------------------
-
 K_HOPS = 2
 MAX_VECTOR_RESULTS = 20
 MAX_CONTEXT_NODES = 50
@@ -52,10 +35,6 @@ class Neo4jClient:
         """
         with self.driver.session() as session:
             session.run(query)
-
-    # ========================================================
-    # Get new/unprocessed nodes
-    # ========================================================
 
     def get_recent_nodes(self, limit=100):
 
@@ -88,10 +67,6 @@ class Neo4jClient:
                 })
 
         return nodes
-
-    # ========================================================
-    # k-hop neighborhood retrieval
-    # ========================================================
 
     def get_k_hop_neighbors(
         self,
@@ -146,10 +121,6 @@ class Neo4jClient:
 
         return list(all_nodes.values()), all_edges
 
-    # ========================================================
-    # Insert inferred edge
-    # ========================================================
-
     def insert_llm_edge(self, edge: Dict):
 
         query = """
@@ -173,10 +144,6 @@ class Neo4jClient:
                 properties=edge["properties"]
             )
 
-    # ========================================================
-    # Insert nodes
-    # ========================================================
-
     def insert_nodes(self, nodes: list):
         """Insert nodes using UNWIND."""
         query = """
@@ -192,10 +159,6 @@ class Neo4jClient:
         """
         with self.driver.session() as session:
             session.run(query, nodes=nodes)
-
-    # ========================================================
-    # Insert edges
-    # ========================================================
 
     def link_nodes(self, edges: list):
         """Insert edges using UNWIND."""
@@ -226,10 +189,7 @@ class Neo4jClient:
         with self.driver.session() as session:
             session.run(query, edges=edges)
 
-    # ========================================================
-    # Mark processed
-    # ========================================================
-
+    #TODO: remove this function
     def mark_nodes_processed(self, node_ids: List[str]):
 
         query = """

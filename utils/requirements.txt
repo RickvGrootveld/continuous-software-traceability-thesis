@@ -1,0 +1,2 @@
+sentence-transformers
+neo4j

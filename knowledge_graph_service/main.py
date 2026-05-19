@@ -2,20 +2,10 @@ import json
 from datetime import datetime, timezone
 from kafka import KafkaConsumer
 
-from knowledge_graph import KnowledgeGraph, insert_nodes, link_nodes
-from llm_service.open_source_llm import (
-    assemble_edge, 
-    run_llm_enrichment, 
-    write_edges,
-    add_embeddings,
-    OLLAMA_URL, 
-    ensure_model
-)
 from ..utils.vector_similarity import EmbeddingService
 from ..utils.neo4j import Neo4jClient
 
 TOPIC = "events"
-
 
 consumer = KafkaConsumer(
     TOPIC,
@@ -24,6 +14,7 @@ consumer = KafkaConsumer(
     auto_offset_reset='earliest',
     group_id='kg-group'
 )
+
 
 def assemble_edge(raw: dict) -> dict:
     """Ensure every edge conforms to the required schema before writing."""
@@ -53,10 +44,8 @@ def consume(kg: Neo4jClient, embedding_model: EmbeddingService):
                 nodes = embedding_model.generate_embeddings(nodes)
 
                 # execute_write() automatically retries the unit of work by an error
-                session.execute_write(insert_nodes, nodes)
-                session.execute_write(link_nodes, edges)
-
-                
+                kg.insert_nodes(nodes)
+                kg.link_nodes(edges)
 
             except Exception as e:
                 print(f"Error occurred while inserting record: {e}")

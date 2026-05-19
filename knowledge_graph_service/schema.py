@@ -1,3 +1,7 @@
+"""
+This file contains the schema for the knowledge graph
+"""
+
 # Each entry defines one enrichable relationship type.
 # The LLM will infer the label and explanation for each node pair.
 

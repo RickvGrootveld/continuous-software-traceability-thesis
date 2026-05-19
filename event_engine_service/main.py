@@ -2,9 +2,10 @@ import sqlite3
 import json
 import time
 from datetime import datetime
+
 from kafka import KafkaProducer
 
-from schema import process_issue, process_change_set
+from schema_converter import process_issue, process_change_set
 
 DB_PATH = "cassandra.db"
 TOPIC = "events"
