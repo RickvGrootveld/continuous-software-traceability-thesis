@@ -1,9 +1,11 @@
 FROM python:3.11-slim
 
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
 
-COPY . .
+COPY event_engine_service/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "main.py"]
+COPY event_engine_service/ ./event_engine_service/
+COPY shared_utils/ ./shared_utils/
+
+CMD ["python", "event_engine_service/main.py"]

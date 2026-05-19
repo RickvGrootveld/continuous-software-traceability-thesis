@@ -99,5 +99,8 @@ def send_event(event):
 
 # MAIN
 if __name__ == "__main__":
+    # Wait for the knowledge graph to be ready 
+    # (KG service needs to load the weights of the models) which takes around 20 seconds
+    time.sleep(20)
     process_timeline_auto(sqlite3.connect(DB_PATH))
     #process_timeline_manual(sqlite3.connect(DB_PATH))

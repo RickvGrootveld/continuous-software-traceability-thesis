@@ -30,6 +30,8 @@ def process_issue(conn, issue_id, timestamp):
         "type": "Issue",
         "id": issue["issue_id"],
         "properties": {
+            "id": issue["issue_id"],
+            "embedding": None,
             "title": issue["summary"],
             "status": issue["status"],
             "description": issue["description"],
@@ -45,6 +47,8 @@ def process_issue(conn, issue_id, timestamp):
             "type": "Developer",
             "id": issue["assignee"],
             "properties": {
+                "id": issue["assignee"],
+                "embedding": None,
                 "name": issue["assignee"]
             }
         })
@@ -84,6 +88,8 @@ def process_issue(conn, issue_id, timestamp):
             "type": "Release",
             "id": ifv["fix_version"],
             "properties": {
+                "id": ifv["fix_version"],
+                "embedding": None,
                 "name": ifv["fix_version"]
             }
         })
@@ -125,6 +131,8 @@ def process_change_set(conn, commit_hash, timestamp):
         "type": "Commit",
         "id": cs["commit_hash"],
         "properties": {
+            "id": cs["commit_hash"],
+            "embedding": None,
             "message": cs["message"],
             "committed_date": cs["committed_date"]
         }
@@ -134,6 +142,8 @@ def process_change_set(conn, commit_hash, timestamp):
         "type": "Developer",
         "id": cs["author"],
         "properties": {
+            "id": cs["author"],
+            "embedding": None,
             "name": cs["author"]
         }
     })
@@ -175,6 +185,8 @@ def process_change_set(conn, commit_hash, timestamp):
             "type": "Code",
             "id": cc["file_path"],
             "properties": {
+                "id": cc["file_path"],
+                "embedding": None,
                 "file_path": cc["file_path"],
                 "is_deleted": cc["is_deleted"]
             }

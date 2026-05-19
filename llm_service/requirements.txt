@@ -1,6 +1,0 @@
-ollama
-openai
-transformers
-torch
-accelerate
-numpy

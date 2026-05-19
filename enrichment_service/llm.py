@@ -1,32 +1,11 @@
 import json
 
-
-#determine to use qwen to prevent everything to be loaded and running when building the project in Docker
+# Determine to use Qwen or GPT to prevent everything to be loaded and running when building the project in Docker
+# Qwen
 USE_LOCAL_QWEN = True
 # USE_LOCAL_QWEN = False
 
-# USE_GPT = True
-USE_GPT = False
-
-# ============================================================
-# GPT CONFIG
-# ============================================================
-
-OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"
-GPT_MODEL = "gpt-5.1"
-
-# ============================================================
-# QWEN CONFIG
-# ============================================================
-
 QWEN_MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507"
-
-# ============================================================
-# OPTIONAL IMPORTS
-# ============================================================
-
-if USE_GPT:
-    from openai import OpenAI
 
 if USE_LOCAL_QWEN:
     import torch
@@ -34,6 +13,16 @@ if USE_LOCAL_QWEN:
         AutoTokenizer,
         AutoModelForCausalLM
     )
+
+# GPT
+# USE_GPT = True
+USE_GPT = False
+
+OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"
+GPT_MODEL = "gpt-5.1"
+
+if USE_GPT:
+    from openai import OpenAI
 
 SYSTEM_PROMPT = """
 You are an expert software traceability
@@ -62,6 +51,7 @@ Format:
     }
 ]
 """
+
 
 class GPTClient:
 

@@ -7,10 +7,6 @@ class EmbeddingService:
         # Use MiniLM as lightweight semantic embedding model
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # =====================================================
-    # Convert node into semantic text
-    # =====================================================
-
     def node_to_text(self, node):
         """
         Converts node JSON into semantic text.
@@ -20,6 +16,8 @@ class EmbeddingService:
             "type": "Commit",
             "id": "...",
             "properties": {
+                "id": "...",
+                "embedding": None,
                 "message": "...",
                 "committed_date": "..."
             }
@@ -32,7 +30,7 @@ class EmbeddingService:
 
         # Include properties
         for key, value in node["properties"].items():
-            if value is None:
+            if value is None or key == "id":
                 continue
             text_parts.append(f"{key}: {value}")
 
@@ -49,7 +47,7 @@ class EmbeddingService:
 
         # Attach embeddings to nodes
         for node, embedding in zip(nodes, embeddings):
-            node["embedding"] = embedding.tolist()
+            node["properties"]["embedding"] = embedding.tolist()
 
         return nodes
     
@@ -64,21 +62,21 @@ class VectorSimilarityRetriever:
             "all-MiniLM-L6-v2"
         )
 
-    def node_to_text(self, node):
-        text_parts = []
-        text_parts.append(node["type"])
-
-        for key, value in node["properties"].items():
-            if value is None:
-                continue
-
-            # Skip embedding itself
-            if key == "embedding":
-                continue
-
-            text_parts.append(f"{key}: {value}")
-
-        return " ".join(text_parts)
+    #def node_to_text(self, node):
+    #    text_parts = []
+    #    text_parts.append(node["type"])
+#
+    #    for key, value in node["properties"].items():
+    #        if value is None:
+    #            continue
+#
+    #        # Skip embedding itself
+    #        if key == "embedding":
+    #            continue
+#
+    #        text_parts.append(f"{key}: {value}")
+#
+    #    return " ".join(text_parts)
 
     def generate_embedding(self, node):
         text = self.node_to_text(node)

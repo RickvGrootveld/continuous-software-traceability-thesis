@@ -24,7 +24,7 @@ class Neo4jClient:
     def vector_index_creation(self):
         query = """
         CREATE VECTOR INDEX node_embeddings
-        FOR (n)
+        FOR (n:TraceabilityNode)
         ON (n.embedding)
         OPTIONS {
             indexConfig: {
@@ -147,15 +147,17 @@ class Neo4jClient:
     def insert_nodes(self, nodes: list):
         """Insert nodes using UNWIND."""
         query = """
-            UNWIND $nodes AS node
-            CALL apoc.merge.node(
-              [node.type],
-              {id: node.id},
-              node.properties,
-              {}
-            ) 
-            YIELD node AS n
-            RETURN count(n)
+        UNWIND $nodes AS node
+
+        CALL apoc.merge.node(
+          ["TraceabilityNode", node.type],
+          {id: node.id},
+          node.properties,
+          node.properties
+        )
+        YIELD node AS n
+
+        RETURN count(n)
         """
         with self.driver.session() as session:
             session.run(query, nodes=nodes)

@@ -21,8 +21,8 @@ from threading import Lock
 
 from context_retriever import ContextRetriever
 from llm import GPTClient, QwenClient
-from ..utils.neo4j import Neo4jClient
-from ..utils.vector_similarity import VectorSimilarityRetriever
+from shared_utils.neo4j import Neo4jClient
+from shared_utils.vector_similarity import VectorSimilarityRetriever
 
 # ============================================================
 # SLIDING WINDOW
@@ -35,7 +35,7 @@ window_start_time = None
 WINDOW_SECONDS = 10
 
 
-class LLMEnrichmentService:
+class EnrichmentService:
 
     def __init__(self):
         self.neo4j = Neo4jClient()
@@ -184,7 +184,5 @@ class LLMEnrichmentService:
         processing_thread.join()
 
 if __name__ == "__main__":
-
-    service = LLMEnrichmentService()
-
+    service = EnrichmentService()
     service.run()

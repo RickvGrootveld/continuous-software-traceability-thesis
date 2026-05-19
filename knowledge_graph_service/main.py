@@ -2,8 +2,8 @@ import json
 from datetime import datetime, timezone
 from kafka import KafkaConsumer
 
-from ..utils.vector_similarity import EmbeddingService
-from ..utils.neo4j import Neo4jClient
+from shared_utils.vector_similarity import EmbeddingService
+from shared_utils.neo4j import Neo4jClient
 
 TOPIC = "events"
 
@@ -54,6 +54,7 @@ def consume(kg: Neo4jClient, embedding_model: EmbeddingService):
 if __name__ == "__main__":
     kg = Neo4jClient()
     embedding_model = EmbeddingService()
-    embedding_model.vector_index_creation()
+    kg.vector_index_creation()
+    print("Starting to consume Kafka messages...")
     consume(kg, embedding_model)
     kg.close()

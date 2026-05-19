@@ -47,32 +47,6 @@ services:
       NEO4J_dbms_security_procedures_unrestricted: apoc.*
     restart: always
 
-  event_engine_service:
-    build: ./event_engine_service
-    container_name: event_engine_service
-    environment:
-      - PYTHONUNBUFFERED=1
-    depends_on:
-      kafka:
-        condition: service_healthy
-    volumes:
-      - ./cassandra.db:/app/cassandra.db
-
-  knowledge_graph_service:
-    build: ./knowledge_graph_service
-    container_name: knowledge_graph_service
-    environment:
-      - PYTHONUNBUFFERED=1
-    env_file:
-      - .env
-    depends_on:
-      kafka:
-        condition: service_healthy
-      neo4j:
-        condition: service_started
-      ollama:
-        condition: service_healthy
-
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
@@ -95,11 +69,46 @@ services:
     #           count: 1
     #           capabilities: [gpu]
 
-  llm_service:
-    build: ./llm_service
-    container_name: llm_service
+  event_engine_service:
+    build: 
+      context: .
+      dockerfile: event_engine_service/Dockerfile
+    container_name: event_engine_service
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./cassandra.db:/app/cassandra.db
+
+  knowledge_graph_service:
+    build: 
+      context: .
+      dockerfile: knowledge_graph_service/Dockerfile
+    container_name: knowledge_graph_service
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      neo4j:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+
+  enrichment_service:
+    build: 
+      context: .
+      dockerfile: enrichment_service/Dockerfile
+    container_name: enrichment_service
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     depends_on:
       neo4j:
         condition: service_started
