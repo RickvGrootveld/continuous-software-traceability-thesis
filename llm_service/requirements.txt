@@ -1,0 +1,8 @@
+ollama
+openai
+neo4j
+transformers
+torch
+accelerate
+sentence-transformers
+numpy

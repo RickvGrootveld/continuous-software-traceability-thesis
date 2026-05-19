@@ -1,4 +1,2 @@
 kafka-python
 neo4j
-ollama
-openai

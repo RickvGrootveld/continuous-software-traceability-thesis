@@ -30,7 +30,7 @@ services:
       start_period: 10s
 
   neo4j:
-    image: neo4j:latest # Use the latest Neo4J community edition
+    image: neo4j:2026.04.0 # Use the latest Neo4J community edition
     container_name: neo4j_knowledge_graph
     ports:
       - "7474:7474" # HTTP port for Neo4j Browser
@@ -94,3 +94,16 @@ services:
     #         - driver: nvidia
     #           count: 1
     #           capabilities: [gpu]
+
+  llm_service:
+    build: ./llm_service
+    container_name: llm_service
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      neo4j:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+    #volumes:
+    #  - ./:/app/cassandra.db

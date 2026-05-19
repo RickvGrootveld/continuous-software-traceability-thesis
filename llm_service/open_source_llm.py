@@ -10,7 +10,7 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
 NEO4J_URI  = os.getenv("NEO4J_URI",  "bolt://neo4j:7687")
 NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
 NEO4J_PASS = os.getenv("NEO4J_PASSWORD", "yourpassword")
-MODEL      = "llama3.1:8b"
+MODEL      = "qwen3.5:4b-thinking" 
 
 
 # ── 1. Find which schema entries apply to a given node label ──────────────────
@@ -212,7 +212,7 @@ def call_llm(client: ollama.Client, prompt: str) -> list[dict]:
     response = client.chat(
         model=MODEL,
         messages=[{"role": "user", "content": prompt}],
-        options={"temperature": 0.2}
+        options={"temperature": 0.1}
     )
     raw = response["message"]["content"].strip()
     raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()

@@ -26,56 +26,56 @@ def insert_nodes(tx, nodes: list):
     """
     tx.run(query, nodes=nodes)
 
-def link_nodes_original(tx, edges: list):
-    query = """
-    UNWIND $edges AS edge
-    MATCH (a {id: edge.source})
-    MATCH (b {id: edge.target})
+#def link_nodes_original(tx, edges: list):
+#    query = """
+#    UNWIND $edges AS edge
+#    MATCH (a {id: edge.source})
+#    MATCH (b {id: edge.target})
+#
+#    CALL apoc.merge.relationship(
+#      a,
+#      edge.label,
+#      {},
+#      edge.properties,
+#      b
+#    ) 
+#    YIELD rel
+#    RETURN count(rel)
+#    """
+#    tx.run(query, edges=edges)
 
-    CALL apoc.merge.relationship(
-      a,
-      edge.label,
-      {},
-      edge.properties,
-      b
-    ) 
-    YIELD rel
-    RETURN count(rel)
-    """
-    tx.run(query, edges=edges)
-
-def link_nodes_hybrid(tx, edges: list):
-    query = """
-    UNWIND $edges AS edge
-    WITH edge
-    WHERE edge.source IS NOT NULL 
-      AND edge.target IS NOT NULL 
-      AND edge.label IS NOT NULL
-
-    // Extract type + id
-    WITH edge,
-         split(edge.source, ':') AS sourceParts,
-         split(edge.target, ':') AS targetParts
-
-    MERGE (a {id: edge.source})
-    ON CREATE SET a:Unknown
-
-    MERGE (b {id: edge.target})
-    ON CREATE SET b:Unknown
-
-    CALL apoc.merge.relationship(
-      a,
-      edge.label,
-      {},
-      {},
-      b
-    ) YIELD rel
-
-    SET rel += edge.properties
-
-    RETURN count(rel)
-    """
-    tx.run(query, edges=edges)
+#def link_nodes_hybrid(tx, edges: list):
+#    query = """
+#    UNWIND $edges AS edge
+#    WITH edge
+#    WHERE edge.source IS NOT NULL 
+#      AND edge.target IS NOT NULL 
+#      AND edge.label IS NOT NULL
+#
+#    // Extract type + id
+#    WITH edge,
+#         split(edge.source, ':') AS sourceParts,
+#         split(edge.target, ':') AS targetParts
+#
+#    MERGE (a {id: edge.source})
+#    ON CREATE SET a:Unknown
+#
+#    MERGE (b {id: edge.target})
+#    ON CREATE SET b:Unknown
+#
+#    CALL apoc.merge.relationship(
+#      a,
+#      edge.label,
+#      {},
+#      {},
+#      b
+#    ) YIELD rel
+#
+#    SET rel += edge.properties
+#
+#    RETURN count(rel)
+#    """
+#    tx.run(query, edges=edges)
 
 def link_nodes(tx, edges: list):
     query = """
@@ -103,3 +103,12 @@ def link_nodes(tx, edges: list):
     RETURN count(rel)
     """
     tx.run(query, edges=edges)
+
+def add_embeddings(nodes: list):
+    query = """
+    UNWIND $nodes AS node
+    MATCH (n {id: node.id})
+    SET n.embedding = node.properties.embedding
+    RETURN count(n)
+    """
+    tx.run(query, nodes=nodes)

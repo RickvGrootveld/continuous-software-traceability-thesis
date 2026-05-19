@@ -19,14 +19,14 @@ should be the same Python file with the same code but with the added documentati
 Also, the output file should only be the Python file and nothing else."""
 
 #llm_edge = {
-#    "source": f"Commit:{commit_hash}",
-#    "target": f"Code:{cc['file_path']}",
-#    "label": cc["change_type"],
+#    "source": ?,
+#    "target": ?,
+#    "label": ?,
 #    "properties": {
-#        "timestamp": timestamp,
+#        "timestamp": ?,
 #        "system": "LLM",
-#        "confidence": 0.85,
-#        "explanation": ""
+#        "confidence": ?,
+#        "explanation": ?
 #    }
 #}
 
