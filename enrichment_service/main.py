@@ -39,7 +39,7 @@ class EnrichmentService:
 
     def __init__(self):
         self.neo4j = Neo4jClient()
-        self.vector = VectorSimilarityRetriever()
+        self.vector = VectorSimilarityRetriever(self.neo4j)
         self.retriever = ContextRetriever(
             self.neo4j,
             self.vector
@@ -53,31 +53,23 @@ class EnrichmentService:
         with window_lock:
             for node in nodes:
                 window_buffer.append(node)
-                print(f"Buffered node: {node['id']}")
-            if (
-                len(window_buffer) > 0 and
-                window_start_time is None
-            ):
+                print(f"Buffered node: {node}")
+                
+            if (len(window_buffer) > 0 and window_start_time is None):
                 window_start_time = time.time()
-                print(
-                    f"Started {WINDOW_SECONDS}s window"
-                )
+                print(f"Started {WINDOW_SECONDS}s window")
 
     def poll_neo4j(self):
         while True:
             try:
-                recent_nodes = \
-                    self.neo4j.get_recent_nodes()
+                recent_nodes = self.neo4j.get_recent_nodes()
+                print(f"Recent nodes: {recent_nodes}")
                 if len(recent_nodes) > 0:
                     self.add_to_window(recent_nodes)
 
             except Exception as e:
                 print("Neo4j polling error:", e)
             time.sleep(1)
-
-    # ========================================================
-    # Process sliding windows
-    # ========================================================
 
     def process_windows(self):
         global window_start_time
@@ -86,8 +78,7 @@ class EnrichmentService:
             with window_lock:
                 if window_start_time is None:
                     continue
-                elapsed = \
-                    time.time() - window_start_time
+                elapsed = time.time() - window_start_time
                 if elapsed < WINDOW_SECONDS:
                     continue
                 current_window = window_buffer.copy()
@@ -98,30 +89,25 @@ class EnrichmentService:
             print(f"Window size: {len(current_window)}")
 
             # Retrieve nodes from the graph to get context for the LLM
-            context_nodes, context_edges = \
-                self.retriever.retrieve_context(current_window)
+            context_nodes, context_edges = self.retriever.retrieve_context(current_window)
 
             print(f"Retrieved {len(context_nodes)} nodes")
 
             # Enrich the graph with the LLM
             try:
-
-                inferred_edges = \
-                    self.llm.infer_edges(
+                inferred_edges = self.llm.infer_edges(
                         context_nodes,
                         context_edges
                     )
 
             except Exception as e:
-
                 print("LLM error:", e)
                 continue
 
             print(f"Inferred {len(inferred_edges)} edges")
 
             # Get the timestamp to store as property in the edges
-            latest_timestamp = \
-                current_window[-1]["properties"].get(
+            latest_timestamp = current_window[-1]["properties"].get(
                     "created_at",
                     str(time.time())
                 )
@@ -147,20 +133,6 @@ class EnrichmentService:
                 except Exception as e:
                     print("Neo4j insertion error:", e)
 
-            # TODO: remove this. don't focus on processing. it is just about the hybrid approach to enrich
-            # =================================================
-            # Mark processed
-            # =================================================
-
-            processed_ids = [
-                node["id"]
-                for node in current_window
-            ]
-
-            self.neo4j.mark_nodes_processed(
-                processed_ids
-            )
-
     def run(self):
         print("Starting LLM Enrichment Service")
 
@@ -168,6 +140,9 @@ class EnrichmentService:
             target=self.poll_neo4j,
             daemon=True
         )
+
+        with self.neo4j.driver.session() as session:
+            pass 
 
         polling_thread.start()
 

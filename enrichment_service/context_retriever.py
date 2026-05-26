@@ -1,12 +1,4 @@
-import json
-from platform import node
-import time
-import threading
-from threading import Lock
 from typing import List, Dict
-
-from neo4j import GraphDatabase
-from networkx import nodes
 
 WINDOW_SECONDS = 10
 
@@ -17,12 +9,7 @@ MAX_CONTEXT_NODES = 50
 
 class ContextRetriever:
 
-    def __init__(
-        self,
-        neo4j_client,
-        vector_retriever
-    ):
-
+    def __init__(self, neo4j_client, vector_retriever):
         self.neo4j = neo4j_client
         self.vector = vector_retriever
 

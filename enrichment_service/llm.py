@@ -1,18 +1,20 @@
 import json
+import os
+
+from prompt import load_system_prompt, load_user_prompt
+from shared_utils.schema import SCHEMA
 
 # Determine to use Qwen or GPT to prevent everything to be loaded and running when building the project in Docker
 # Qwen
 USE_LOCAL_QWEN = True
 # USE_LOCAL_QWEN = False
 
-QWEN_MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
+#QWEN_MODEL_NAME = "Qwen/Qwen3-4B-Instruct-2507"
+QWEN_MODEL_NAME = "qwen3.5:4b"
 
 if USE_LOCAL_QWEN:
-    import torch
-    from transformers import (
-        AutoTokenizer,
-        AutoModelForCausalLM
-    )
+    import ollama
 
 # GPT
 # USE_GPT = True
@@ -24,33 +26,7 @@ GPT_MODEL = "gpt-5.1"
 if USE_GPT:
     from openai import OpenAI
 
-SYSTEM_PROMPT = """
-You are an expert software traceability
-knowledge graph enrichment system.
 
-Infer meaningful missing relationships.
-
-Allowed labels:
-- BLOCKED_BY
-- DEPENDS_ON
-- RELATED_TO
-- CAUSES
-- AFFECTS
-
-Return ONLY valid JSON.
-
-Format:
-
-[
-    {
-        "source": "...",
-        "target": "...",
-        "label": "...",
-        "confidence": 0.92,
-        "explanation": "..."
-    }
-]
-"""
 
 
 class GPTClient:
@@ -59,6 +35,29 @@ class GPTClient:
         print("Loading GPT...")
         self.client = OpenAI(api_key=OPENAI_API_KEY)
         print("GPT-5.1 initialized")
+
+    def call_llm(self, graph_content: dict) -> dict:
+        """
+        Calls GPT-5.1 via the OpenAI API.
+        """
+        messages = [
+            {"role": "system",    "content": load_system_prompt()},
+            {"role": "user",      "content": load_user_prompt(SCHEMA, graph_content)},
+        ]
+
+        client = OpenAI(
+            api_key="YOUR_API_KEY",
+            base_url="https://api.openai.com/v1",
+        )
+    
+        response = client.chat.completions.create(
+            model="gpt-5.1",
+            messages=messages,
+            reasoning_effort="low",
+            response_format={"type": "json_object"},
+        )
+
+        return json.loads(response.choices[0].message.content)
 
     def infer_edges(self, nodes, edges):
         
@@ -97,17 +96,56 @@ class QwenClient:
 
     def __init__(self):
         print("Loading QWEN...")
-        self.tokenizer = \
-            AutoTokenizer.from_pretrained(
-                QWEN_MODEL_NAME
-            )
-        self.model = \
-            AutoModelForCausalLM.from_pretrained(
-                QWEN_MODEL_NAME,
-                torch_dtype=torch.float16,
-                device_map="auto"
-            )
+        #self.tokenizer = \
+        #    AutoTokenizer.from_pretrained(
+        #        QWEN_MODEL_NAME
+        #    )
+        #self.model = \
+        #    AutoModelForCausalLM.from_pretrained(
+        #        QWEN_MODEL_NAME,
+        #        dtype=torch.float16,
+        #        device_map="auto"
+        #    )
+        self.client = ollama.Client(host=OLLAMA_URL)
+        self.ensure_model()
         print("Qwen initialized")
+
+    def ensure_model(self) -> None:
+        available = [m["model"] for m in self.client.list()["models"]]
+        if QWEN_MODEL_NAME not in available:
+            print(f"Model '{QWEN_MODEL_NAME}' not found locally. Pulling — this may take a few minutes...")
+            self.client.pull(QWEN_MODEL_NAME)
+            print("Model ready.")
+        else:
+            print(f"Model '{QWEN_MODEL_NAME}' already available.")
+
+    #def call_llm(self, messages: list) -> list[dict]:
+    #    response = self.client.chat(
+    #        model=QWEN_MODEL_NAME,
+    #        messages=messages,
+    #        options={"temperature": 0.0} # deterministic output
+    #    )
+    #    raw = response["message"]["content"].strip()
+    #    raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    #    return json.loads(raw)
+    
+    def call_llm(self, graph_content: dict) -> dict:
+        client = ollama.Client(host="http://ollama:11434")
+
+        messages = [
+            {"role": "system",    "content": load_system_prompt()},
+            {"role": "user",      "content": load_user_prompt(SCHEMA, graph_content)},
+        ]
+
+        response = client.chat(
+            model="qwen3.5:4b",
+            messages=messages,
+            format="json",
+            think="low",
+            options={"temperature": 0.6},
+        )
+
+        return json.loads(response.message.content)
 
     def infer_edges(self, nodes, edges):
         # Remove the embeddings from the nodes fed to the LLM to reduce input tokens
@@ -134,24 +172,27 @@ class QwenClient:
                 "content": prompt
             }
         ]
-        text = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
-        )
-        model_inputs = self.tokenizer(
-            [text],
-            return_tensors="pt"
-        ).to(self.model.device)
-        generated_ids = self.model.generate(
-            **model_inputs,
-            max_new_tokens=1024,
-            temperature=0.0
-        )
-        output_ids = generated_ids[0][
-            len(model_inputs.input_ids[0]):]
-        response = self.tokenizer.decode(
-            output_ids,
-            skip_special_tokens=True
-        )
+
+        response = self.call_llm(messages)
+
+        #text = self.tokenizer.apply_chat_template(
+        #    messages,
+        #    tokenize=False,
+        #    add_generation_prompt=True
+        #)
+        #model_inputs = self.tokenizer(
+        #    [text],
+        #    return_tensors="pt"
+        #).to(self.model.device)
+        #generated_ids = self.model.generate(
+        #    **model_inputs,
+        #    max_new_tokens=1024,
+        #    temperature=0.0
+        #)
+        #output_ids = generated_ids[0][
+        #    len(model_inputs.input_ids[0]):]
+        #response = self.tokenizer.decode(
+        #    output_ids,
+        #    skip_special_tokens=True
+        #)
         return json.loads(response)

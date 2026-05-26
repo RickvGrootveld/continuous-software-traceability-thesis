@@ -1,0 +1,94 @@
+{
+  "nodes": {
+    "Release": {
+      "version": { "type": "string" }
+    },
+    "Issue": {
+      "title": { "type": "string" },
+      "type": { "type": "string" },
+      "status": { "type": "string"},
+      "description": { "type": "string" },
+      "created": { "type": "date" },
+      "resolved": { "type": "date" }
+    },
+    "Issue:Feature": {
+      "unit of work": { "type": "integer" },
+      "business value": { "type": "integer" }
+    },
+    "Issue:Bug": {
+      "detected_date": { "type": "date" },
+      "root_cause": { "type": "string" },
+      "solved": { "type": "string"}
+    },
+    "Commit": {
+      "title": { "type": "string" },
+      "message": { "type": "string" },
+      "timestamp": { "type": "string" }
+    },
+    "Developer": {
+      "name": { "type": "string" },
+      "email": { "type": "string" }
+    },
+    "Code": {
+      "file_path": { "type": "string" },
+      "deleted": { "type": "string" }
+    }
+  },
+  "edges": {
+    "issue_included_in_release": {
+      "source_id": "Issue",
+      "target_id": "Release",
+      "label": "included in"
+    },
+    "issue_updates_issue": {
+      "source_id": "Issue",
+      "target_id": "Issue",
+      "label": "updates"
+    },
+    "feature_inherits_issue": {
+      "source_id": "Feature",
+      "target_id": "Issue",
+      "label": "is a"
+    },
+    "bug_inherits_issue": {
+      "source_id": "Bug",
+      "target_id": "Issue",
+      "label": "is a"
+    },
+    "feature_relates_to_feature": {
+      "source_id": "Feature",
+      "target_id": "Feature",
+      "label": "relates to"
+    },
+    "bug_caused_by_feature": {
+      "source_id": "Bug",
+      "target_id": "Feature",
+      "label": "caused by"
+    },
+    "commit_implements_feature": {
+      "source_id": "Commit",
+      "target_id": "Feature",
+      "label": "implements"
+    },
+    "commit_solves_bug": {
+      "source_id": "Commit",
+      "target_id": "Bug",
+      "label": "solves"
+    },
+    "developer_creates_commit": {
+      "source_id": "Developer",
+      "target_id": "Commit",
+      "label": "creates"
+    },
+    "issue_assigned_to_developer": {
+      "source_id": "Issue",
+      "target_id": "Developer",
+      "label": "assigned to"
+    },
+    "commit_changes_code": {
+      "source_id": "Commit",
+      "target_id": "Code",
+      "label": "changes"
+    }
+  }
+}

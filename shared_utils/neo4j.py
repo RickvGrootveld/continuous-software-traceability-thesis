@@ -37,7 +37,6 @@ class Neo4jClient:
             session.run(query)
 
     def get_recent_nodes(self, limit=100):
-
         query = """
         MATCH (n)
         WHERE
@@ -53,13 +52,10 @@ class Neo4jClient:
         nodes = []
 
         with self.driver.session() as session:
-
             results = session.run(query, limit=limit)
 
             for record in results:
-
                 node = record["n"]
-
                 nodes.append({
                     "type": list(node.labels)[0],
                     "id": node["uid"],
@@ -68,61 +64,74 @@ class Neo4jClient:
 
         return nodes
 
-    def get_k_hop_neighbors(
-        self,
-        node_ids: List[str],
-        k: int = 2
-    ):
-        """Retrieve k-hop neighborhood with 2 hops for a list of node IDs."""
+    def get_k_hop_neighbors(self, node_ids: List[str]):
+        """
+        Retrieve the neighborhood for a list of node IDs with edge-type-aware hop limits:
+          - Edges with system='dataset' → 2 hops
+          - Edges with system='LLM'     → 1 hop
+        Both result sets are merged and deduplicated.
+        """
 
-        query = f"""
+        # 2-hop traversal restricted to dataset edges only
+        dataset_query = """
         MATCH (n)
         WHERE n.uid IN $node_ids
 
-        MATCH p=(n)-[*1..{k}]-(m)
+        MATCH p=(n)-[r*1..2]-(m)
+        WHERE ALL(rel IN relationships(p) WHERE rel.system = 'dataset')
 
         RETURN DISTINCT
-            nodes(p) as nodes,
-            relationships(p) as rels
+            nodes(p)         AS nodes,
+            relationships(p) AS rels
+        """
+
+        # 1-hop traversal restricted to LLM edges only
+        llm_query = """
+        MATCH (n)
+        WHERE n.uid IN $node_ids
+
+        MATCH p=(n)-[r*1..1]-(m)
+        WHERE ALL(rel IN relationships(p) WHERE rel.system = 'LLM')
+
+        RETURN DISTINCT
+            nodes(p)         AS nodes,
+            relationships(p) AS rels
         """
 
         all_nodes = {}
-        all_edges = []
+        all_edges = {}   # keyed by (source, target, label) to deduplicate
 
-        with self.driver.session() as session:
-
-            results = session.run(
-                query,
-                node_ids=node_ids
-            )
-
+        def _collect(results):
             for record in results:
-
                 for node in record["nodes"]:
-
                     uid = node["uid"]
-
-                    all_nodes[uid] = {
-                        "type": list(node.labels)[0],
-                        "id": uid,
-                        "properties": dict(node)
-                    }
+                    if uid not in all_nodes:
+                        all_nodes[uid] = {
+                            "type":       list(node.labels)[0],
+                            "id":         uid,
+                            "properties": dict(node),
+                        }
 
                 for rel in record["rels"]:
+                    src   = rel.start_node["uid"]
+                    tgt   = rel.end_node["uid"]
+                    label = rel.type
+                    key   = (src, tgt, label)
+                    if key not in all_edges:
+                        all_edges[key] = {
+                            "source":     src,
+                            "target":     tgt,
+                            "label":      label,
+                            "properties": dict(rel),
+                        }
 
-                    edge = {
-                        "source": rel.start_node["uid"],
-                        "target": rel.end_node["uid"],
-                        "label": rel.type,
-                        "properties": dict(rel)
-                    }
+        with self.driver.session() as session:
+            _collect(session.run(dataset_query, node_ids=node_ids))
+            _collect(session.run(llm_query,     node_ids=node_ids))
 
-                    all_edges.append(edge)
-
-        return list(all_nodes.values()), all_edges
+        return list(all_nodes.values()), list(all_edges.values())
 
     def insert_llm_edge(self, edge: Dict):
-
         query = """
         MATCH (a {uid: $source})
         MATCH (b {uid: $target})
@@ -135,7 +144,6 @@ class Neo4jClient:
         """
 
         with self.driver.session() as session:
-
             session.run(
                 query,
                 source=edge["source"],
@@ -190,33 +198,8 @@ class Neo4jClient:
         """
         with self.driver.session() as session:
             session.run(query, edges=edges)
-
-    #TODO: remove this function
-    def mark_nodes_processed(self, node_ids: List[str]):
-
-        query = """
-        MATCH (n)
-        WHERE n.uid IN $node_ids
-
-        SET n.last_llm_processed_at = datetime()
-
-        SET n.llm_processing_count =
-            coalesce(n.llm_processing_count, 0) + 1
-        """
-
-        with self.driver.session() as session:
-
-            session.run(
-                query,
-                node_ids=node_ids
-            )
     
-    def query_similar_nodes(
-        self,
-        embedding,
-        top_k=50
-    ):
-
+    def query_similar_nodes(self, embedding, top_k=50):
         query = """
         CALL db.index.vector.queryNodes(
             'node_embeddings',
@@ -240,9 +223,7 @@ class Neo4jClient:
             )
 
             for record in results:
-
                 node = record["node"]
-
                 score = record["score"]
 
                 nodes.append({

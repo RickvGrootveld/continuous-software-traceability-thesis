@@ -52,8 +52,15 @@ services:
     container_name: ollama
     ports:
       - "11434:11434"
-    #volumes:
-    #  - ollama_data:/root/.ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: >
+      sh -c "
+      ollama serve &
+      sleep 10 &&
+      ollama pull qwen3.5:4b &&
+      wait
+      "
     healthcheck:
       test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
       interval: 15s
@@ -98,8 +105,6 @@ services:
         condition: service_healthy
       neo4j:
         condition: service_started
-      ollama:
-        condition: service_healthy
 
   enrichment_service:
     build: 
@@ -116,3 +121,6 @@ services:
         condition: service_healthy
     #volumes:
     #  - ./:/app/cassandra.db
+
+volumes: 
+  ollama_data:

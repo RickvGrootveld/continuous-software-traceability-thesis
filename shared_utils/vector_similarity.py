@@ -1,6 +1,5 @@
 from sentence_transformers import SentenceTransformer
 
-
 class EmbeddingService:
 
     def __init__(self):
@@ -61,27 +60,6 @@ class VectorSimilarityRetriever:
         self.model = SentenceTransformer(
             "all-MiniLM-L6-v2"
         )
-
-    #def node_to_text(self, node):
-    #    text_parts = []
-    #    text_parts.append(node["type"])
-#
-    #    for key, value in node["properties"].items():
-    #        if value is None:
-    #            continue
-#
-    #        # Skip embedding itself
-    #        if key == "embedding":
-    #            continue
-#
-    #        text_parts.append(f"{key}: {value}")
-#
-    #    return " ".join(text_parts)
-
-    def generate_embedding(self, node):
-        text = self.node_to_text(node)
-        embedding = self.model.encode(text)
-        return embedding.tolist()
 
     def find_similar_nodes(self, nodes, top_k=20):
         similar_nodes = []

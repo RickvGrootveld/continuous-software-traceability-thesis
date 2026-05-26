@@ -1,0 +1,16 @@
+services:
+ 
+  app:
+    build: .
+    volumes:
+      - .:/app
+ 
+#  ollama:
+#    image: ollama/ollama:latest
+#    ports:
+#      - "11434:11434"
+#    volumes:
+#      - ollama_models:/root/.ollama
+# 
+#volumes:
+#  ollama_models:

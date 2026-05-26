@@ -1,0 +1,52 @@
+{
+  "new_edges": [
+    {
+      "source_id": "commit_901",
+      "target_id": "feature_044",
+      "label": "fixes",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "Commit fixes the bug caused by feature 044's middleware implementation."
+    },
+    {
+      "source_id": "bug_302",
+      "target_id": "code_401",
+      "label": "affects",
+      "confidence": 0.89,
+      "system": "LLM",
+      "explanation": "Bug 302 involves middleware.ts file path matching the bug's auth context."
+    },
+    {
+      "source_id": "feature_044",
+      "target_id": "code_401",
+      "label": "implements",
+      "confidence": 0.87,
+      "system": "LLM",
+      "explanation": "Feature 044's RBAC middleware directly corresponds to middleware.ts file."
+    },
+    {
+      "source_id": "bug_101",
+      "target_id": "feature_999",
+      "label": "precedes",
+      "confidence": 0.91,
+      "system": "LLM",
+      "explanation": "Bug 101's token validation issue was resolved before feature 999 was created."
+    },
+    {
+      "source_id": "bug_101",
+      "target_id": "code_991",
+      "label": "affects",
+      "confidence": 0.88,
+      "system": "LLM",
+      "explanation": "Bug 101's token validation anomaly directly impacts token_validator.ts file."
+    },
+    {
+      "source_id": "feature_999",
+      "target_id": "code_991",
+      "label": "implements",
+      "confidence": 0.86,
+      "system": "LLM",
+      "explanation": "Feature 999's session expiry notification requires token_validator.ts implementation."
+    }
+  ]
+}

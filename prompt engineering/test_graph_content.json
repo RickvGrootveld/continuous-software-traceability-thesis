@@ -1,0 +1,124 @@
+{
+  "sliding_window_events": {
+    "nodes": {
+      "commit_901": {
+        "type": "Commit",
+        "title": "Fix auth timeout bug",
+        "message": "Adjusted JWT verification token expiration buffer to resolve premature session termination.",
+        "timestamp": "2026-05-23T01:15:00Z"
+      },
+      "code_401": {
+        "type": "Code",
+        "file_path": "src/auth/middleware.ts",
+        "deleted": "false"
+      }
+    },
+    "edges": {
+      "edge_e1": {
+        "source_id": "commit_901",
+        "target_id": "code_401",
+        "label": "changes",
+        "system": "git_event_stream",
+        "confidence": 100,
+        "explanation": "Event log captures commit_901 directly modifying middleware.ts."
+      }
+    }
+  },
+
+  "k_hop_neighbourhood": {
+    "nodes": {
+      "bug_302": {
+        "type": "Issue:Bug",
+        "title": "Intermittent 401 on valid user session",
+        "status": "in progress",
+        "description": "Users are reporting sudden logouts while actively browsing dashboards.",
+        "created": "2026-05-22",
+        "resolved": null,
+        "detected_date": "2026-05-22",
+        "root_cause": "Race condition in validation timestamp check.",
+        "solved": "no"
+      },
+      "dev_105": {
+        "type": "Developer",
+        "name": "Alex Mercer",
+        "email": "alex.mercer@company.com"
+      },
+      "feature_044": {
+        "type": "Issue:Feature",
+        "title": "Implement RBAC Auth Middleware",
+        "status": "done",
+        "description": "Establish baseline token validation middleware for role-based access control.",
+        "created": "2026-04-10",
+        "resolved": "2026-05-01",
+        "unit of work": 5,
+        "business value": 80
+      }
+    },
+    "edges": {
+      "edge_k1": {
+        "source_id": "commit_901",
+        "target_id": "bug_302",
+        "label": "solves",
+        "system": "k_hop_retriever",
+        "confidence": 95,
+        "explanation": "Hop 1 from sliding window: Commit message explicitly tags or addresses the context of bug_302."
+      },
+      "edge_k2": {
+        "source_id": "dev_105",
+        "target_id": "commit_901",
+        "label": "creates",
+        "system": "k_hop_retriever",
+        "confidence": 100,
+        "explanation": "Hop 1 from sliding window: Author metadata of commit_901 resolves to dev_105."
+      },
+      "edge_k3": {
+        "source_id": "bug_302",
+        "target_id": "feature_044",
+        "label": "caused by",
+        "system": "k_hop_retriever",
+        "confidence": 85,
+        "explanation": "Hop 2 from bug_302: Traceability logs show this session regression originated after feature_044 shipped."
+      },
+      "edge_k4": {
+        "source_id": "bug_302",
+        "target_id": "dev_105",
+        "label": "assigned to",
+        "system": "k_hop_retriever",
+        "confidence": 100,
+        "explanation": "Hop 2 from bug_302: Issue tracker shows dev_105 owns this ticket."
+      }
+    }
+  },
+
+  "vector_similarity_retrieval": {
+    "nodes": {
+      "bug_101": {
+        "type": "Issue:Bug",
+        "title": "Token refresh timing anomaly",
+        "status": "done",
+        "description": "Legacy authorization system occasionally fails when system clocks are out of sync.",
+        "created": "2025-11-12",
+        "resolved": "2025-11-15",
+        "detected_date": "2025-11-12",
+        "root_cause": "Hardcoded token validation windows with tight tolerance.",
+        "solved": "yes"
+      },
+      "feature_999": {
+        "type": "Issue:Feature",
+        "title": "User Session Expiry Notification",
+        "status": "planned",
+        "description": "Provide UI alerts notifying active users that their authentication token is nearing expiry.",
+        "created": "2026-05-19",
+        "resolved": null,
+        "unit of work": 3,
+        "business value": 40
+      },
+      "code_991": {
+        "type": "Code",
+        "file_path": "src/security/token_validator.ts",
+        "deleted": "false"
+      }
+    },
+    "edges": {}
+  }
+}
