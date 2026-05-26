@@ -9,7 +9,7 @@ Run the container
 ```
 docker compose up ollama -d
 ```
-download the model
+download the model (only once)
 ```
 docker compose exec ollama ollama pull qwen3.5:4b
 ```
@@ -22,25 +22,4 @@ docker compose run app
 After commenting the lines of calling Qwen and ollama and volume in the docker compose file:
 ```
 docker compose up -d
-```
-
-
-
-
-## Download Ollama
-https://ollama.com/download/windows
-
-## Load to model for the first time
-```
-ollama pull qwen3.5:4b
-```
-
-## start ollama locally
-```
-ollama serve
-```
-
-## build and run the app
-```
-docker compose run app
 ```

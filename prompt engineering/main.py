@@ -33,7 +33,7 @@ def call_gpt() -> dict:
 
 
 def call_qwen() -> dict:
-    client = ollama.Client(host="http://host.docker.internal:11434") #"http://localhost:11434/v1"    "http://ollama:11434"
+    client = ollama.Client(host="http://ollama:11434")
 
     response = client.chat(
         model="qwen3.5:4b",
