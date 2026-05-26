@@ -3,14 +3,14 @@ import os
 import ollama
 from openai import OpenAI
 
-#from initial_prompt import SYSTEM_PROMPT, USER_PROMPT
-#from final_prompt import FINAL_SYSTEM_PROMPT, FINAL_USER_PROMPT
-from initial_prompt_better import BETTER_SYSTEM_PROMPT, BETTER_USER_PROMPT
+from prompt_v4 import SYSTEM_PROMPT, USER_PROMPT
 
+API_KEY = "<YOUR_API_KEY>"
 
 messages = [
-    {"role": "system",    "content": BETTER_SYSTEM_PROMPT},
-    {"role": "user",      "content": BETTER_USER_PROMPT},
+    {"role": "system",    "content": SYSTEM_PROMPT},
+    {"role": "user",      "content": USER_PROMPT},
+    {"role": "assistant",  "content": "{\n  \"new_edges\": ["}
 ]
 
 def call_gpt() -> dict:
@@ -18,7 +18,7 @@ def call_gpt() -> dict:
     Calls GPT-5.1 via the OpenAI API.
     """
     client = OpenAI(
-        api_key="YOUR_API_KEY",
+        api_key=API_KEY,
         base_url="https://api.openai.com/v1",
     )
 
@@ -42,8 +42,13 @@ def call_qwen() -> dict:
         think="low",
         options={"temperature": 0.0},
     )
-    print(f"response = {response}")
-    return json.loads(response.message.content)
+    prefix = '{\n  "new_edges": ['
+
+    api_response = response.message.content 
+    # Content will only contain what the LLM has generated after the prefix. So, concatenate them
+    full_json_string = prefix + api_response
+
+    return json.loads(full_json_string)
 
 
 if __name__ == "__main__":

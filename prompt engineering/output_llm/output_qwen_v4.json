@@ -1,0 +1,28 @@
+{
+  "new_edges": [
+    {
+      "source_id": "commit_901",
+      "target_id": "bug_101",
+      "label": "fixes",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "Commit message 'Fix auth timeout bug' and description of premature session termination semantically match the root cause of bug_101 regarding token refresh timing."
+    },
+    {
+      "source_id": "commit_901",
+      "target_id": "feature_999",
+      "label": "implements",
+      "confidence": 0.88,
+      "system": "LLM",
+      "explanation": "Commit adjusts JWT expiration buffer, which directly addresses the functionality described in feature_999 for notifying users of token expiry."
+    },
+    {
+      "source_id": "code_401",
+      "target_id": "bug_101",
+      "label": "contains",
+      "confidence": 0.86,
+      "system": "LLM",
+      "explanation": "The file path 'src/auth/middleware.ts' is the logical location for the token validation logic identified as the root cause of bug_101."
+    }
+  ]
+}
