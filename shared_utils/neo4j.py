@@ -40,34 +40,74 @@ class Neo4jClient:
 
     def get_recent_nodes(self, limit=100):
         query = """
-        MATCH (n)
-        WHERE
-            datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT1S')
-        RETURN n, 
-               // Filter out TraceabilityNode, sort alphabetically, and join with colons
-               reduce(s = "", l IN apoc.coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) | 
-                   s + (CASE WHEN s = "" THEN "" ELSE ":" END) + l
-               ) AS clean_type
+        // 1. Fetch the recent source nodes
+        MATCH (n:TraceabilityNode)
+        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT1S')
+        WITH n
         ORDER BY n.timestamp DESC
         LIMIT $limit
+
+        // 2. Collect the nodes so we can find relationships connecting ONLY this subset
+        WITH collect(n) AS node_list
+        UNWIND node_list AS n
+
+        // 3. Find edges where both the start and end nodes are inside our collected list
+        OPTIONAL MATCH (n)-[r]->(target)
+        WHERE target IN node_list
+
+        RETURN 
+            n, 
+            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,
+            collect(DISTINCT {
+                rel: r,
+                target_id: target.id,
+                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])
+            }) AS connected_edges
         """
 
         nodes = []
+        edges = []
+        seen_edges = set()  # Prevent duplicate edge tracking in the undirected check
 
         with self.driver.session() as session:
             results = session.run(query, limit=limit)
             for record in results:
                 node = record["n"]
-                n = {
-                    "type": record["clean_type"],  # Pulls the pre-formatted string directly
-                    "id": node["uid"],
-                    "properties": dict(node)
-                }
-                print(f"n.labels: {list(node.labels)}")
-                print(f"n.type: {n.type}")
-                nodes.append(n)
+                source_id = node["id"]
 
-        return nodes
+                # Formulate the source label array
+                source_labels = ["TraceabilityNode"] + record["filtered_labels"]
+
+                # Format and append the node block
+                nodes.append({
+                    "type": source_labels,
+                    "id": source_id,
+                    "properties": dict(node)
+                })
+
+                # Format and append the accompanying edges
+                for edge_entry in record["connected_edges"]:
+                    rel = edge_entry["rel"]
+                    if rel is None:
+                        continue
+                    
+                    # Create a unique tracking key using the Neo4j element/relationship ID
+                    rel_internal_id = rel.element_id if hasattr(rel, 'element_id') else rel.id
+                    if rel_internal_id in seen_edges:
+                        continue
+                    seen_edges.add(rel_internal_id)
+
+                    target_labels = ["TraceabilityNode"] + edge_entry["target_labels"]
+
+                    edges.append({
+                        "source type": source_labels,
+                        "source id": source_id,
+                        "target type": target_labels,
+                        "target id": edge_entry["target_id"],
+                        "label": rel.type,
+                        "properties": dict(rel)
+                    })
+        return nodes, edges
 
     def get_k_hop_neighbors(self, node_ids: List[str], k=1):
         """
@@ -93,7 +133,7 @@ class Neo4jClient:
         # 1-hop traversal restricted to LLM edges only
         llm_query = """
         MATCH (n)
-        WHERE n.uid IN $node_ids
+        WHERE n.id IN $node_ids
 
         MATCH p=(n)-[r*1..1]-(m)
         WHERE ALL(rel IN relationships(p) WHERE rel.system = 'LLM')

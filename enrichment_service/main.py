@@ -26,11 +26,15 @@ from shared_utils.vector_similarity import VectorSimilarityRetriever
 # SLIDING WINDOW
 # ============================================================
 
-window_buffer = []
+# window_buffer = []
+window_buffer_v2 = {
+    "nodes": [],
+    "edges": []
+}
 window_lock = Lock()
 window_start_time = None
 
-WINDOW_SECONDS = 10
+WINDOW_SECONDS = 15
 
 
 class EnrichmentService:
@@ -45,26 +49,28 @@ class EnrichmentService:
         #self.llm = GPTClient()
         self.llm = QwenClient()
 
-    def add_to_window(self, nodes):
+    def add_to_window(self, nodes, edges):
         global window_start_time
 
         with window_lock:
             for node in nodes:
-                window_buffer.append(node)
+                window_buffer_v2["nodes"].append(node)
+            for edge in edges:
+                window_buffer_v2["edges"].append(edge)
                 #print(f"Buffered node: {node}")
                 
-            if (len(window_buffer) > 0 and window_start_time is None):
+            if (len(window_buffer_v2["nodes"]) > 0 and window_start_time is None):
                 window_start_time = time.time()
                 print(f"Started {WINDOW_SECONDS}s window")
 
     def poll_neo4j(self):
         while True:
             try:
-                recent_nodes = self.neo4j.get_recent_nodes()
+                recent_nodes, recent_edges = self.neo4j.get_recent_nodes()
                 #print(f"Recent nodes: {recent_nodes}")
                 if len(recent_nodes) > 0:
                     print("adding to window")
-                    self.add_to_window(recent_nodes)
+                    self.add_to_window(recent_nodes, recent_edges)
 
             except Exception as e:
                 print("Neo4j polling error:", e)
@@ -80,17 +86,15 @@ class EnrichmentService:
                 elapsed = time.time() - window_start_time
                 if elapsed < WINDOW_SECONDS:
                     continue
-                current_window = window_buffer.copy()
-                window_buffer.clear()
+                current_window = window_buffer_v2.copy()
+                window_buffer_v2["nodes"].clear()
+                window_buffer_v2["edges"].clear()
                 window_start_time = None
-
-            #print("\nProcessing window...")
-            #print(f"Window size: {len(current_window)}")
 
             # Retrieve nodes from the graph to get context for the LLM
             #context_nodes, context_edges = self.retriever.retrieve_context(current_window)
             print("start retrieving ...")
-            context = self.retriever.retrieve_context(current_window)
+            context = self.retriever.retrieve_context(current_window) #TODO aanpassen functie
 
             #print(f"Retrieved {len(context_nodes)} nodes")
 
@@ -105,7 +109,8 @@ class EnrichmentService:
             except Exception as e:
                 print("LLM error:", e)
                 continue
-
+            
+            print("LLM enrichment done.")
             # Get the timestamp to store as property in the edges
             #latest_timestamp = current_window[-1]["properties"].get(
             #        "created_at",

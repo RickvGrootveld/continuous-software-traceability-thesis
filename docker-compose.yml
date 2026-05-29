@@ -62,6 +62,13 @@ services:
     #  ollama pull qwen3.5:4b &&
     #  wait
     #  "
+    deploy:
+      resources:
+        limits:
+          cpus: '7.0'          # Max number of CPU cores Ollama can use
+          memory: 8gb         # Hard memory ceiling to prevent system thrashing
+        reservations:
+          cpus: '2.0'          # Minimum cores dedicated when active
     healthcheck:
       test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
       interval: 15s

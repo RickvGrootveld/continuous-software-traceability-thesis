@@ -13,39 +13,38 @@ class ContextRetriever:
         self.neo4j = neo4j_client
         self.vector = vector_retriever
 
-    def deduplicate_graph_nodes(data: dict) -> dict:
-            """Removes duplicate nodes across all sub-graphs based on their unique node IDs
+    def deduplicate_graph_nodes(self, data: dict) -> dict:
+        """Removes duplicate nodes across all sub-graphs based on their unique node IDs
+        while preserving the original dictionary structure.
+        """
+        seen_node_ids = set()
 
-            while preserving the original dictionary structure.
-            """
-            seen_node_ids = set()
+        # Iterate through each sub-graph category (sliding_window_events, etc.)
+        for category, content in data.items():
+            if "nodes" not in content:
+                continue
+            unique_nodes = []
 
-            # Iterate through each sub-graph category (sliding_window_events, etc.)
-            for category, content in data.items():
-                if "nodes" not in content:
-                    continue
+            for node_dict in content["nodes"]:
+                # Extract the unique key/ID of the node (e.g., 'bug_302')
+                node_id = next(iter(node_dict.keys()))
 
-                unique_nodes = []
-                for node_dict in content["nodes"]:
-                    # Extract the unique key/ID of the node (e.g., 'bug_302')
-                    node_id = next(iter(node_dict.keys()))
+                # If we haven't seen this node ID yet, keep it and mark it as seen
+                if node_id not in seen_node_ids:
+                    seen_node_ids.add(node_id)
+                    unique_nodes.append(node_dict)
+            # Update the category with the deduplicated list of nodes
 
-                    # If we haven't seen this node ID yet, keep it and mark it as seen
-                    if node_id not in seen_node_ids:
-                        seen_node_ids.add(node_id)
-                        unique_nodes.append(node_dict)
+            data[category]["nodes"] = unique_nodes
+            
+        return data
 
-                # Update the category with the deduplicated list of nodes
-                data[category]["nodes"] = unique_nodes
-
-            return data
-
-    def retrieve_context(self, window_nodes: List[Dict], window_edges: List[Dict]):
+    def retrieve_context(self, current_window: dict) -> dict:
         # Get the IDs from each node in the window
         print("Retrieve context for the window nodes.")
         seed_ids = [
             node["id"]
-            for node in window_nodes
+            for node in current_window["nodes"]
         ]
 
         # k-hop retrieval
@@ -57,14 +56,14 @@ class ContextRetriever:
 
         # Vector retrieval
         vector_nodes = self.vector.find_similar_nodes(
-            nodes=window_nodes + neighbour_nodes,
+            nodes=current_window["nodes"] + neighbour_nodes,
             top_k=MAX_VECTOR_RESULTS
         )
 
         # Merge
         merged = {}
 
-        for node in (window_nodes + neighbour_nodes + vector_nodes):
+        for node in (current_window["nodes"] + neighbour_nodes + vector_nodes):
             # Make sure there are no duplicates in the combined dict
             if node["id"] not in merged:
                 merged[node["id"]] = node
@@ -72,12 +71,9 @@ class ContextRetriever:
             # Delete the embeddings to minimize the token usage
             del node["properties"]["embeddings"]
 
-        
-        
-
         merged["sliding_window_events"] = {
-            "nodes": window_nodes,
-            "edges": window_edges
+            "nodes": current_window["nodes"],
+            "edges": current_window["edges"]
         }
         merged["k_hop_neighbourhood"] = {
             "nodes": neighbour_nodes,
