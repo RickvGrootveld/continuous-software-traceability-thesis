@@ -43,9 +43,11 @@ def consume(kg: Neo4jClient, embedding_model: EmbeddingService):
             try:
                 nodes = embedding_model.generate_embeddings(nodes)
 
-                # execute_write() automatically retries the unit of work by an error
+                for n in nodes:
+                    n["properties"]["timestamp"] = datetime.now().isoformat()
+
                 kg.insert_nodes(nodes)
-                kg.link_nodes(edges)
+                kg.insert_edges(edges)
 
             except Exception as e:
                 print(f"Error occurred while inserting record: {e}")
@@ -54,7 +56,6 @@ def consume(kg: Neo4jClient, embedding_model: EmbeddingService):
 if __name__ == "__main__":
     kg = Neo4jClient()
     embedding_model = EmbeddingService()
-    kg.vector_index_creation()
     print("Starting to consume Kafka messages...")
     consume(kg, embedding_model)
     kg.close()

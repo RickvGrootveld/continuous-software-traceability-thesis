@@ -7,7 +7,7 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = "password"
 
 WINDOW_SECONDS = 10
-K_HOPS = 2
+K_HOPS = 1
 MAX_VECTOR_RESULTS = 20
 MAX_CONTEXT_NODES = 50
 
@@ -20,12 +20,14 @@ class Neo4jClient:
             NEO4J_URI,
             auth=(NEO4J_USER, NEO4J_PASSWORD)
         )
+        
+        self.vector_index_creation()
 
     def vector_index_creation(self):
         query = """
-        CREATE VECTOR INDEX node_embeddings
+        CREATE VECTOR INDEX node_embeddings IF NOT EXISTS
         FOR (n:TraceabilityNode)
-        ON (n.embedding)
+        ON n.embedding
         OPTIONS {
             indexConfig: {
                 `vector.dimensions`: 384,
@@ -40,12 +42,13 @@ class Neo4jClient:
         query = """
         MATCH (n)
         WHERE
-            n.last_llm_processed_at IS NULL
-            OR n.last_llm_processed_at <
-               datetime() - duration('PT1H')
-
-        RETURN n
-        ORDER BY n.created_at ASC
+            datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT1S')
+        RETURN n, 
+               // Filter out TraceabilityNode, sort alphabetically, and join with colons
+               reduce(s = "", l IN apoc.coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) | 
+                   s + (CASE WHEN s = "" THEN "" ELSE ":" END) + l
+               ) AS clean_type
+        ORDER BY n.timestamp DESC
         LIMIT $limit
         """
 
@@ -53,18 +56,20 @@ class Neo4jClient:
 
         with self.driver.session() as session:
             results = session.run(query, limit=limit)
-
             for record in results:
                 node = record["n"]
-                nodes.append({
-                    "type": list(node.labels)[0],
+                n = {
+                    "type": record["clean_type"],  # Pulls the pre-formatted string directly
                     "id": node["uid"],
                     "properties": dict(node)
-                })
+                }
+                print(f"n.labels: {list(node.labels)}")
+                print(f"n.type: {n.type}")
+                nodes.append(n)
 
         return nodes
 
-    def get_k_hop_neighbors(self, node_ids: List[str]):
+    def get_k_hop_neighbors(self, node_ids: List[str], k=1):
         """
         Retrieve the neighborhood for a list of node IDs with edge-type-aware hop limits:
           - Edges with system='dataset' → 2 hops
@@ -131,26 +136,26 @@ class Neo4jClient:
 
         return list(all_nodes.values()), list(all_edges.values())
 
-    def insert_llm_edge(self, edge: Dict):
-        query = """
-        MATCH (a {uid: $source})
-        MATCH (b {uid: $target})
-
-        MERGE (a)-[r:LLM_RELATION {
-            label: $label
-        }]->(b)
-
-        SET r += $properties
-        """
-
-        with self.driver.session() as session:
-            session.run(
-                query,
-                source=edge["source"],
-                target=edge["target"],
-                label=edge["label"],
-                properties=edge["properties"]
-            )
+    #def insert_llm_edge(self, edge: Dict):
+    #    query = """
+    #    MATCH (a {uid: $source})
+    #    MATCH (b {uid: $target})
+#
+    #    MERGE (a)-[r:LLM_RELATION {
+    #        label: $label
+    #    }]->(b)
+#
+    #    SET r += $properties
+    #    """
+#
+    #    with self.driver.session() as session:
+    #        session.run(
+    #            query,
+    #            source=edge["source"],
+    #            target=edge["target"],
+    #            label=edge["label"],
+    #            properties=edge["properties"]
+    #        )
 
     def insert_nodes(self, nodes: list):
         """Insert nodes using UNWIND."""
@@ -158,7 +163,7 @@ class Neo4jClient:
         UNWIND $nodes AS node
 
         CALL apoc.merge.node(
-          ["TraceabilityNode", node.type],
+          node.type,
           {id: node.id},
           node.properties,
           node.properties
@@ -167,49 +172,47 @@ class Neo4jClient:
 
         RETURN count(n)
         """
+
         with self.driver.session() as session:
             session.run(query, nodes=nodes)
 
-    def link_nodes(self, edges: list):
-        """Insert edges using UNWIND."""
+    def insert_edges(self, edges: list):
+        """Insert edges safely using native label arrays."""
         query = """
-            UNWIND $edges AS edge
+        UNWIND $edges AS edge
 
-            // 1. Extract Label and ID from strings like "Commit:82f5b6..."
-            WITH edge, 
-                 split(edge.source, ':') AS srcParts, 
-                 split(edge.target, ':') AS tgtParts
+        // 1. Look up or create the source node using 'source type' and 'source id'
+        CALL apoc.merge.node(edge.`source type`, {id: edge.`source id`}) YIELD node AS a
 
-            // 2. Use labels for speed. If labels are dynamic, use APOC to find nodes.
-            CALL apoc.merge.node([srcParts[0]], {id: srcParts[1]}) YIELD node AS a
-            CALL apoc.merge.node([tgtParts[0]], {id: tgtParts[1]}) YIELD node AS b
+        // 2. Look up or create the target node using 'target type' and 'target id'
+        CALL apoc.merge.node(edge.`target type`, {id: edge.`target id`}) YIELD node AS b
 
-            // 3. Create the relationship with all 6 required arguments
-            CALL apoc.merge.relationship(
-              a,               // Start node
-              edge.label,      // Rel type (e.g., 'CreatedBy')
-              {},              // Ident properties (usually empty for rels)
-              edge.properties, // Properties to set on Create
-              b,               // End node
-              {}               // Properties to set on Match (Required 6th arg)
-            ) 
-            YIELD rel
-            RETURN count(rel)
+        // 3. Construct the connecting relationship cleanly
+        CALL apoc.merge.relationship(
+          a, 
+          edge.label, 
+          {}, 
+          edge.properties, 
+          b, 
+          {}
+        ) 
+        YIELD rel
+        RETURN count(rel)
         """
         with self.driver.session() as session:
             session.run(query, edges=edges)
     
     def query_similar_nodes(self, embedding, top_k=50):
         query = """
-        CALL db.index.vector.queryNodes(
-            'node_embeddings',
-            $top_k,
-            $embedding
-        )
-
-        YIELD node, score
-
+        MATCH (node:TraceabilityNode)
+        SEARCH node IN (
+          VECTOR INDEX node_embeddings 
+          FOR $embedding 
+          LIMIT $top_k
+        ) SCORE AS score
+        WHERE score >= 0.75
         RETURN node, score
+        ORDER BY score DESC;
         """
 
         nodes = []
@@ -225,6 +228,8 @@ class Neo4jClient:
             for record in results:
                 node = record["node"]
                 score = record["score"]
+
+                print(f"Retrieved similar node {node}")
 
                 nodes.append({
                     "type": list(node.labels)[0],

@@ -10,9 +10,7 @@ This service:
 
 Architecture:
 
-Neo4j
-  ↑
-LLM Enrichment Service
+Neo4j <- LLM Enrichment Service
 """
 
 import time
@@ -53,7 +51,7 @@ class EnrichmentService:
         with window_lock:
             for node in nodes:
                 window_buffer.append(node)
-                print(f"Buffered node: {node}")
+                #print(f"Buffered node: {node}")
                 
             if (len(window_buffer) > 0 and window_start_time is None):
                 window_start_time = time.time()
@@ -63,8 +61,9 @@ class EnrichmentService:
         while True:
             try:
                 recent_nodes = self.neo4j.get_recent_nodes()
-                print(f"Recent nodes: {recent_nodes}")
+                #print(f"Recent nodes: {recent_nodes}")
                 if len(recent_nodes) > 0:
+                    print("adding to window")
                     self.add_to_window(recent_nodes)
 
             except Exception as e:
@@ -85,53 +84,52 @@ class EnrichmentService:
                 window_buffer.clear()
                 window_start_time = None
 
-            print("\nProcessing window...")
-            print(f"Window size: {len(current_window)}")
+            #print("\nProcessing window...")
+            #print(f"Window size: {len(current_window)}")
 
             # Retrieve nodes from the graph to get context for the LLM
-            context_nodes, context_edges = self.retriever.retrieve_context(current_window)
+            #context_nodes, context_edges = self.retriever.retrieve_context(current_window)
+            print("start retrieving ...")
+            context = self.retriever.retrieve_context(current_window)
 
-            print(f"Retrieved {len(context_nodes)} nodes")
+            #print(f"Retrieved {len(context_nodes)} nodes")
 
             # Enrich the graph with the LLM
             try:
-                inferred_edges = self.llm.infer_edges(
-                        context_nodes,
-                        context_edges
-                    )
+                #inferred_edges = self.llm.infer_edges(
+                #        context_nodes,
+                #        context_edges
+                #    )
+                inferred_edges = self.llm.call_llm(context)
 
             except Exception as e:
                 print("LLM error:", e)
                 continue
 
-            print(f"Inferred {len(inferred_edges)} edges")
-
             # Get the timestamp to store as property in the edges
-            latest_timestamp = current_window[-1]["properties"].get(
-                    "created_at",
-                    str(time.time())
-                )
+            #latest_timestamp = current_window[-1]["properties"].get(
+            #        "created_at",
+            #        str(time.time())
+            #    )
 
             # Insert the enriched edges back into the graph
-            for edge in inferred_edges:
-                llm_edge = {
-                    "source": edge["source"],
-                    "target": edge["target"],
-                    "label": edge["label"],
-                    "properties": {
-                        "timestamp": latest_timestamp,
-                        "system": "LLM",
-                        "confidence": edge["confidence"],
-                        "explanation": edge["explanation"]
-                    }
-                }
+            #for edge in inferred_edges:
+            #    llm_edge = {
+            #        "source": edge["source"],
+            #        "target": edge["target"],
+            #        "label": edge["label"],
+            #        "properties": {
+            #            "timestamp": latest_timestamp,
+            #            "system": "LLM",
+            #            "confidence": edge["confidence"],
+            #            "explanation": edge["explanation"]
+            #        }
+            #    }
 
-                try:
-                    self.neo4j.insert_llm_edge(llm_edge)
-                    print("Inserted edge:", llm_edge)
-
-                except Exception as e:
-                    print("Neo4j insertion error:", e)
+            try:
+                self.neo4j.insert_edges(inferred_edges["new_edges"])
+            except Exception as e:
+                print("Neo4j insertion error:", e)
 
     def run(self):
         print("Starting LLM Enrichment Service")
@@ -159,5 +157,6 @@ class EnrichmentService:
         processing_thread.join()
 
 if __name__ == "__main__":
+    time.sleep(5) # Wait for Neo4j to be ready before starting the service
     service = EnrichmentService()
     service.run()

@@ -48,33 +48,26 @@ services:
     restart: always
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.24.0
     container_name: ollama
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    entrypoint: >
-      sh -c "
-      ollama serve &
-      sleep 10 &&
-      ollama pull qwen3.5:4b &&
-      wait
-      "
+    # pull the qwen model during the start up
+    #entrypoint: >
+    #  sh -c "
+    #  ollama serve &
+    #  sleep 10 &&
+    #  ollama pull qwen3.5:4b &&
+    #  wait
+    #  "
     healthcheck:
       test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
       start_period: 20s
-    # For GPU support (optional):
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
 
   event_engine_service:
     build: 
@@ -89,6 +82,7 @@ services:
         condition: service_healthy
     volumes:
       - ./cassandra.db:/app/cassandra.db
+      - ./datasets/validate/lucene.sqlite3:/app/lucene.sqlite3
 
   knowledge_graph_service:
     build: 

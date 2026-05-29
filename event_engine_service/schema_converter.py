@@ -16,25 +16,24 @@ def process_issue(conn, issue_id, timestamp):
         SELECT * FROM issue WHERE issue_id = ?
     """, (issue_id,))
     issue = cursor.fetchone()
+    issue_type = issue["type"]
+    if issue_type == "Bug": 
+        schema_issue_type = ["TraceabilityNode", "Issue", "Bug"] 
+    else: 
+        schema_issue_type = ["TraceabilityNode", "Issue", "Feature"]
 
-    #case issue["type"]:
-    #    1: issue_type = "Bug"
-    #    2: issue_type = "Improvement"
-    #    3: issue_type = "New Feature"
-    #    4: issue_type = "Task"
-    #    5: issue_type = "Sub-task"
-    #    6: issue_type = "Epic"
-    #    7: issue_type = "Story"
-    #    _ : issue_type = "Unknown"
+    
     nodes.append({
-        "type": "Issue",
+        "type": schema_issue_type,
         "id": issue["issue_id"],
         "properties": {
             "id": issue["issue_id"],
             "embedding": None,
             "title": issue["summary"],
+            "type": issue_type,
             "status": issue["status"],
-            "description": issue["description"],
+            "summary": issue["description"],
+            "priority": issue["priority"],
             "created_date": issue["created_date"],
             "updated_date": issue["updated_date"],
             "resolved_date": issue["resolved_date"]
@@ -44,7 +43,7 @@ def process_issue(conn, issue_id, timestamp):
     # Only create and link the developer if it is in the table
     if issue["assignee"] is not None:
         nodes.append({
-            "type": "Developer",
+            "type": ["TraceabilityNode", "Developer"],
             "id": issue["assignee"],
             "properties": {
                 "id": issue["assignee"],
@@ -53,8 +52,10 @@ def process_issue(conn, issue_id, timestamp):
             }
         })
         edges.append({
-            "source": f"Issue:{issue_id}",
-            "target": f"Developer:{issue['assignee']}",
+            "source type": schema_issue_type,
+            "source id": issue["issue_id"],
+            "target type": ["TraceabilityNode", "Developer"],
+            "target id": issue["assignee"],
             "label": "AssignedTo",
             "properties": {
                 "timestamp": timestamp,
@@ -64,13 +65,27 @@ def process_issue(conn, issue_id, timestamp):
 
     # --- issue_link ---
     cursor.execute("""
-        SELECT * FROM issue_link 
-        WHERE source_issue_id = ?
+        SELECT 
+            il.source_issue_id,
+            il.target_issue_id,
+            il.outward_label,
+            i.type AS target_issue_type
+        FROM issue_link il
+        JOIN issue i ON il.target_issue_id = i.issue_id
+        WHERE il.source_issue_id = ?
     """, (issue_id,))
+
     for link in cursor.fetchall():
+        target_id = link["target_issue_id"]
+
+        # Extract the dynamic type
+        target_type = ["TraceabilityNode", "Issue", "Bug"] if link["issue_type"] == "Bug" else ["TraceabilityNode", "Issue", "Feature"]
+
         edges.append({
-            "source": f"Issue:{link['source_issue_id']}",
-            "target": f"Issue:{link['target_issue_id']}",
+            "source type": schema_issue_type,
+            "source id": link['source_issue_id'],
+            "target type": target_type,  # Dynamically assigned via JOIN!
+            "target id": target_id,
             "label": link["outward_label"],
             "properties": {
                 "timestamp": timestamp,
@@ -85,7 +100,7 @@ def process_issue(conn, issue_id, timestamp):
     """, (issue_id,))
     for ifv in cursor.fetchall():
         nodes.append({
-            "type": "Release",
+            "type": ["TraceabilityNode", "Release"],
             "id": ifv["fix_version"],
             "properties": {
                 "id": ifv["fix_version"],
@@ -94,8 +109,10 @@ def process_issue(conn, issue_id, timestamp):
             }
         })
         edges.append({
-            "source": f"Issue:{issue_id}",
-            "target": f"Release:{ifv['fix_version']}",
+            "source type": schema_issue_type,
+            "source id": issue["issue_id"],
+            "target type": ["TraceabilityNode", "Release"],
+            "target id": ifv['fix_version'],
             "label": "FixedIn",
             "properties": {
                 "timestamp": timestamp,
@@ -103,12 +120,10 @@ def process_issue(conn, issue_id, timestamp):
             }
         })
 
-    events = {
+    return {
         "nodes": nodes,
         "edges": edges
     }
-
-    return events
 
 def process_change_set(conn, commit_hash, timestamp):
     """
@@ -128,7 +143,7 @@ def process_change_set(conn, commit_hash, timestamp):
     cs = cursor.fetchone()
 
     nodes.append({
-        "type": "Commit",
+        "type": ["TraceabilityNode", "Commit"],
         "id": cs["commit_hash"],
         "properties": {
             "id": cs["commit_hash"],
@@ -139,7 +154,7 @@ def process_change_set(conn, commit_hash, timestamp):
     })
 
     nodes.append({
-        "type": "Developer",
+        "type": ["TraceabilityNode", "Developer"],
         "id": cs["author"],
         "properties": {
             "id": cs["author"],
@@ -148,8 +163,10 @@ def process_change_set(conn, commit_hash, timestamp):
         }
     })
     edges.append({
-        "source": f"Commit:{commit_hash}",
-        "target": f"Developer:{cs['author']}",
+        "source type": ["TraceabilityNode", "Commit"],
+        "source id": commit_hash,
+        "target type": ["TraceabilityNode", "Developer"],
+        "target id": cs['author'],
         "label": "CreatedBy",
         "properties": {
             "timestamp": timestamp,
@@ -159,15 +176,24 @@ def process_change_set(conn, commit_hash, timestamp):
 
     # --- change_set_link ---
     cursor.execute("""
-        SELECT * FROM change_set_link 
-        WHERE commit_hash = ?
+        SELECT 
+            csl.issue_id,
+            i.type AS issue_type
+        FROM change_set_link csl
+        JOIN issue i ON csl.issue_id = i.issue_id
+        WHERE csl.commit_hash = ?
     """, (commit_hash,))
     for link in cursor.fetchall():
         issue_id = link["issue_id"]
 
+        # 2. Grab the dynamic type
+        target_type = ["TraceabilityNode", "Issue", "Bug"] if link["issue_type"] == "Bug" else ["TraceabilityNode", "Issue", "Feature"]
+
         edges.append({
-            "source": f"Commit:{commit_hash}",
-            "target": f"Issue:{issue_id}",
+            "source type": ["TraceabilityNode", "Commit"],
+            "source id": commit_hash,
+            "target type": target_type,  # Dynamically assigned now!
+            "target id": issue_id,
             "label": "BelongsTo",
             "properties": {
                 "timestamp": timestamp,
@@ -182,7 +208,7 @@ def process_change_set(conn, commit_hash, timestamp):
     """, (commit_hash,))
     for cc in cursor.fetchall():
         nodes.append({
-            "type": "Code",
+            "type": ["TraceabilityNode", "Code"],
             "id": cc["file_path"],
             "properties": {
                 "id": cc["file_path"],
@@ -194,8 +220,10 @@ def process_change_set(conn, commit_hash, timestamp):
 
         # Save the link between the code and commit
         edges.append({
-            "source": f"Commit:{commit_hash}",
-            "target": f"Code:{cc['file_path']}",
+            "source type": ["TraceabilityNode", "Commit"],
+            "source id": commit_hash,
+            "target type": ["TraceabilityNode", "Code"],
+            "target id": cc['file_path'],
             "label": cc["change_type"],
             "properties": {
                 "timestamp": timestamp,
@@ -203,9 +231,7 @@ def process_change_set(conn, commit_hash, timestamp):
             }
         })
 
-    events = {
+    return {
         "nodes": nodes,
         "edges": edges
     }
-
-    return events

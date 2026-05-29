@@ -9,30 +9,38 @@ class EmbeddingService:
     def node_to_text(self, node):
         """
         Converts node JSON into semantic text.
-
-        Example node:
+    
+        Example node input now:
         {
-            "type": "Commit",
+            "type": ["TraceabilityNode", "Issue", "Bug"],
             "id": "...",
-            "properties": {
-                "id": "...",
-                "embedding": None,
-                "message": "...",
-                "committed_date": "..."
-            }
+            "properties": { ... }
         }
         """
         text_parts = []
-
-        # Include node type
-        text_parts.append(node["type"])
-
-        # Include properties
+    
+        # 1. Handle the list of labels safely
+        labels = node["type"]
+        if isinstance(labels, list):
+            # Filter out 'TraceabilityNode' to leave the specific types (e.g., ['Issue', 'Bug'])
+            specific_labels = [l for l in labels if l != "TraceabilityNode"]
+            # Ensure a consistent order (e.g., 'Issue:Bug')
+            specific_labels.sort(reverse=True) 
+            type_str = ":".join(specific_labels)
+        else:
+            # Fallback just in case a raw string slips through
+            type_str = str(labels)
+    
+        # Append the clean string representation of the type
+        text_parts.append(f"Type: {type_str}")
+    
+        # 2. Include properties
         for key, value in node["properties"].items():
-            if value is None or key == "id":
+            # Skip internal metrics/fields that don't add semantic value for text processing
+            if value is None or key in ["id", "embedding"]:
                 continue
             text_parts.append(f"{key}: {value}")
-
+    
         return " ".join(text_parts)
 
     def generate_embeddings(self, nodes):
@@ -61,7 +69,7 @@ class VectorSimilarityRetriever:
             "all-MiniLM-L6-v2"
         )
 
-    def find_similar_nodes(self, nodes, top_k=20):
+    def find_similar_nodes(self, nodes, top_k=50):
         similar_nodes = []
         seen = set()
 
@@ -72,6 +80,7 @@ class VectorSimilarityRetriever:
                 top_k=top_k
             )
 
+            # Check if the node has already been seen by another node in the list of nodes
             for retrieved_node in retrieved:
                 node_id = retrieved_node["id"]
                 if node_id == node["id"]:

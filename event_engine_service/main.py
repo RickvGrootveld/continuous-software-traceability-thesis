@@ -7,7 +7,7 @@ from kafka import KafkaProducer
 
 from schema_converter import process_issue, process_change_set
 
-DB_PATH = "cassandra.db"
+DB_PATH = "lucene.sqlite3" #cassandra.db
 TOPIC = "events"
 
 producer = KafkaProducer(
@@ -53,43 +53,43 @@ def process_timeline_auto(conn, interval=5):
 
         else:
             continue  # safety
-        
+
         send_event(event)
 
         time.sleep(interval)
 
 # Manual replay mode
-def process_timeline_manual(conn):
-    print("\nManual mode:")
-    print("Commands: send_next, exit")
-
-    timeline = get_timeline(conn)
-
-    for row in timeline:
-        cmd = input("> ")
-
-        if cmd == "send_next":
-            source_table = row["source_table"]
-            entity_id = row["id"]
-
-            timestamp = datetime.now().isoformat()
-
-            if source_table == "issue":
-                event = process_issue(conn, entity_id, timestamp)
-
-            elif source_table == "change_set":
-                event = process_change_set(conn, entity_id, timestamp)
-
-            else:
-                continue  # safety
-
-            send_event(event)
-
-        elif cmd == "exit":
-            break
-
-        else:
-            print("Unknown command")
+#def process_timeline_manual(conn):
+#    print("\nManual mode:")
+#    print("Commands: send_next, exit")
+#
+#    timeline = get_timeline(conn)
+#
+#    for row in timeline:
+#        cmd = input("> ")
+#
+#        if cmd == "send_next":
+#            source_table = row["source_table"]
+#            entity_id = row["id"]
+#
+#            timestamp = datetime.now().isoformat()
+#
+#            if source_table == "issue":
+#                event = process_issue(conn, entity_id, timestamp)
+#
+#            elif source_table == "change_set":
+#                event = process_change_set(conn, entity_id, timestamp)
+#
+#            else:
+#                continue  # safety
+#
+#            send_event(event)
+#
+#        elif cmd == "exit":
+#            break
+#
+#        else:
+#            print("Unknown command")
 
 # Send event to Kafka
 def send_event(event):

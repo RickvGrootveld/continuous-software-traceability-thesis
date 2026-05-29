@@ -74,20 +74,23 @@ Collect all validated, non-duplicate edges that scored higher than 0.85. Format 
 Content explanation: The first keys are the retrieval strategies. One layer deeper are the nodes and edges retrieved by that strategy. Then come the IDs of the nodes and edges, followed by their properties.
 {
   "sliding_window_events": {
-    "nodes": [
+    "nodes": [{
       "commit_901": {
         "type": "Commit",
         "title": "Fix auth timeout bug",
         "message": "Adjusted JWT verification token expiration buffer to resolve premature session termination.",
         "timestamp": "2026-05-23T01:15:00Z"
-      },
+      }
+    },
+    {
       "code_401": {
         "type": "Code",
         "file_path": "src/auth/middleware.ts",
         "deleted": "false"
       }
+    }
     ],
-    "edges": [
+    "edges": [{
       {
         "source_id": "commit_901",
         "target_id": "code_401",
@@ -96,6 +99,7 @@ Content explanation: The first keys are the retrieval strategies. One layer deep
         "confidence": 100,
         "explanation": "Event log captures commit_901 directly modifying middleware.ts."
       }
+    }
     ]
   },
 

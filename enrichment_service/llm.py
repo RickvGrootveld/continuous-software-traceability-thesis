@@ -3,7 +3,6 @@ import json
 import os
 
 from prompt import SYSTEM_PROMPT, load_user_prompt
-from shared_utils.schema import SCHEMA
 
 # Determine to use Qwen or GPT to prevent everything to be loaded and running when building the project in Docker
 # Qwen
@@ -37,7 +36,7 @@ class GPTClient:
         )
         print("GPT-5.1 initialized")
 
-    def call_gpt(self, graph_content: dict) -> dict:
+    def call_llm(self, graph_content: dict) -> dict:
         """
         Calls GPT-5.1 via the OpenAI API.
         """
@@ -48,7 +47,7 @@ class GPTClient:
             {"role": "assistant",  "content": "{\n  \"new_edges\": ["}
         ]
         
-        start_timer = datetime.now()
+        start_timer = datetime.now().isoformat()
 
         response = self.client.chat.completions.create(
             model="gpt-5.1",
@@ -57,7 +56,7 @@ class GPTClient:
             response_format={"type": "json_object"},
         )
 
-        end_timer = datetime.now()
+        end_timer = datetime.now().isoformat()
         print(f"GPT call duration: {(end_timer - start_timer).total_seconds()} seconds")
 
         return json.loads(response.choices[0].message.content)
@@ -132,12 +131,14 @@ class QwenClient:
     #    raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
     #    return json.loads(raw)
     
-    def call_qwen(self, graph_content: dict) -> dict:
+    def call_llm(self, graph_content: dict) -> dict:
         messages = [
             {"role": "system",    "content": SYSTEM_PROMPT},
             {"role": "user",      "content": load_user_prompt(graph_content)},
             {"role": "assistant",  "content": "{\n  \"new_edges\": ["}
         ]
+
+        start_timer = datetime.now()
 
         response = self.client.chat(
             model="qwen3.5:4b",
@@ -146,6 +147,10 @@ class QwenClient:
             think="low",
             options={"temperature": 0.0},
         )
+
+        end_timer = datetime.now()
+        print(f"Qwen call duration: {(end_timer - start_timer).total_seconds()} seconds")
+
         prefix = '{\n  "new_edges": ['
 
         api_response = response.message.content 

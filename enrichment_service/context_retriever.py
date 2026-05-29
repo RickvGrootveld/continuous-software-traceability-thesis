@@ -2,7 +2,7 @@ from typing import List, Dict
 
 WINDOW_SECONDS = 10
 
-K_HOPS = 2
+K_HOPS = 1
 MAX_VECTOR_RESULTS = 20
 MAX_CONTEXT_NODES = 50
 
@@ -13,8 +13,36 @@ class ContextRetriever:
         self.neo4j = neo4j_client
         self.vector = vector_retriever
 
+    def deduplicate_graph_nodes(data: dict) -> dict:
+            """Removes duplicate nodes across all sub-graphs based on their unique node IDs
+
+            while preserving the original dictionary structure.
+            """
+            seen_node_ids = set()
+
+            # Iterate through each sub-graph category (sliding_window_events, etc.)
+            for category, content in data.items():
+                if "nodes" not in content:
+                    continue
+
+                unique_nodes = []
+                for node_dict in content["nodes"]:
+                    # Extract the unique key/ID of the node (e.g., 'bug_302')
+                    node_id = next(iter(node_dict.keys()))
+
+                    # If we haven't seen this node ID yet, keep it and mark it as seen
+                    if node_id not in seen_node_ids:
+                        seen_node_ids.add(node_id)
+                        unique_nodes.append(node_dict)
+
+                # Update the category with the deduplicated list of nodes
+                data[category]["nodes"] = unique_nodes
+
+            return data
+
     def retrieve_context(self, window_nodes: List[Dict], window_edges: List[Dict]):
         # Get the IDs from each node in the window
+        print("Retrieve context for the window nodes.")
         seed_ids = [
             node["id"]
             for node in window_nodes
@@ -41,12 +69,32 @@ class ContextRetriever:
             if node["id"] not in merged:
                 merged[node["id"]] = node
 
-        # Convert to list to make it readable for LLMs
-        merged_nodes = list(merged.values())
+            # Delete the embeddings to minimize the token usage
+            del node["properties"]["embeddings"]
 
+        
+        
+
+        merged["sliding_window_events"] = {
+            "nodes": window_nodes,
+            "edges": window_edges
+        }
+        merged["k_hop_neighbourhood"] = {
+            "nodes": neighbour_nodes,
+            "edges": neighbour_edges
+        }
+        merged["vector_similarity_retrieval"] = {
+            "nodes": vector_nodes,
+            "edges": []  # No edges in vector retrieval
+        }
+
+        # remove duplicates
+        merged = self.deduplicate_graph_nodes(merged)
+        
         # Shorten the context to make it fit in the LLM's context window
-        merged_nodes = merged_nodes[:MAX_CONTEXT_NODES]
+        max_vector_nodes = max(0, MAX_CONTEXT_NODES - len(merged["k_hop_neighbourhood"]["nodes"]) + len(merged["vector_similarity_retrieval"]["nodes"]))
+        merged["vector_similarity_retrieval"]["nodes"] = merged["vector_similarity_retrieval"]["nodes"][:max_vector_nodes]
 
-        edges = window_edges + neighbour_edges
+        return merged 
+    
 
-        return merged_nodes, edges 
