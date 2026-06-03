@@ -74,9 +74,8 @@ class VectorSimilarityRetriever:
         seen = set()
 
         for node in nodes:
-            embedding = self.generate_embedding(node)
             retrieved = self.neo4j.query_similar_nodes(
-                embedding=embedding,
+                embedding=node["properties"]["embedding"],
                 top_k=top_k
             )
 

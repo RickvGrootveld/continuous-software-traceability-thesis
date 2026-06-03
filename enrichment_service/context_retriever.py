@@ -41,7 +41,6 @@ class ContextRetriever:
 
     def retrieve_context(self, current_window: dict) -> dict:
         # Get the IDs from each node in the window
-        print("Retrieve context for the window nodes.")
         seed_ids = [
             node["id"]
             for node in current_window["nodes"]
@@ -56,10 +55,10 @@ class ContextRetriever:
 
         # Vector retrieval
         vector_nodes = self.vector.find_similar_nodes(
-            nodes=current_window["nodes"] + neighbour_nodes,
+            nodes=current_window["nodes"], # Only find the similar nodes of the nodes in the current window
             top_k=MAX_VECTOR_RESULTS
         )
-
+        
         # Merge
         merged = {}
 
@@ -69,7 +68,7 @@ class ContextRetriever:
                 merged[node["id"]] = node
 
             # Delete the embeddings to minimize the token usage
-            del node["properties"]["embeddings"]
+            del node["properties"]["embedding"]
 
         merged["sliding_window_events"] = {
             "nodes": current_window["nodes"],

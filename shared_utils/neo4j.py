@@ -107,6 +107,7 @@ class Neo4jClient:
                         "label": rel.type,
                         "properties": dict(rel)
                     })
+
         return nodes, edges
 
     def get_k_hop_neighbors(self, node_ids: List[str], k=1):
@@ -114,13 +115,14 @@ class Neo4jClient:
         Retrieve the neighborhood for a list of node IDs with edge-type-aware hop limits:
           - Edges with system='dataset' → 2 hops
           - Edges with system='LLM'     → 1 hop
+        This function returns the nodes that have incoming and outgoing edges from the giving list of nodes, using -(m) instead of ->(m).
         Both result sets are merged and deduplicated.
         """
 
         # 2-hop traversal restricted to dataset edges only
         dataset_query = """
         MATCH (n)
-        WHERE n.uid IN $node_ids
+        WHERE n.id IN $node_ids
 
         MATCH p=(n)-[r*1..2]-(m)
         WHERE ALL(rel IN relationships(p) WHERE rel.system = 'dataset')
@@ -149,17 +151,23 @@ class Neo4jClient:
         def _collect(results):
             for record in results:
                 for node in record["nodes"]:
-                    uid = node["uid"]
-                    if uid not in all_nodes:
-                        all_nodes[uid] = {
-                            "type":       list(node.labels)[0],
-                            "id":         uid,
+                    print(f"node: {node}")
+                    id = node["id"]
+                    print(f"node id: {id}")
+                    # check if the id is already captured, if not, add it
+                    if id not in all_nodes:
+                        all_nodes[id] = {
+                            "type":       ", ".join(node.labels),
+                            "id":         id,
                             "properties": dict(node),
                         }
 
                 for rel in record["rels"]:
-                    src   = rel.start_node["uid"]
-                    tgt   = rel.end_node["uid"]
+                    start_node, end_node = rel.nodes
+                    #print(f"sn: {start_node}")
+                    #print(f"en: {end_node}")
+                    src   = start_node["id"]
+                    tgt   = end_node["id"]
                     label = rel.type
                     key   = (src, tgt, label)
                     if key not in all_edges:
@@ -222,10 +230,10 @@ class Neo4jClient:
         UNWIND $edges AS edge
 
         // 1. Look up or create the source node using 'source type' and 'source id'
-        CALL apoc.merge.node(edge.`source type`, {id: edge.`source id`}) YIELD node AS a
+        CALL apoc.merge.node(edge.`source type`, {id: edge.`source_id`}) YIELD node AS a
 
         // 2. Look up or create the target node using 'target type' and 'target id'
-        CALL apoc.merge.node(edge.`target type`, {id: edge.`target id`}) YIELD node AS b
+        CALL apoc.merge.node(edge.`target type`, {id: edge.`target_id`}) YIELD node AS b
 
         // 3. Construct the connecting relationship cleanly
         CALL apoc.merge.relationship(
@@ -241,7 +249,39 @@ class Neo4jClient:
         """
         with self.driver.session() as session:
             session.run(query, edges=edges)
-    
+
+    def insert_llm_edges(self, edges: list):
+        """
+        Insert edges safely using only source and target IDs. 
+        This function doesn't make use of apoc, making sure no nodes were created by accident
+        """
+        query = """
+        UNWIND $edges AS edge
+
+        // 1. Strictly look up the existing source and target nodes by ID using the base label index
+        MATCH (a:TraceabilityNode {id: edge.source_id})
+        MATCH (b:TraceabilityNode {id: edge.target_id})
+
+        // 2. Construct the connecting relationship cleanly
+        CALL apoc.merge.relationship(
+          a, 
+          edge.label, 
+          {}, 
+          {
+              system: edge.system,
+              confidence: toFloat(edge.confidence),
+              explanation: edge.explanation,
+              timestamp: datetime({timezone: 'UTC'})
+          }, 
+          b, 
+          {}
+        ) 
+        YIELD rel
+        RETURN count(rel)
+        """
+        with self.driver.session() as session:
+            session.run(query, edges=edges)
+
     def query_similar_nodes(self, embedding, top_k=50):
         query = """
         MATCH (node:TraceabilityNode)
@@ -268,8 +308,6 @@ class Neo4jClient:
             for record in results:
                 node = record["node"]
                 score = record["score"]
-
-                print(f"Retrieved similar node {node}")
 
                 nodes.append({
                     "type": list(node.labels)[0],

@@ -13,6 +13,7 @@ Architecture:
 Neo4j <- LLM Enrichment Service
 """
 
+import copy
 import time
 import threading
 from threading import Lock
@@ -80,30 +81,33 @@ class EnrichmentService:
         global window_start_time
         while True:
             time.sleep(1)
+            #print(f"Current window buffer loop: {window_buffer_v2}")
+            print("looping to check window...")
             with window_lock:
                 if window_start_time is None:
                     continue
                 elapsed = time.time() - window_start_time
                 if elapsed < WINDOW_SECONDS:
                     continue
-                current_window = window_buffer_v2.copy()
+                current_window = {
+                    "nodes": list(window_buffer_v2["nodes"]),
+                    "edges": list(window_buffer_v2["edges"])
+                }
                 window_buffer_v2["nodes"].clear()
                 window_buffer_v2["edges"].clear()
                 window_start_time = None
 
+            #print(f"window_buffer_v2: {window_buffer_v2}")
+            #print(f"current window: {current_window}")
             # Retrieve nodes from the graph to get context for the LLM
             #context_nodes, context_edges = self.retriever.retrieve_context(current_window)
             print("start retrieving ...")
-            context = self.retriever.retrieve_context(current_window) #TODO aanpassen functie
+            context = self.retriever.retrieve_context(current_window)
 
             #print(f"Retrieved {len(context_nodes)} nodes")
 
             # Enrich the graph with the LLM
             try:
-                #inferred_edges = self.llm.infer_edges(
-                #        context_nodes,
-                #        context_edges
-                #    )
                 inferred_edges = self.llm.call_llm(context)
 
             except Exception as e:
@@ -130,9 +134,21 @@ class EnrichmentService:
             #            "explanation": edge["explanation"]
             #        }
             #    }
+            #mock = {
+            #    "new_edges": [
+            #        {
+            #            "source_id": "5a2615650e104c0713407637d65ae0ce7c2b257a",
+            #            "target_id": "Jason van Zyl",
+            #            "label": "TestImplementedBy",
+            #            "system": "LLM",
+            #            "confidence": 0.88,
+            #            "explanation": "Based on the issue description and historical patterns, Jason is likely the assignee."
+            #        }
+            #    ]
+            #}
 
             try:
-                self.neo4j.insert_edges(inferred_edges["new_edges"])
+                self.neo4j.insert_llm_edges(inferred_edges["new_edges"])
             except Exception as e:
                 print("Neo4j insertion error:", e)
 
@@ -162,6 +178,5 @@ class EnrichmentService:
         processing_thread.join()
 
 if __name__ == "__main__":
-    time.sleep(5) # Wait for Neo4j to be ready before starting the service
     service = EnrichmentService()
     service.run()

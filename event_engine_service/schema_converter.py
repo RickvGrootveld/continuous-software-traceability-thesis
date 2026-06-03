@@ -52,10 +52,10 @@ def process_issue(conn, issue_id, timestamp):
             }
         })
         edges.append({
-            "source type": schema_issue_type,
-            "source id": issue["issue_id"],
-            "target type": ["TraceabilityNode", "Developer"],
-            "target id": issue["assignee"],
+            "source_type": schema_issue_type,
+            "source_id": issue["issue_id"],
+            "target_type": ["TraceabilityNode", "Developer"],
+            "target_id": issue["assignee"],
             "label": "AssignedTo",
             "properties": {
                 "timestamp": timestamp,
@@ -82,10 +82,10 @@ def process_issue(conn, issue_id, timestamp):
         target_type = ["TraceabilityNode", "Issue", "Bug"] if link["issue_type"] == "Bug" else ["TraceabilityNode", "Issue", "Feature"]
 
         edges.append({
-            "source type": schema_issue_type,
-            "source id": link['source_issue_id'],
-            "target type": target_type,  # Dynamically assigned via JOIN!
-            "target id": target_id,
+            "source_type": schema_issue_type,
+            "source_id": link['source_issue_id'],
+            "target_type": target_type,  # Dynamically assigned via JOIN!
+            "target_id": target_id,
             "label": link["outward_label"],
             "properties": {
                 "timestamp": timestamp,
@@ -109,10 +109,10 @@ def process_issue(conn, issue_id, timestamp):
             }
         })
         edges.append({
-            "source type": schema_issue_type,
-            "source id": issue["issue_id"],
-            "target type": ["TraceabilityNode", "Release"],
-            "target id": ifv['fix_version'],
+            "source_type": schema_issue_type,
+            "source_id": issue["issue_id"],
+            "target_type": ["TraceabilityNode", "Release"],
+            "target_id": ifv['fix_version'],
             "label": "FixedIn",
             "properties": {
                 "timestamp": timestamp,
@@ -163,10 +163,10 @@ def process_change_set(conn, commit_hash, timestamp):
         }
     })
     edges.append({
-        "source type": ["TraceabilityNode", "Commit"],
-        "source id": commit_hash,
-        "target type": ["TraceabilityNode", "Developer"],
-        "target id": cs['author'],
+        "source_type": ["TraceabilityNode", "Commit"],
+        "source_id": commit_hash,
+        "target_type": ["TraceabilityNode", "Developer"],
+        "target_id": cs['author'],
         "label": "CreatedBy",
         "properties": {
             "timestamp": timestamp,
@@ -190,10 +190,10 @@ def process_change_set(conn, commit_hash, timestamp):
         target_type = ["TraceabilityNode", "Issue", "Bug"] if link["issue_type"] == "Bug" else ["TraceabilityNode", "Issue", "Feature"]
 
         edges.append({
-            "source type": ["TraceabilityNode", "Commit"],
-            "source id": commit_hash,
-            "target type": target_type,  # Dynamically assigned now!
-            "target id": issue_id,
+            "source_type": ["TraceabilityNode", "Commit"],
+            "source_id": commit_hash,
+            "target_type": target_type,  # Dynamically assigned now!
+            "target_id": issue_id,
             "label": "BelongsTo",
             "properties": {
                 "timestamp": timestamp,
@@ -220,10 +220,10 @@ def process_change_set(conn, commit_hash, timestamp):
 
         # Save the link between the code and commit
         edges.append({
-            "source type": ["TraceabilityNode", "Commit"],
-            "source id": commit_hash,
-            "target type": ["TraceabilityNode", "Code"],
-            "target id": cc['file_path'],
+            "source_type": ["TraceabilityNode", "Commit"],
+            "source_id": commit_hash,
+            "target_type": ["TraceabilityNode", "Code"],
+            "target_id": cc['file_path'],
             "label": cc["change_type"],
             "properties": {
                 "timestamp": timestamp,

@@ -2,3 +2,4 @@ datasets
 .env
 test.sqlite3
 cassandra.db
+neo4j

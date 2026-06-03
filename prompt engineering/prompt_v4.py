@@ -212,5 +212,5 @@ Content explanation: The first keys are the retrieval strategies. One layer deep
 }
 
 # Recap
-You are a knowledge graph engineer for software traceability. Analyse the nodes and edges in graph content, follow steps 1–5, propose missing edges and synonym replacements that improve semantic precision, and return ONLY JSON output using the <output format>. 
+You are a knowledge graph engineer for software traceability. Analyse the nodes and edges in graph content, follow steps 1–5, propose missing edges and synonym replacements that improve semantic precision, and return ONLY JSON output using the <output format> having only one list "new_edges". 
 """
