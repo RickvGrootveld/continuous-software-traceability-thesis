@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from kafka import KafkaConsumer
 
-from shared_utils.vector_similarity import EmbeddingService
+from shared_utils.embedding_service import EmbeddingService
 from shared_utils.neo4j import Neo4jClient
 
 TOPIC = "events"

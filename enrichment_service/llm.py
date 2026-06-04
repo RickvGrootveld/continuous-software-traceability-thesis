@@ -1,7 +1,7 @@
 from datetime import datetime
+import re
 import json
 import os
-from sys import prefix
 
 from prompt import SYSTEM_PROMPT, load_user_prompt, load_user_prompt_v1
 
@@ -33,9 +33,10 @@ def messages_object(graph_content):
         "sliding_window_events": {
             "nodes": [
                 {
-                    "id": "commit_5a261565",
+                    "id": "LUCENE-5a261565",
                     "type": ["TraceabilityNode", "Commit"],
                     "properties": {
+                        "id": "LUCENE-5a261565",
                         "message": "Update authentication routing handlers and add login testing specs",
                         "timestamp": "2026-05-30T15:00:00Z"
                     }
@@ -49,6 +50,7 @@ def messages_object(graph_content):
                     "id": "src/java/org/apache/lucene/search/Query.java",
                     "type": ["TraceabilityNode", "File"],
                     "properties": {
+                        "id": "src/java/org/apache/lucene/search/Query.java",
                         "path": "src/java/org/apache/lucene/search/Query.java"
                     }
                 }
@@ -58,9 +60,10 @@ def messages_object(graph_content):
         "vector_similarity_retrieval": {
             "nodes": [
                 {
-                    "id": "issue_BUG-942",
+                    "id": "LUCENE-942",
                     "type": ["TraceabilityNode", "Issue", "Bug"],
                     "properties": {
+                        "id": "LUCENE-942",
                         "title": "NullPointerException during login session setup",
                         "description": "App crashes immediately when hitting the authentication router link."
                     }
@@ -74,15 +77,15 @@ def messages_object(graph_content):
     few_shot_output = {
         "new_edges": [
             {
-                "source_id": "commit_5a261565",
-                "target_id": "issue_BUG-942",
+                "source_id": "LUCENE-5a261565",
+                "target_id": "LUCENE-942",
                 "label": "RESOLVES",
                 "system": "LLM",
                 "confidence": 0.92,
-                "explanation": "Commit 5a261565 explicitly mentions fixing the authentication routing handlers, which matches the crash described in issue BUG-942."
+                "explanation": "Commit 5a261565 explicitly mentions fixing the authentication routing handlers, which matches the crash described in issue LUCENE-942."
             },
             {
-                "source_id": "commit_5a261565",
+                "source_id": "LUCENE-5a261565",
                 "target_id": "src/java/org/apache/lucene/search/Query.java",
                 "label": "MODIFY",
                 "system": "LLM",
@@ -95,8 +98,8 @@ def messages_object(graph_content):
     return [
             {"role": "system",    "content": SYSTEM_PROMPT},
 
-            #{"role": "user",      "content": f"Analyze these software artifacts and extract traceability edges:\n{few_shot_input}"},
-            #{"role": "assistant",  "content": json.dumps(few_shot_output, indent=2)},
+            {"role": "user",      "content": f"Analyze these software artifacts and extract traceability edges:\n{few_shot_input}"},
+            {"role": "assistant",  "content": json.dumps(few_shot_output, indent=2)},
 
             {"role": "user",      "content": load_user_prompt_v1(graph_content)},
             {"role": "assistant",  "content": "{\n  \"new_edges\": ["}
@@ -148,6 +151,40 @@ class QwenClient:
         else:
             print(f"Model '{QWEN_MODEL_NAME}' already available.")
     
+    def extract_json(self, raw: str) -> dict:
+        """Extract JSON from messy LLM output."""
+        # Try direct parse first
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            pass
+        
+        # Try to find JSON block via regex
+        match = re.search(r'\{.*"new_edges".*\}', raw, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group())
+            except json.JSONDecodeError:
+                pass
+
+        # Try extracting individual edge objects and rebuild
+        edges = re.findall(r'\{[^{}]*"source_id"[^{}]*\}', raw, re.DOTALL)
+        if edges:
+            valid = []
+            for e in edges:
+                try:
+                    parsed = json.loads(e)
+                    # Only keep edges with required keys
+                    required = {"source_id", "target_id", "label", "confidence", "system", "explanation"}
+                    if required.issubset(parsed.keys()):
+                        valid.append(parsed)
+                except json.JSONDecodeError:
+                    continue
+            if valid:
+                return {"new_edges": valid}
+
+        return {"new_edges": []}
+
     def call_llm(self, graph_content: dict) -> dict:
         print("starting Qwen call...")
         start_timer = datetime.now()
@@ -155,21 +192,31 @@ class QwenClient:
         response = self.client.chat(
             model=QWEN_MODEL_NAME,
             messages=messages_object(graph_content),
-            #format="json",
+            format="json",
             think="low",
-            options={"temperature": 0.1},
+            options={
+                "temperature": 0.1,
+                "stop": ["}\n}"],
+            },
         )
 
         end_timer = datetime.now()
         print(f"Qwen call duration: {(end_timer - start_timer).total_seconds()} seconds")
 
         prefix = "{\n  \"new_edges\": ["
-        api_response = prefix + response.message.content 
+        raw = prefix + response.message.content 
         # Content will only contain what the LLM has generated after the prefix. So, concatenate them
-        print(f"response: {api_response}")
+        print(f"response: {raw}")
+
+        result = self.extract_json(raw)
         
-        try:
-            return json.loads(api_response)
-        except json.JSONDecodeError:
-            print("Fallback: JSON parsing failed. Returning empty graph edge payload.")
-            return {"new_edges": []}
+        # Validate and filter edge objects
+        valid_edges = []
+        required_keys = {"source_id", "target_id", "label", "confidence", "system", "explanation"}
+        for edge in result.get("new_edges", []):
+            if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
+                valid_edges.append(edge)
+
+        print(f"Valid edges extracted: {valid_edges}")
+
+        return {"new_edges": valid_edges}

@@ -21,7 +21,6 @@ from threading import Lock
 from context_retriever import ContextRetriever
 from llm import GPTClient, QwenClient
 from shared_utils.neo4j import Neo4jClient
-from shared_utils.vector_similarity import VectorSimilarityRetriever
 
 # ============================================================
 # SLIDING WINDOW
@@ -34,6 +33,7 @@ window_buffer_v2 = {
 }
 window_lock = Lock()
 window_start_time = None
+correct_inserted_edges = 0
 
 WINDOW_SECONDS = 15
 
@@ -41,12 +41,13 @@ WINDOW_SECONDS = 15
 class EnrichmentService:
 
     def __init__(self):
+        print("Starting neo4j client...")
         self.neo4j = Neo4jClient()
-        self.vector = VectorSimilarityRetriever(self.neo4j)
+        print("starting context retriever...")
         self.retriever = ContextRetriever(
             self.neo4j,
-            self.vector
         )
+        print("starting LLM client...")
         #self.llm = GPTClient()
         self.llm = QwenClient()
 
@@ -115,42 +116,14 @@ class EnrichmentService:
                 continue
             
             print("LLM enrichment done.")
-            # Get the timestamp to store as property in the edges
-            #latest_timestamp = current_window[-1]["properties"].get(
-            #        "created_at",
-            #        str(time.time())
-            #    )
-
-            # Insert the enriched edges back into the graph
-            #for edge in inferred_edges:
-            #    llm_edge = {
-            #        "source": edge["source"],
-            #        "target": edge["target"],
-            #        "label": edge["label"],
-            #        "properties": {
-            #            "timestamp": latest_timestamp,
-            #            "system": "LLM",
-            #            "confidence": edge["confidence"],
-            #            "explanation": edge["explanation"]
-            #        }
-            #    }
-            #mock = {
-            #    "new_edges": [
-            #        {
-            #            "source_id": "5a2615650e104c0713407637d65ae0ce7c2b257a",
-            #            "target_id": "Jason van Zyl",
-            #            "label": "TestImplementedBy",
-            #            "system": "LLM",
-            #            "confidence": 0.88,
-            #            "explanation": "Based on the issue description and historical patterns, Jason is likely the assignee."
-            #        }
-            #    ]
-            #}
 
             try:
                 self.neo4j.insert_llm_edges(inferred_edges["new_edges"])
             except Exception as e:
                 print("Neo4j insertion error:", e)
+
+            # let the LLM rest for a little to prevent CPU overload
+            time.sleep(60)
 
     def run(self):
         print("Starting LLM Enrichment Service")
@@ -176,7 +149,7 @@ class EnrichmentService:
 
         polling_thread.join()
         processing_thread.join()
-
+print("Starting service...")
 if __name__ == "__main__":
     service = EnrichmentService()
     service.run()

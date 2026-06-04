@@ -9,9 +9,8 @@ MAX_CONTEXT_NODES = 50
 
 class ContextRetriever:
 
-    def __init__(self, neo4j_client, vector_retriever):
+    def __init__(self, neo4j_client):
         self.neo4j = neo4j_client
-        self.vector = vector_retriever
 
     def deduplicate_graph_nodes(self, data: dict) -> dict:
         """Removes duplicate nodes across all sub-graphs based on their unique node IDs
@@ -54,13 +53,17 @@ class ContextRetriever:
             )
 
         # Vector retrieval
-        vector_nodes = self.vector.find_similar_nodes(
+        vector_nodes = self.find_similar_nodes(
             nodes=current_window["nodes"], # Only find the similar nodes of the nodes in the current window
             top_k=MAX_VECTOR_RESULTS
         )
-        
+
         # Merge
-        merged = {}
+        merged = {
+            "sliding_window_events": {},
+            "k_hop_neighbourhood": {},
+            "vector_similarity_retrieval": {}
+        }
 
         for node in (current_window["nodes"] + neighbour_nodes + vector_nodes):
             # Make sure there are no duplicates in the combined dict
@@ -92,4 +95,26 @@ class ContextRetriever:
 
         return merged 
     
+    def find_similar_nodes(self, nodes, top_k=50):
+        similar_nodes = []
+        seen = set()
 
+        for node in nodes:
+            retrieved = self.neo4j.query_similar_nodes(
+                embedding=node["properties"]["embedding"],
+                top_k=top_k
+            )
+
+            # Check if the node has already been seen by another node in the list of nodes
+            for retrieved_node in retrieved:
+                node_id = retrieved_node["id"]
+                if node_id == node["id"]:
+                    continue
+
+                if node_id in seen:
+                    continue
+
+                seen.add(node_id)
+                similar_nodes.append(retrieved_node)
+
+        return similar_nodes

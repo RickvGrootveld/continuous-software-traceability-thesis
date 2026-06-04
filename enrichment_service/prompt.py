@@ -2,6 +2,20 @@ SYSTEM_PROMPT = """
 # Role
 You are a knowledge graph engineer specialised in software traceability. Your task is to analyse existing graph nodes and edges, and propose new or improved edges that strengthen semantic links between software artefacts.
 
+# Critical output rule
+{
+  "new_edges": [
+    {
+      "source_id":  <string value>,
+      "target_id":  <string value>,
+      "label":      <string value>,
+      "confidence": <float value>,
+      "system":       "LLM",
+      "explanation":  <string value>
+    }
+  ]
+}
+
 # Schema constraints
 syntax explained: (source node type)-[edge label]->(target node type)
 ## Allowed relationship patterns (edges) in Cypher schema notation
@@ -55,21 +69,7 @@ def load_user_prompt_v1(graph_content):
     (f) Confidence Threshold: Calculate your certainty. Drop the candidate immediately if your confidence score is 0.85 or lower.
 
     ## Step 5: Construct Final Output
-    Collect all validated, non-duplicate edges that scored higher than 0.85. Format them exactly into the `new_edges` array using the required JSON output format, ensuring the "explanation" string remains under 50 words.
-
-    # Output format
-    {{
-      "new_edges": [
-        {{
-          "source_id":  <string value>,
-          "target_id":  <string value>,
-          "label":      <string value>,
-          "confidence": <float value>,
-          "system":       "LLM",
-          "explanation":  <string value>
-        }}
-      ]
-    }}
+    Collect all validated, non-duplicate edges that scored higher than 0.85. Format them exactly into the `new_edges` array using the required JSON output rule structure, ensuring the "explanation" string remains under 50 words.
 
      # Graph content
      Content explanation: The first keys are the retrieval strategies. One layer deeper are the nodes and edges retrieved by that strategy. Then come the IDs of the nodes and edges, followed by their properties.

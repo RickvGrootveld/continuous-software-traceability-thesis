@@ -151,9 +151,7 @@ class Neo4jClient:
         def _collect(results):
             for record in results:
                 for node in record["nodes"]:
-                    print(f"node: {node}")
                     id = node["id"]
-                    print(f"node id: {id}")
                     # check if the id is already captured, if not, add it
                     if id not in all_nodes:
                         all_nodes[id] = {
@@ -164,8 +162,6 @@ class Neo4jClient:
 
                 for rel in record["rels"]:
                     start_node, end_node = rel.nodes
-                    #print(f"sn: {start_node}")
-                    #print(f"en: {end_node}")
                     src   = start_node["id"]
                     tgt   = end_node["id"]
                     label = rel.type
@@ -290,8 +286,8 @@ class Neo4jClient:
           FOR $embedding 
           LIMIT $top_k
         ) SCORE AS score
-        WHERE score >= 0.75
-        RETURN node, score
+        WHERE score >= 0.87
+        RETURN node
         ORDER BY score DESC;
         """
 
@@ -307,12 +303,9 @@ class Neo4jClient:
 
             for record in results:
                 node = record["node"]
-                score = record["score"]
-
                 nodes.append({
                     "type": list(node.labels)[0],
-                    "id": node["uid"],
-                    "score": score,
+                    "id": node["id"],
                     "properties": dict(node)
                 })
 

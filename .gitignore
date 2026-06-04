@@ -3,3 +3,7 @@ datasets
 test.sqlite3
 cassandra.db
 neo4j
+enrichment_service/__pycache__
+knowledge_graph_service/__pycache__
+event_engine_service/__pycache__
+shared_utils/__pycache__

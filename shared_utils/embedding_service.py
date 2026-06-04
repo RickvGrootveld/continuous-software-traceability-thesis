@@ -58,37 +58,3 @@ class EmbeddingService:
 
         return nodes
     
-
-class VectorSimilarityRetriever:
-
-    def __init__(self, neo4j_client):
-        self.neo4j = neo4j_client
-
-        # Same model as KG service
-        self.model = SentenceTransformer(
-            "all-MiniLM-L6-v2"
-        )
-
-    def find_similar_nodes(self, nodes, top_k=50):
-        similar_nodes = []
-        seen = set()
-
-        for node in nodes:
-            retrieved = self.neo4j.query_similar_nodes(
-                embedding=node["properties"]["embedding"],
-                top_k=top_k
-            )
-
-            # Check if the node has already been seen by another node in the list of nodes
-            for retrieved_node in retrieved:
-                node_id = retrieved_node["id"]
-                if node_id == node["id"]:
-                    continue
-
-                if node_id in seen:
-                    continue
-
-                seen.add(node_id)
-                similar_nodes.append(retrieved_node)
-
-        return similar_nodes

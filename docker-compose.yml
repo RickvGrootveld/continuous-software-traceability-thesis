@@ -36,10 +36,12 @@ services:
       - "7474:7474" # HTTP port for Neo4j Browser
       - "7687:7687" # Bolt for Python driver
     volumes:
-      - ./neo4j/data:/data
-      - ./neo4j/logs:/logs
-      - ./neo4j/import:/var/lib/neo4j/import
-      - ./neo4j/plugins:/plugins
+      - neo4j_data:/data
+      #- ./neo4j/data:/data
+      #- ./neo4j/logs:/logs
+      #- ./neo4j/import:/var/lib/neo4j/import
+      #- ./neo4j/plugins:/plugins
+
     environment:
       NEO4J_AUTH: ${NEO4J_AUTH}
       NEO4J_PLUGINS: '["apoc"]'
@@ -47,7 +49,8 @@ services:
       NEO4J_dbms_security_procedures_unrestricted: apoc.*
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u neo4j -p 'password' 'RETURN 1' > /dev/null 2>&1 || exit 1"]
+      #test: ["CMD-SHELL", "cypher-shell -u neo4j -p 'password' 'RETURN 1' > /dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -60,14 +63,6 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    # pull the qwen model during the start up
-    #entrypoint: >
-    #  sh -c "
-    #  ollama serve &
-    #  sleep 10 &&
-    #  ollama pull qwen3.5:4b &&
-    #  wait
-    #  "
     environment:
       - OLLAMA_NUM_PARALLEL=1       # Force it to handle one window enrichment at a time
       - OMP_NUM_THREADS=10
@@ -76,7 +71,7 @@ services:
       resources:
         limits:
           cpus: '10.0'          # Max number of CPU cores Ollama can use
-          memory: 7gb         # Hard memory ceiling to prevent system thrashing
+          memory: 4gb
         reservations:
           cpus: '2.0'          # Minimum cores dedicated when active
     healthcheck:
@@ -100,6 +95,8 @@ services:
     volumes:
       - ./cassandra.db:/app/cassandra.db
       - ./datasets/validate/lucene.sqlite3:/app/lucene.sqlite3
+      - ./event_engine_service:/app/event_engine_service
+      - ./shared_utils:/app/shared_utils
 
   knowledge_graph_service:
     build: 
@@ -116,6 +113,9 @@ services:
         condition: service_healthy
       neo4j:
         condition: service_healthy
+    volumes:
+      - ./knowledge_graph_service:/app/knowledge_graph_service
+      - ./shared_utils:/app/shared_utils
 
   enrichment_service:
     build: 
@@ -130,8 +130,9 @@ services:
         condition: service_healthy
       ollama:
         condition: service_healthy
-    #volumes:
-    #  - ./:/app/cassandra.db
+    volumes:
+      - ./enrichment_service:/app/enrichment_service
+      - ./shared_utils:/app/shared_utils
 
 volumes: 
   ollama_data:
