@@ -2,6 +2,7 @@ from datetime import datetime
 import re
 import json
 import os
+import random
 
 from prompt import SYSTEM_PROMPT, load_user_prompt, load_user_prompt_v1
 
@@ -33,12 +34,11 @@ def messages_object(graph_content):
         "sliding_window_events": {
             "nodes": [
                 {
-                    "id": "LUCENE-5a261565",
-                    "type": ["TraceabilityNode", "Commit"],
-                    "properties": {
-                        "id": "LUCENE-5a261565",
-                        "message": "Update authentication routing handlers and add login testing specs",
-                        "timestamp": "2026-05-30T15:00:00Z"
+                    "a3f9c12b": {
+                        "type": ["TraceabilityNode", "Commit"],
+                        "id": "a3f9c12b",
+                        "message": "Fix null pointer in authentication session handler and add login unit tests",
+                        "committed_date": "2026-05-30T15:00:00Z"
                     }
                 }
             ],
@@ -47,11 +47,18 @@ def messages_object(graph_content):
         "k_hop_neighbourhood": {
             "nodes": [
                 {
-                    "id": "src/java/org/apache/lucene/search/Query.java",
-                    "type": ["TraceabilityNode", "File"],
-                    "properties": {
-                        "id": "src/java/org/apache/lucene/search/Query.java",
-                        "path": "src/java/org/apache/lucene/search/Query.java"
+                    "tom baker": {
+                        "type": ["TraceabilityNode", "Developer"],
+                        "id": "tom baker",
+                        "name": "tom baker"
+                    }
+                },
+                {
+                    "src/auth/SessionHandler.java": {
+                        "type": ["TraceabilityNode", "Code"],
+                        "id": "src/auth/SessionHandler.java",
+                        "file_path": "src/auth/SessionHandler.java",
+                        "is_deleted": False
                     }
                 }
             ],
@@ -60,50 +67,62 @@ def messages_object(graph_content):
         "vector_similarity_retrieval": {
             "nodes": [
                 {
-                    "id": "LUCENE-942",
-                    "type": ["TraceabilityNode", "Issue", "Bug"],
-                    "properties": {
-                        "id": "LUCENE-942",
+                    "LUCENE-2847": {
+                        "type": ["TraceabilityNode", "Issue", "Bug"],
+                        "id": "LUCENE-2847",
                         "title": "NullPointerException during login session setup",
-                        "description": "App crashes immediately when hitting the authentication router link."
+                        "type": "Bug",
+                        "status": "Open",
+                        "summary": "App crashes immediately when the authentication session handler is initialised.",
+                        "priority": "High",
+                        "created_date": "2026-05-28T09:00:00Z",
+                        "updated_date": "2026-05-29T11:00:00Z",
+                        "resolved_date": None
                     }
-                }
+                }   
             ],
             "edges": []
         }
     }
 
-    # 2. Mock Output showing the model exactly how to map links using the input IDs
     few_shot_output = {
         "new_edges": [
             {
-                "source_id": "LUCENE-5a261565",
-                "target_id": "LUCENE-942",
-                "label": "RESOLVES",
+                "source_id": "a3f9c12b",
+                "target_id": "LUCENE-2847",
+                "label": "solves",
+                "confidence": 0.93,
                 "system": "LLM",
-                "confidence": 0.92,
-                "explanation": "Commit 5a261565 explicitly mentions fixing the authentication routing handlers, which matches the crash described in issue LUCENE-942."
+                "explanation": "Commit a3f9c12b explicitly fixes a null pointer in the session handler, directly matching the crash described in bug LUCENE-2847."
             },
             {
-                "source_id": "LUCENE-5a261565",
-                "target_id": "src/java/org/apache/lucene/search/Query.java",
-                "label": "MODIFY",
+                "source_id": "a3f9c12b",
+                "target_id": "src/auth/SessionHandler.java",
+                "label": "modify",
+                "confidence": 0.91,
                 "system": "LLM",
-                "confidence": 0.85,
-                "explanation": "The commit modifies authentication logic which directly impacts query executions defined inside Query.java."
+                "explanation": "Commit a3f9c12b patches authentication session logic, meaning SessionHandler.java was directly modified."
             }
         ]
     }
 
     return [
-            {"role": "system",    "content": SYSTEM_PROMPT},
+        {"role": "system",    "content": SYSTEM_PROMPT},
+        #{"role": "user",      "content": load_user_prompt_v1(few_shot_input)},
+        #{"role": "assistant", "content": json.dumps(few_shot_output)},
+        {"role": "user",      "content": load_user_prompt_v1(graph_content)},
+        {"role": "assistant", "content": "{\n  \"new_edges\": ["}
+    ]
 
-            {"role": "user",      "content": f"Analyze these software artifacts and extract traceability edges:\n{few_shot_input}"},
-            {"role": "assistant",  "content": json.dumps(few_shot_output, indent=2)},
-
-            {"role": "user",      "content": load_user_prompt_v1(graph_content)},
-            {"role": "assistant",  "content": "{\n  \"new_edges\": ["}
-        ]
+    #return [
+    #        {"role": "system",    "content": SYSTEM_PROMPT},
+#
+    #        {"role": "user",      "content": f"Analyze these software artifacts and extract traceability edges:\n{few_shot_input}"},
+    #        {"role": "assistant",  "content": json.dumps(few_shot_output, indent=2)},
+#
+    #        {"role": "user",      "content": load_user_prompt_v1(graph_content)},
+    #        {"role": "assistant",  "content": "{\n  \"new_edges\": ["}
+    #    ]
 
 class GPTClient:
 
@@ -135,6 +154,8 @@ class GPTClient:
         return json.loads(response.choices[0].message.content)
 
 class QwenClient:
+    valid_edges = 0
+    total_edges = 0
 
     def __init__(self):
         print("Loading Qwen...")
@@ -195,13 +216,14 @@ class QwenClient:
             format="json",
             think="low",
             options={
-                "temperature": 0.1,
-                "stop": ["}\n}"],
+                "temperature": 0.0,
+                "num_ctx": 8192,   
+                #"num_predict": 2048,
+                "seed": random.randint(1, 9999999),
+                "stop": ["]\n}"],
             },
         )
-
-        end_timer = datetime.now()
-        print(f"Qwen call duration: {(end_timer - start_timer).total_seconds()} seconds")
+        print(f"Qwen call duration: {response.total_duration} seconds")
 
         prefix = "{\n  \"new_edges\": ["
         raw = prefix + response.message.content 
@@ -216,6 +238,8 @@ class QwenClient:
         for edge in result.get("new_edges", []):
             if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
                 valid_edges.append(edge)
+                self.valid_edges += 1
+            self.total_edges += 1
 
         print(f"Valid edges extracted: {valid_edges}")
 

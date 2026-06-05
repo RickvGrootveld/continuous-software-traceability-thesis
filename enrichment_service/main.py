@@ -35,7 +35,7 @@ window_lock = Lock()
 window_start_time = None
 correct_inserted_edges = 0
 
-WINDOW_SECONDS = 15
+WINDOW_SECONDS = 5
 
 
 class EnrichmentService:
@@ -106,7 +106,7 @@ class EnrichmentService:
             context = self.retriever.retrieve_context(current_window)
 
             #print(f"Retrieved {len(context_nodes)} nodes")
-
+            #print(f"context: {context}")
             # Enrich the graph with the LLM
             try:
                 inferred_edges = self.llm.call_llm(context)

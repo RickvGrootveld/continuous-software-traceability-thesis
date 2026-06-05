@@ -9,7 +9,7 @@ NEO4J_PASSWORD = "password"
 WINDOW_SECONDS = 10
 K_HOPS = 1
 MAX_VECTOR_RESULTS = 20
-MAX_CONTEXT_NODES = 50
+MAX_CONTEXT_NODES = 200
 
 
 class Neo4jClient:
@@ -74,15 +74,14 @@ class Neo4jClient:
             for record in results:
                 node = record["n"]
                 source_id = node["id"]
-
                 # Formulate the source label array
                 source_labels = ["TraceabilityNode"] + record["filtered_labels"]
 
                 # Format and append the node block
                 nodes.append({
-                    "type": source_labels,
                     "id": source_id,
-                    "properties": dict(node)
+                    "type": source_labels,
+                    **dict(node)
                 })
 
                 # Format and append the accompanying edges
@@ -100,10 +99,10 @@ class Neo4jClient:
                     target_labels = ["TraceabilityNode"] + edge_entry["target_labels"]
 
                     edges.append({
-                        "source type": source_labels,
                         "source id": source_id,
-                        "target type": target_labels,
                         "target id": edge_entry["target_id"],
+                        "source type": source_labels,
+                        "target type": target_labels,
                         "label": rel.type,
                         "properties": dict(rel)
                     })
@@ -120,11 +119,11 @@ class Neo4jClient:
         """
 
         # 2-hop traversal restricted to dataset edges only
-        dataset_query = """
+        dataset_query = f"""
         MATCH (n)
         WHERE n.id IN $node_ids
 
-        MATCH p=(n)-[r*1..2]-(m)
+        MATCH p=(n)-[r*1..{k}]-(m)
         WHERE ALL(rel IN relationships(p) WHERE rel.system = 'dataset')
 
         RETURN DISTINCT
@@ -145,20 +144,23 @@ class Neo4jClient:
             relationships(p) AS rels
         """
 
-        all_nodes = {}
-        all_edges = {}   # keyed by (source, target, label) to deduplicate
+        all_nodes = []
+        all_edges = []   # keyed by (source, target, label) to deduplicate
+        ids_seen = set()  # To track seen node IDs for deduplication
 
         def _collect(results):
             for record in results:
                 for node in record["nodes"]:
                     id = node["id"]
                     # check if the id is already captured, if not, add it
-                    if id not in all_nodes:
-                        all_nodes[id] = {
-                            "type":       ", ".join(node.labels),
-                            "id":         id,
-                            "properties": dict(node),
-                        }
+                    if id not in ids_seen:
+                        ids_seen.add(id)
+                        all_nodes.append({
+                            "id": id,
+                            "type": ", ".join(node.labels),
+                            **dict(node)
+                        })
+                        del all_nodes[-1]["embedding"]
 
                 for rel in record["rels"]:
                     start_node, end_node = rel.nodes
@@ -166,40 +168,20 @@ class Neo4jClient:
                     tgt   = end_node["id"]
                     label = rel.type
                     key   = (src, tgt, label)
-                    if key not in all_edges:
-                        all_edges[key] = {
+                    if key not in ids_seen:
+                        ids_seen.add(key)
+                        all_edges.append({
                             "source":     src,
                             "target":     tgt,
                             "label":      label,
                             "properties": dict(rel),
-                        }
+                        })
 
         with self.driver.session() as session:
             _collect(session.run(dataset_query, node_ids=node_ids))
             _collect(session.run(llm_query,     node_ids=node_ids))
 
-        return list(all_nodes.values()), list(all_edges.values())
-
-    #def insert_llm_edge(self, edge: Dict):
-    #    query = """
-    #    MATCH (a {uid: $source})
-    #    MATCH (b {uid: $target})
-#
-    #    MERGE (a)-[r:LLM_RELATION {
-    #        label: $label
-    #    }]->(b)
-#
-    #    SET r += $properties
-    #    """
-#
-    #    with self.driver.session() as session:
-    #        session.run(
-    #            query,
-    #            source=edge["source"],
-    #            target=edge["target"],
-    #            label=edge["label"],
-    #            properties=edge["properties"]
-    #        )
+        return all_nodes, all_edges
 
     def insert_nodes(self, nodes: list):
         """Insert nodes using UNWIND."""
@@ -304,9 +286,10 @@ class Neo4jClient:
             for record in results:
                 node = record["node"]
                 nodes.append({
-                    "type": list(node.labels)[0],
                     "id": node["id"],
-                    "properties": dict(node)
+                    "type": ", ".join(node.labels),
+                    **dict(node)
                 })
+                del nodes[-1]["embedding"]
 
         return nodes

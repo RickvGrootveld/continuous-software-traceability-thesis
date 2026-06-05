@@ -3,8 +3,8 @@ from typing import List, Dict
 WINDOW_SECONDS = 10
 
 K_HOPS = 1
-MAX_VECTOR_RESULTS = 20
-MAX_CONTEXT_NODES = 50
+MAX_VECTOR_RESULTS = 30
+MAX_CONTEXT_NODES = 150
 
 
 class ContextRetriever:
@@ -20,34 +20,36 @@ class ContextRetriever:
 
         # Iterate through each sub-graph category (sliding_window_events, etc.)
         for category, content in data.items():
+            if category == "sliding_window_events":
+                for node_dict in content["nodes"]:
+                    # Delete the embedding to minimize token usage in the prompt. neighbours and vector was already removed when retrieved from neo4j
+                    del node_dict["embedding"]
+
             if "nodes" not in content:
                 continue
             unique_nodes = []
 
             for node_dict in content["nodes"]:
                 # Extract the unique key/ID of the node (e.g., 'bug_302')
-                node_id = next(iter(node_dict.keys()))
+                node_id = node_dict["id"]
 
                 # If we haven't seen this node ID yet, keep it and mark it as seen
                 if node_id not in seen_node_ids:
                     seen_node_ids.add(node_id)
                     unique_nodes.append(node_dict)
-            # Update the category with the deduplicated list of nodes
 
+            # Update the category with the deduplicated list of nodes
             data[category]["nodes"] = unique_nodes
-            
+            print(f"After deduplication, category '{category}' has {len(unique_nodes)} unique nodes.")
         return data
+            
 
     def retrieve_context(self, current_window: dict) -> dict:
         # Get the IDs from each node in the window
-        seed_ids = [
-            node["id"]
-            for node in current_window["nodes"]
-        ]
+        seed_ids = [node["id"] for node in current_window["nodes"]]
 
         # k-hop retrieval
-        neighbour_nodes, neighbour_edges = \
-            self.neo4j.get_k_hop_neighbors(
+        neighbour_nodes, neighbour_edges = self.neo4j.get_k_hop_neighbors(
                 seed_ids,
                 k=K_HOPS
             )
@@ -65,14 +67,6 @@ class ContextRetriever:
             "vector_similarity_retrieval": {}
         }
 
-        for node in (current_window["nodes"] + neighbour_nodes + vector_nodes):
-            # Make sure there are no duplicates in the combined dict
-            if node["id"] not in merged:
-                merged[node["id"]] = node
-
-            # Delete the embeddings to minimize the token usage
-            del node["properties"]["embedding"]
-
         merged["sliding_window_events"] = {
             "nodes": current_window["nodes"],
             "edges": current_window["edges"]
@@ -88,11 +82,12 @@ class ContextRetriever:
 
         # remove duplicates
         merged = self.deduplicate_graph_nodes(merged)
-        
+
         # Shorten the context to make it fit in the LLM's context window
-        max_vector_nodes = max(0, MAX_CONTEXT_NODES - len(merged["k_hop_neighbourhood"]["nodes"]) + len(merged["vector_similarity_retrieval"]["nodes"]))
+        max_vector_nodes = max(0, min(MAX_CONTEXT_NODES, MAX_CONTEXT_NODES - len(merged["k_hop_neighbourhood"]["nodes"]) + len(merged["vector_similarity_retrieval"]["nodes"])))
         merged["vector_similarity_retrieval"]["nodes"] = merged["vector_similarity_retrieval"]["nodes"][:max_vector_nodes]
 
+        print(f"merged {merged}")
         return merged 
     
     def find_similar_nodes(self, nodes, top_k=50):
@@ -101,7 +96,7 @@ class ContextRetriever:
 
         for node in nodes:
             retrieved = self.neo4j.query_similar_nodes(
-                embedding=node["properties"]["embedding"],
+                embedding=node["embedding"],
                 top_k=top_k
             )
 

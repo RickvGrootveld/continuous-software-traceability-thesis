@@ -30,7 +30,7 @@ def process_issue(conn, issue_id, timestamp):
             "id": issue["issue_id"],
             "embedding": None,
             "title": issue["summary"],
-            "type": issue_type,
+            "issue_type": issue_type,
             "status": issue["status"],
             "summary": issue["description"],
             "priority": issue["priority"],

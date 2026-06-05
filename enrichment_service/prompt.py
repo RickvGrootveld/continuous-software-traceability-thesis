@@ -6,8 +6,8 @@ You are a knowledge graph engineer specialised in software traceability. Your ta
 {
   "new_edges": [
     {
-      "source_id":  <string value>,
-      "target_id":  <string value>,
+      "source_id":  <exact value of id key from graph_content>,
+      "target_id":  <exact value of id key from graph_content>,
       "label":      <string value>,
       "confidence": <float value>,
       "system":       "LLM",
@@ -16,7 +16,12 @@ You are a knowledge graph engineer specialised in software traceability. Your ta
   ]
 }
 
-# Schema constraints
+# VALID NODE IDs — STRICT RULES
+    - You MUST only use the exact keys present in the provided <graph_content>.
+    - DO NOT use generic placeholders, example IDs, or common shorthand labels like "ISSUE-101", "ISSUE-102", or "TASK-1". 
+    - If you use an ID that does not exist exactly as a key inside <graph_content>, the output is completely invalid.
+
+# Schema type constraints
 syntax explained: (source node type)-[edge label]->(target node type)
 ## Allowed relationship patterns (edges) in Cypher schema notation
 (:Issue)-[:INCLUDED_IN]->(:Release)
@@ -46,7 +51,7 @@ def load_user_prompt_v1(graph_content):
     Given a set of nodes and existing edges from a software traceability knowledge graph in <graph content>, identify missing edges between nodes that are semantically related but not yet connected, and propose synonym edges that replace or supplement vague relationship labels with more precise ones. Respond with ONLY a valid JSON, having only the key "new_edges", containing a list with dicts that contain the keys: "source_id", "target_id", "label", "confidence", "system", and "explanation", and with a confidence score higher than 0.85.
 
     # Steps
-    Follow these steps strictly—think through each step step-by-step before generating the final JSON output:
+    Follow these steps, strictly—think through each step before generating the final JSON output:
 
     ## Step 1: Build Mental Model
     Read all nodes across all retrieval strategies inside <graph_content>. Understand the semantic meaning, type, and metadata of each software artifact (e.g., Commit, Issue:Bug, Issue:Feature, Code, Developer, release).
@@ -71,9 +76,9 @@ def load_user_prompt_v1(graph_content):
     ## Step 5: Construct Final Output
     Collect all validated, non-duplicate edges that scored higher than 0.85. Format them exactly into the `new_edges` array using the required JSON output rule structure, ensuring the "explanation" string remains under 50 words.
 
-     # Graph content
-     Content explanation: The first keys are the retrieval strategies. One layer deeper are the nodes and edges retrieved by that strategy. Then come the IDs of the nodes and edges, followed by their properties.
-     {graph_content}
+    # Graph content
+    Content explanation: The first keys are the retrieval strategies. One layer deeper are the nodes and edges retrieved by that strategy. Then come the IDs of the nodes and edges, followed by their properties.
+    {graph_content}
 
     # Recap
     You are a knowledge graph engineer for software traceability. Analyse the nodes and edges in graph content, follow steps 1–5, propose missing edges and synonym replacements that improve semantic precision. Respond with ONLY a valid JSON, having only the
