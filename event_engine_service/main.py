@@ -27,7 +27,7 @@ def get_timeline(conn, query):
 
     return cursor.fetchall()
 
-def process_preload_data(conn):
+def process_preload_data(conn, interval):
     """
     Loads all of the data to the point in time that will be streamed to simulate
     the project's historical data. This is needed to make sure the LLM enrichment 
@@ -61,9 +61,10 @@ def process_preload_data(conn):
             continue  # safety
 
         send_event(event)
+        time.sleep(interval)
 
 # Automatic replay mode
-def process_simulation_data(conn, interval=10):
+def process_simulation_data(conn, interval):
     print("Starting streaming replay...")
     
     query = """
@@ -105,6 +106,5 @@ if __name__ == "__main__":
     # Wait for the knowledge graph to be ready 
     # (KG service needs to load the weights of the models) which takes around 20 seconds
     time.sleep(20)
-    process_preload_data(sqlite3.connect(DB_PATH))
-    #time.sleep(30) # wait 30 seconds to start the simulation
-    #process_simulation_data(sqlite3.connect(DB_PATH))
+    process_preload_data(sqlite3.connect(DB_PATH), 10)
+    #process_simulation_data(sqlite3.connect(DB_PATH), 10)

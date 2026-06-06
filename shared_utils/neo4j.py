@@ -261,6 +261,12 @@ class Neo4jClient:
             session.run(query, edges=edges)
 
     def query_similar_nodes(self, embedding, top_k=50):
+        """
+        returns the similar nodes in the graph of the passed node using vector
+        indexing in Neo4j with cosine similarity. The returned list is in descending
+        order
+        """
+
         query = """
         MATCH (node:TraceabilityNode)
         SEARCH node IN (

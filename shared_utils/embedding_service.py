@@ -8,9 +8,10 @@ class EmbeddingService:
 
     def node_to_text(self, node):
         """
-        Converts node JSON into semantic text.
+        Converts node JSON into semantic text by extracting all the values from the node 
+        (type, id, and the key-values in properties, make it a string without spaces, and return it.
     
-        Example node input now:
+        Example node input:
         {
             "type": ["TraceabilityNode", "Issue", "Bug"],
             "id": "...",
@@ -44,7 +45,10 @@ class EmbeddingService:
         return " ".join(text_parts)
 
     def generate_embeddings(self, nodes):
-        # Convert nodes to text
+        """
+        generates the embeddings with all-MiniLM-L6-v2 to all the passed nodes and stores them
+        in node["properties"]["embedding"] for each node in the passed nodes
+        """
         texts = [
             self.node_to_text(node)
             for node in nodes

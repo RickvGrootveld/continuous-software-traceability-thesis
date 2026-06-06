@@ -111,7 +111,7 @@ def messages_object(graph_content):
         #{"role": "user",      "content": load_user_prompt_v1(few_shot_input)},
         #{"role": "assistant", "content": json.dumps(few_shot_output)},
         {"role": "user",      "content": load_user_prompt_v1(graph_content)},
-        #{"role": "assistant", "content": "{\n  \"new_edges\": ["}
+        {"role": "assistant", "content": "{\n  \"new_edges\": ["}
     ]
 
     #return [
@@ -214,13 +214,13 @@ class QwenClient:
             model=QWEN_MODEL_NAME,
             messages=messages_object(graph_content),
             format="json",
-            #think="low",
+            think="low",
             options={
                 "temperature": 0.2,
                 "num_ctx": 16384,   
-                "num_predict": 2000,
+                "num_predict": 1000,
                 "seed": random.randint(1, 9999999),
-                #"stop": ["]\n}"],
+                "stop": ["]\n}"],
                 "keep_alive": 0,
             },
         )
