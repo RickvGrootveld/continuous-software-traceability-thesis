@@ -268,7 +268,7 @@ class Neo4jClient:
           FOR $embedding 
           LIMIT $top_k
         ) SCORE AS score
-        WHERE score >= 0.87
+        WHERE score >= 0.90
         RETURN node
         ORDER BY score DESC;
         """

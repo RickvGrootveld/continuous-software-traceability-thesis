@@ -4,7 +4,7 @@ import json
 import os
 import random
 
-from prompt import SYSTEM_PROMPT, load_user_prompt, load_user_prompt_v1
+from prompt import SYSTEM_PROMPT, load_user_prompt_v1 #, load_user_prompt
 
 # Determine to use Qwen or GPT to prevent everything to be loaded and running when building the project in Docker
 # Qwen
@@ -111,7 +111,7 @@ def messages_object(graph_content):
         #{"role": "user",      "content": load_user_prompt_v1(few_shot_input)},
         #{"role": "assistant", "content": json.dumps(few_shot_output)},
         {"role": "user",      "content": load_user_prompt_v1(graph_content)},
-        {"role": "assistant", "content": "{\n  \"new_edges\": ["}
+        #{"role": "assistant", "content": "{\n  \"new_edges\": ["}
     ]
 
     #return [
@@ -214,13 +214,14 @@ class QwenClient:
             model=QWEN_MODEL_NAME,
             messages=messages_object(graph_content),
             format="json",
-            think="low",
+            #think="low",
             options={
-                "temperature": 0.0,
-                "num_ctx": 8192,   
-                #"num_predict": 2048,
+                "temperature": 0.2,
+                "num_ctx": 16384,   
+                "num_predict": 2000,
                 "seed": random.randint(1, 9999999),
-                "stop": ["]\n}"],
+                #"stop": ["]\n}"],
+                "keep_alive": 0,
             },
         )
         print(f"Qwen call duration: {response.total_duration} seconds")
@@ -241,6 +242,9 @@ class QwenClient:
                 self.valid_edges += 1
             self.total_edges += 1
 
+        print(f"prompt tokens: {response.prompt_eval_count}")
+        print(f"eval count (output tokens): {response.eval_count}")
+        print(f"stop reason: {response.done_reason}")
         print(f"Valid edges extracted: {valid_edges}")
 
         return {"new_edges": valid_edges}

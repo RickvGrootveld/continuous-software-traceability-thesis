@@ -3,8 +3,8 @@ from typing import List, Dict
 WINDOW_SECONDS = 10
 
 K_HOPS = 1
-MAX_VECTOR_RESULTS = 30
-MAX_CONTEXT_NODES = 150
+MAX_VECTOR_RESULTS = 20
+MAX_CONTEXT_NODES = 70
 
 
 class ContextRetriever:
@@ -72,8 +72,8 @@ class ContextRetriever:
             "edges": current_window["edges"]
         }
         merged["k_hop_neighbourhood"] = {
-            "nodes": neighbour_nodes,
-            "edges": neighbour_edges
+            "nodes": neighbour_nodes[:20],
+            "edges": neighbour_edges[:20]
         }
         merged["vector_similarity_retrieval"] = {
             "nodes": vector_nodes,
@@ -84,8 +84,8 @@ class ContextRetriever:
         merged = self.deduplicate_graph_nodes(merged)
 
         # Shorten the context to make it fit in the LLM's context window
-        max_vector_nodes = max(0, min(MAX_CONTEXT_NODES, MAX_CONTEXT_NODES - len(merged["k_hop_neighbourhood"]["nodes"]) + len(merged["vector_similarity_retrieval"]["nodes"])))
-        merged["vector_similarity_retrieval"]["nodes"] = merged["vector_similarity_retrieval"]["nodes"][:max_vector_nodes]
+        #max_vector_nodes = max(0, min(MAX_CONTEXT_NODES, MAX_CONTEXT_NODES - len(merged["k_hop_neighbourhood"]["nodes"]) + len(merged["vector_similarity_retrieval"]["nodes"])))
+        #merged["vector_similarity_retrieval"]["nodes"] = merged["vector_similarity_retrieval"]["nodes"][:max_vector_nodes]
 
         print(f"merged {merged}")
         return merged 
