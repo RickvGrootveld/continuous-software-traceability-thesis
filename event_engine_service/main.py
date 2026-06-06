@@ -50,7 +50,7 @@ def process_preload_data(conn):
         entity_id = row["id"]
 
         timestamp = datetime.now().isoformat()
-
+        
         if source_table == "issue":
             event = process_issue(conn, entity_id, timestamp)
 
@@ -63,12 +63,12 @@ def process_preload_data(conn):
         send_event(event)
 
 # Automatic replay mode
-def process_simulation_data(conn, interval=20):
+def process_simulation_data(conn, interval=10):
     print("Starting streaming replay...")
     
     query = """
         SELECT source_table, id, created_date
-        FROM issue_commit_chronological
+        FROM issue_commit_events_simulation
         ORDER BY created_date ASC
     """
 
@@ -105,7 +105,6 @@ if __name__ == "__main__":
     # Wait for the knowledge graph to be ready 
     # (KG service needs to load the weights of the models) which takes around 20 seconds
     time.sleep(20)
-    #process_preload_data(sqlite3.connect(DB_PATH))
+    process_preload_data(sqlite3.connect(DB_PATH))
     #time.sleep(30) # wait 30 seconds to start the simulation
-    process_simulation_data(sqlite3.connect(DB_PATH))
-    #process_timeline_manual(sqlite3.connect(DB_PATH))
+    #process_simulation_data(sqlite3.connect(DB_PATH))
