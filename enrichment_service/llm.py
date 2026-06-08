@@ -172,11 +172,24 @@ class QwenClient:
         else:
             print(f"Model '{QWEN_MODEL_NAME}' already available.")
     
-    def extract_json(self, raw: str) -> dict:
-        """Extract JSON from messy LLM output."""
+    def extract_json(self, raw: str) -> tuple[dict, int, int]:
+        """
+        Extract JSON from messy LLM output.
+        Returns:
+            (extracted_dict, total_edges_processed, valid_edges_count)
+        """
+        # Helper to calculate metrics if a complete JSON object/block is parsed successfully
+        def get_full_block_metrics(parsed_dict: dict) -> tuple[dict, int, int]:
+            edges_list = parsed_dict.get("new_edges", [])
+            if isinstance(edges_list, list):
+                count = len(edges_list)
+                return parsed_dict, count, count
+            return parsed_dict, 0, 0
+    
         # Try direct parse first
         try:
-            return json.loads(raw)
+            data = json.loads(raw)
+            return get_full_block_metrics(data)
         except json.JSONDecodeError:
             pass
         
@@ -184,12 +197,15 @@ class QwenClient:
         match = re.search(r'\{.*"new_edges".*\}', raw, re.DOTALL)
         if match:
             try:
-                return json.loads(match.group())
+                data = json.loads(match.group())
+                return get_full_block_metrics(data)
             except json.JSONDecodeError:
                 pass
-
+            
         # Try extracting individual edge objects and rebuild
         edges = re.findall(r'\{[^{}]*"source_id"[^{}]*\}', raw, re.DOTALL)
+        total_edges = len(edges)
+        
         if edges:
             valid = []
             for e in edges:
@@ -202,9 +218,9 @@ class QwenClient:
                 except json.JSONDecodeError:
                     continue
             if valid:
-                return {"new_edges": valid}
-
-        return {"new_edges": []}
+                return {"new_edges": valid}, total_edges, len(valid)
+    
+        return {"new_edges": []}, total_edges, 0
 
     def call_llm(self, graph_content: dict) -> dict:
         print("starting Qwen call...")
@@ -231,7 +247,7 @@ class QwenClient:
         # Content will only contain what the LLM has generated after the prefix. So, concatenate them
         print(f"response: {raw}")
 
-        result = self.extract_json(raw)
+        result, generated_edges, correct_edges = self.extract_json(raw)
         
         # Validate and filter edge objects
         valid_edges = []
@@ -247,4 +263,4 @@ class QwenClient:
         print(f"stop reason: {response.done_reason}")
         print(f"Valid edges extracted: {valid_edges}")
 
-        return {"new_edges": valid_edges}
+        return ({"new_edges": valid_edges}, response.total_duration, generated_edges, correct_edges)

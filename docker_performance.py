@@ -33,7 +33,7 @@ def get_container_stats(container_name):
     except Exception:
         return None, None
 
-def monitor_and_save(stop_event, filename="performance_log.csv", interval=2):
+def monitor_and_save(stop_event, filename="performance_log.csv", interval=5):
     """Background monitoring loop that streams data straight to a CSV file."""
     
     # Open the file and write the header column layout

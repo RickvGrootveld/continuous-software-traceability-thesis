@@ -79,7 +79,7 @@ def process_issue(conn, issue_id, timestamp):
         target_id = link["target_issue_id"]
 
         # Extract the dynamic type
-        target_type = ["TraceabilityNode", "Issue", "Bug"] if link["issue_type"] == "Bug" else ["TraceabilityNode", "Issue", "Feature"]
+        target_type = ["TraceabilityNode", "Issue", "Bug"] if link["target_issue_type"] == "Bug" else ["TraceabilityNode", "Issue", "Feature"]
 
         edges.append({
             "source_type": schema_issue_type,
