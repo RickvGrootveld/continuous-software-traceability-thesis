@@ -96,7 +96,9 @@ class ContextRetriever:
             # Filter edges: both endpoints must be in kept IDs for this category
             filtered_edges = []
             for edge in content.get("edges", []):
-                if edge["source"] in kept_ids and edge["target"] in kept_ids:
+                print(f"edge {edge}")
+                print(f"kept_ids {kept_ids}")
+                if edge["source id"] in kept_ids and edge["target"] in kept_ids:
                     filtered_edges.append(edge)
     
             #removed_edges = len(content.get("edges", [])) - len(filtered_edges)

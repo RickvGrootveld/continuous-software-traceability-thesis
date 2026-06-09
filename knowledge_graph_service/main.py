@@ -7,7 +7,7 @@ from shared_utils.embedding_service import EmbeddingService
 from shared_utils.neo4j import Neo4jClient
 
 TOPIC = "events"
-CSV_FILE = "app/knowledge_graph_service/log_db_results.csv"
+CSV_FILE = "/app/knowledge_graph_service/log_db_results.csv"
 
 consumer = KafkaConsumer(
     TOPIC,
