@@ -99,6 +99,8 @@ class GPTClient:
         Calls GPT-5.1 via the OpenAI API.
         """
 
+        start_time = datetime.now()
+
         response = self.client.chat.completions.create(
             model="gpt-5.1",
             messages=messages_object(graph_content),
@@ -106,14 +108,31 @@ class GPTClient:
             response_format={"type": "json_object"},
         )
 
+        total_duration = (datetime.now() - start_time) *1000 #convert to ms, same as neo4j time responses
+
+        # Extract raw content using OpenAI's response format
         raw = response.choices[0].message.content 
-        # Content will only contain what the LLM has generated after the prefix. So, concatenate them
         print(f"response: {raw}")
 
+        # Process JSON data using your extraction function
         result, generated_edges, correct_edges = extract_json(raw)
-        
 
-        return (result, response.total_duration, generated_edges, correct_edges) #TODO correct_edges must be len(valid_edges)?
+        # Validate and filter edge objects (Exactly identical to your Qwen logic)
+        valid_edges = []
+        required_keys = {"source_id", "target_id", "label", "confidence", "system", "explanation"}
+
+        for edge in result.get("new_edges", []):
+            if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
+                valid_edges.append(edge)
+
+        # OpenAI equivalent token and finish reason logging
+        print(f"prompt tokens: {response.usage.prompt_tokens}")
+        print(f"eval count (output tokens): {response.usage.completion_tokens}")
+        print(f"stop reason: {response.choices[0].finish_reason}")
+        print(f"Valid edges extracted: {len(valid_edges)}")
+        print(f"Valid edges extracted v2: {correct_edges}")
+
+        return (result, total_duration, generated_edges, correct_edges)
 
 class QwenClient:
 
@@ -135,21 +154,26 @@ class QwenClient:
     def call_llm(self, graph_content: dict) -> dict:
         print("starting Qwen call...")
 
+        start_time = datetime.now()
+
         response = self.client.chat(
             model=QWEN_MODEL_NAME,
             messages=messages_object(graph_content),
             format="json",
             #think="low",
             options={
-                "temperature": 0.2,
+                "temperature": 0.0,
                 "num_ctx": 33000,   
                 "num_predict": 2000,
                 "seed": random.randint(1, 9999999),
-                #"stop": ["]\n}"],
+                "num_thread": 10,
+                "stop": ["]\n}"],
                 "keep_alive": 0,
             },
         )
-        print(f"Qwen call duration: {response.total_duration} seconds")
+
+        total_duration = (datetime.now() - start_time) *1000 #convert to ms, same as neo4j time responses
+        #print(f"Qwen call duration: {response.total_duration} seconds")
 
         prefix = "{\n  \"new_edges\": ["
         raw = prefix + response.message.content 
@@ -164,12 +188,11 @@ class QwenClient:
         for edge in result.get("new_edges", []):
             if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
                 valid_edges.append(edge)
-                self.valid_edges += 1
-            self.total_edges += 1
 #
         print(f"prompt tokens: {response.prompt_eval_count}")
         print(f"eval count (output tokens): {response.eval_count}")
         print(f"stop reason: {response.done_reason}")
         print(f"Valid edges extracted: {valid_edges}")
+        print(f"Valid edges extracted v2: {correct_edges}")
 
-        return (result, response.total_duration, generated_edges, correct_edges)
+        return {"new_edges": valid_edges}, total_duration, generated_edges, correct_edges
