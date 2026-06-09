@@ -7,7 +7,7 @@ from shared_utils.embedding_service import EmbeddingService
 from shared_utils.neo4j import Neo4jClient
 
 TOPIC = "events"
-CSV_FILE = "log_db_results.csv"
+CSV_FILE = "app/knowledge_graph_service/log_db_results.csv"
 
 consumer = KafkaConsumer(
     TOPIC,
@@ -65,7 +65,7 @@ def consume(kg: Neo4jClient, embedding_model: EmbeddingService):
                     edges_metric["db_insert_time_ms"],
                 ]
 
-                log_experiment_run()
+                log_experiment_run(metrics)
 
             except Exception as e:
                 print(f"Error occurred while inserting record: {e}")

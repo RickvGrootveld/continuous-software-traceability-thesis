@@ -1,12 +1,12 @@
-x-logging: &default-logging
-  driver: "none"
+#x-logging: &default-logging
+#  driver: "none"
 
 services:
   
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
-    logging: *default-logging
+    #logging: *default-logging
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
 
@@ -17,7 +17,7 @@ services:
       - zookeeper
     ports:
       - "9092:9092" 
-    logging: *default-logging
+    #logging: *default-logging
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -46,7 +46,7 @@ services:
       #- ./neo4j/logs:/logs
       #- ./neo4j/import:/var/lib/neo4j/import
       #- ./neo4j/plugins:/plugins
-    logging: *default-logging
+    #logging: *default-logging
     environment:
       NEO4J_AUTH: ${NEO4J_AUTH}
       NEO4J_PLUGINS: '["apoc"]'
@@ -70,7 +70,7 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    logging: *default-logging
+    #logging: *default-logging
     #environment:
     #  - OLLAMA_NUM_PARALLEL=1       # Force it to handle one window enrichment at a time
     #  - OMP_NUM_THREADS=4
@@ -93,7 +93,7 @@ services:
       context: .
       dockerfile: event_engine_service/Dockerfile
     container_name: event_engine_service
-    logging: *default-logging
+    #logging: *default-logging
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
@@ -111,7 +111,7 @@ services:
       context: .
       dockerfile: knowledge_graph_service/Dockerfile
     container_name: knowledge_graph_service
-    logging: *default-logging
+    #logging: *default-logging
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
@@ -131,7 +131,7 @@ services:
       context: .
       dockerfile: enrichment_service/Dockerfile
     container_name: enrichment_service
-    logging: *default-logging
+    #logging: *default-logging
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app

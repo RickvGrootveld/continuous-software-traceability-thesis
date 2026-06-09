@@ -178,9 +178,9 @@ class Neo4jClient:
         else:
             profiled_query = query
     
-        with self.driver.session() as session:
+        with self.driver.session() as metric_session:
             # 2. Record Graph Pollution / Growth metrics before modifying or deep-traversing
-            size_record = session.run(
+            size_record = metric_session.run(
                 "MATCH (n) WITH count(n) as nodes MATCH ()-[r]->() RETURN nodes, count(r) as edges"
             ).single()
             
@@ -188,25 +188,19 @@ class Neo4jClient:
             graph_edges = size_record["edges"] if size_record else 0
     
             # 3. Execute the target query, proxying all flexible parameter configurations
+        with self.driver.session() as session:
             results = session.run(profiled_query, *args, **kwargs)
             
             # 4. Drain the streaming buffer into memory to complete execution
-            #records = list(results)
+            records = list(results)
             
             # 5. Harvest performance metadata
             summary = results.consume()
             
             db_retrieval_time_ms = summary.result_consumed_after
             total_db_hits = self.get_total_db_hits(summary.profile)
-    
-            # 6. Log, store, or return the metrics for your research
-            #metrics = {
-            #    "graph_nodes": total_nodes,
-            #    "graph_edges": total_edges,
-            #    "db_hits": total_db_hits,
-            #    "db_retrieval_time_ms": db_retrieval_time_ms
-            #}
-        return results, graph_nodes, graph_edges, total_db_hits, db_retrieval_time_ms
+
+        return records, graph_nodes, graph_edges, total_db_hits, db_retrieval_time_ms
 
     def get_recent_nodes(self, limit=100):
         query = """
@@ -240,6 +234,7 @@ class Neo4jClient:
         seen_edges = set()  # Prevent duplicate edge tracking in the undirected check
 
         results, total_nodes, total_edges, total_db_hits, db_retrieval_time_ms = self.get_neo4j_metrics(query, limit=limit)
+
         for record in results:
             node = record["n"]
             source_id = node["id"]
@@ -274,7 +269,7 @@ class Neo4jClient:
                     "label": rel.type,
                     "properties": dict(rel)
                     })
-
+                
         return nodes, edges, total_nodes, total_edges, total_db_hits, db_retrieval_time_ms 
 
     def get_k_hop_neighbors(self, node_ids: List[str], k=1):
@@ -328,6 +323,7 @@ class Neo4jClient:
                             "type": ", ".join(node.labels),
                             **dict(node)
                         })
+                        # Remove the embedding
                         del all_nodes[-1]["embedding"]
 
                 for rel in record["rels"]:

@@ -44,7 +44,7 @@ metrics_window = {
 }
 
 WINDOW_SECONDS = 5
-CSV_FILE = "log_run_results.csv"
+CSV_FILE = "app/enrichment_service/log_run_results.csv"
 
 class EnrichmentService:
 
