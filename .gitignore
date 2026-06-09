@@ -7,3 +7,7 @@ enrichment_service/__pycache__
 knowledge_graph_service/__pycache__
 event_engine_service/__pycache__
 shared_utils/__pycache__
+neo4j_non_enrichment.dump
+neo4j_preload_data_clean.dump
+neo4j_preload_data.dump
+neo4j.dump

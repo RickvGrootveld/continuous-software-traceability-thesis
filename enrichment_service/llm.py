@@ -139,13 +139,13 @@ class QwenClient:
             model=QWEN_MODEL_NAME,
             messages=messages_object(graph_content),
             format="json",
-            think="low",
+            #think="low",
             options={
                 "temperature": 0.2,
-                "num_ctx": 16384,   
-                "num_predict": 1000,
+                "num_ctx": 33000,   
+                "num_predict": 2000,
                 "seed": random.randint(1, 9999999),
-                "stop": ["]\n}"],
+                #"stop": ["]\n}"],
                 "keep_alive": 0,
             },
         )
@@ -159,17 +159,17 @@ class QwenClient:
         result, generated_edges, correct_edges = extract_json(raw)
         
         # Validate and filter edge objects
-        #valid_edges = []
-        #required_keys = {"source_id", "target_id", "label", "confidence", "system", "explanation"}
-        #for edge in result.get("new_edges", []):
-        #    if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
-        #        valid_edges.append(edge)
-        #        self.valid_edges += 1
-        #    self.total_edges += 1
+        valid_edges = []
+        required_keys = {"source_id", "target_id", "label", "confidence", "system", "explanation"}
+        for edge in result.get("new_edges", []):
+            if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
+                valid_edges.append(edge)
+                self.valid_edges += 1
+            self.total_edges += 1
 #
-        #print(f"prompt tokens: {response.prompt_eval_count}")
-        #print(f"eval count (output tokens): {response.eval_count}")
-        #print(f"stop reason: {response.done_reason}")
-        #print(f"Valid edges extracted: {valid_edges}")
+        print(f"prompt tokens: {response.prompt_eval_count}")
+        print(f"eval count (output tokens): {response.eval_count}")
+        print(f"stop reason: {response.done_reason}")
+        print(f"Valid edges extracted: {valid_edges}")
 
         return (result, response.total_duration, generated_edges, correct_edges)

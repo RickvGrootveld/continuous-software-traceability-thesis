@@ -206,7 +206,7 @@ class Neo4jClient:
         query = """
         // 1. Fetch the recent source nodes
         MATCH (n:TraceabilityNode)
-        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT1S')
+        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT1S') AND n.embedding IS NOT NULL
         WITH n
         ORDER BY n.timestamp DESC
         LIMIT $limit
@@ -215,9 +215,9 @@ class Neo4jClient:
         WITH collect(n) AS node_list
         UNWIND node_list AS n
 
-        // 3. Find edges where both the start and end nodes are inside our collected list
+        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes
         OPTIONAL MATCH (n)-[r]->(target)
-        WHERE target IN node_list
+        WHERE target IN node_list AND target.embedding IS NOT NULL
 
         RETURN 
             n, 
@@ -278,16 +278,17 @@ class Neo4jClient:
           - Edges with system='dataset' → 2 hops
           - Edges with system='LLM'     → 1 hop
         This function returns the nodes that have incoming and outgoing edges from the giving list of nodes, using -(m) instead of ->(m).
-        Both result sets are merged and deduplicated.
+        Both result sets are merged and deduplicated. This function filters out ghost nodes that do not have the properties such as embedding
         """
 
         # 2-hop traversal restricted to dataset edges only
         dataset_query = f"""
         MATCH (n)
-        WHERE n.id IN $node_ids
+        WHERE n.id IN $node_ids AND n.embedding IS NOT NULL
 
         MATCH p=(n)-[r*1..{k}]-(m)
         WHERE ALL(rel IN relationships(p) WHERE rel.system = 'dataset')
+          AND ALL(node IN nodes(p) WHERE node.embedding IS NOT NULL)
 
         RETURN DISTINCT
             nodes(p)         AS nodes,
@@ -297,10 +298,11 @@ class Neo4jClient:
         # 1-hop traversal restricted to LLM edges only
         llm_query = """
         MATCH (n)
-        WHERE n.id IN $node_ids
+        WHERE n.id IN $node_ids AND n.embedding IS NOT NULL
 
         MATCH p=(n)-[r*1..1]-(m)
         WHERE ALL(rel IN relationships(p) WHERE rel.system = 'LLM')
+          AND ALL(node IN nodes(p) WHERE node.embedding IS NOT NULL)
 
         RETURN DISTINCT
             nodes(p)         AS nodes,
@@ -335,8 +337,10 @@ class Neo4jClient:
                     if key not in ids_seen:
                         ids_seen.add(key)
                         all_edges.append({
-                            "source":     src,
-                            "target":     tgt,
+                            "source id":     src,
+                            "target id":     tgt,
+                            "source type": ", ".join(start_node.labels),
+                            "target type": ", ".join(end_node.labels),
                             "label":      label,
                             "properties": dict(rel),
                         })
@@ -362,7 +366,7 @@ class Neo4jClient:
           FOR $embedding 
           LIMIT $top_k
         ) SCORE AS score
-        WHERE score >= 0.90
+        WHERE score >= 0.88
         RETURN node
         ORDER BY score DESC;
         """

@@ -95,10 +95,9 @@ class ContextRetriever:
     
             # Filter edges: both endpoints must be in kept IDs for this category
             filtered_edges = []
+            print(f"edges: {content.get('edges', [])}")
             for edge in content.get("edges", []):
-                print(f"edge {edge}")
-                print(f"kept_ids {kept_ids}")
-                if edge["source id"] in kept_ids and edge["target"] in kept_ids:
+                if edge["source id"] in kept_ids and edge["target id"] in kept_ids:
                     filtered_edges.append(edge)
     
             #removed_edges = len(content.get("edges", [])) - len(filtered_edges)
@@ -147,10 +146,10 @@ class ContextRetriever:
             "nodes": vector_nodes,
             "edges": []  # No edges in vector retrieval
         }
-
+        print(f"neighbour_edges: {len(neighbour_edges)}")
         # remove duplicates
         merged = self.deduplicate_graph_nodes(merged)
-
+        print(f"neighbour_edges V2: {len(neighbour_edges)}")
         # Shorten the context to make it fit in the LLM's context window
         #max_neighbour_nodes = max(MAX_NEIGHBOUR_NODES, MAX_CONTENT_NODES - len(merged["sliding_window_events"]["nodes"]) - MIN_VECTOR_NODES)
         #merged["k_hop_neighbourhood"]["nodes"] = merged["k_hop_neighbourhood"]["nodes"][:max_neighbour_nodes]
@@ -169,7 +168,7 @@ class ContextRetriever:
         }
 
         print(f"merged {merged}")
-        return (merged, metrics_data)
+        return merged, metrics_data
     
     def find_similar_nodes(self, nodes, top_k=50):
         similar_nodes = []
