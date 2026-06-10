@@ -1,15 +1,15 @@
-from datetime import datetime
+import time
 import re
 import json
 import os
 import random
 
-from prompt import SYSTEM_PROMPT, load_user_prompt_v1 #, load_user_prompt
+from prompt import SYSTEM_PROMPT, load_system_prompt, load_user_prompt_v1 #, load_user_prompt
 
 # Determine to use Qwen or GPT to prevent everything to be loaded and running when building the project in Docker
 # Qwen
 USE_LOCAL_QWEN = True
-# USE_LOCAL_QWEN = False
+#USE_LOCAL_QWEN = False
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
 QWEN_MODEL_NAME = "qwen3.5:4b"
@@ -18,10 +18,10 @@ if USE_LOCAL_QWEN:
     import ollama
 
 # GPT
-# USE_GPT = True
+#USE_GPT = True
 USE_GPT = False
 
-OPENAI_API_KEY = "<YOUR_OPENAI_API_KEY>"
+OPENAI_API_KEY = "<YOUR_API_KEY>"
 GPT_MODEL = "gpt-5.1"
 
 if USE_GPT:
@@ -78,9 +78,11 @@ def extract_json(raw: str) -> tuple[dict, int, int]:
     return {"new_edges": []}, total_edges, 0
 
 def messages_object(graph_content):
+
+    user_prompt = load_user_prompt_v1(json.dumps(graph_content, separators=(',', ':'))[:85000], random.randint(0,999999))
     return [
-        {"role": "system",    "content": SYSTEM_PROMPT},
-        {"role": "user",      "content": load_user_prompt_v1(graph_content)},
+        {"role": "system",    "content": load_system_prompt(random.randint(0,999999))},
+        {"role": "user",      "content": user_prompt},
         {"role": "assistant", "content": "{\n  \"new_edges\": ["}
     ]
 
@@ -99,16 +101,17 @@ class GPTClient:
         Calls GPT-5.1 via the OpenAI API.
         """
 
-        start_time = datetime.now()
+        start_time = time.perf_counter()
 
         response = self.client.chat.completions.create(
             model="gpt-5.1",
             messages=messages_object(graph_content),
             reasoning_effort="low",
             response_format={"type": "json_object"},
+            max_completion_tokens=38000
         )
 
-        total_duration = (datetime.now() - start_time) *1000 #convert to ms, same as neo4j time responses
+        total_duration = (time.perf_counter() - start_time) * 1000 #convert to ms, same as neo4j time responses
 
         # Extract raw content using OpenAI's response format
         raw = response.choices[0].message.content 
@@ -154,31 +157,30 @@ class QwenClient:
     def call_llm(self, graph_content: dict) -> dict:
         print("starting Qwen call...")
 
-        start_time = datetime.now()
+        start_time = time.perf_counter()
 
         response = self.client.chat(
             model=QWEN_MODEL_NAME,
             messages=messages_object(graph_content),
             format="json",
-            #think="low",
+            keep_alive=0,
             options={
-                "temperature": 0.0,
-                "num_ctx": 33000,   
-                "num_predict": 2000,
+                "temperature": 0.2,
+                "num_ctx": 36864,
+                "num_predict": 1200,
+                "num_batch": 512,
                 "seed": random.randint(1, 9999999),
-                "num_thread": 10,
+                "num_thread": 6,
                 "stop": ["]\n}"],
-                "keep_alive": 0,
             },
         )
 
-        total_duration = (datetime.now() - start_time) *1000 #convert to ms, same as neo4j time responses
+        total_duration = (time.perf_counter() - start_time) * 1000 #convert to ms, same as neo4j time responses
         #print(f"Qwen call duration: {response.total_duration} seconds")
 
         prefix = "{\n  \"new_edges\": ["
         raw = prefix + response.message.content 
         # Content will only contain what the LLM has generated after the prefix. So, concatenate them
-        print(f"response: {raw}")
 
         result, generated_edges, correct_edges = extract_json(raw)
         
@@ -188,11 +190,5 @@ class QwenClient:
         for edge in result.get("new_edges", []):
             if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
                 valid_edges.append(edge)
-#
-        print(f"prompt tokens: {response.prompt_eval_count}")
-        print(f"eval count (output tokens): {response.eval_count}")
-        print(f"stop reason: {response.done_reason}")
-        print(f"Valid edges extracted: {valid_edges}")
-        print(f"Valid edges extracted v2: {correct_edges}")
 
         return {"new_edges": valid_edges}, total_duration, generated_edges, correct_edges

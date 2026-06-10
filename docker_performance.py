@@ -51,7 +51,12 @@ def get_all_pipeline_stats(project_name, target_containers):
             container_project = labels.get('com.docker.compose.project')
             
             if container_project == project_name:
-                stats = container.stats(stream=False)
+                try:
+                    # Set a strict 2-second network timeout on the stats call
+                    stats = container.stats(stream=False, timeout=2)
+                except Exception as timeout_error:
+                    # If the engine is too busy, log 0 and move on rather than piling onto the socket backlog
+                    continue
                 
                 # Fetch raw core CPU usage (e.g., 400.0% means 4 full cores)
                 container_cpu = calculate_container_raw_cpu(stats)
@@ -74,51 +79,52 @@ def get_all_pipeline_stats(project_name, target_containers):
         
     return metrics
 
-def monitor_and_save(stop_event, filename="performance_log.csv", interval=1):
+def monitor_and_save(stop_event, filename="performance_log.csv", interval=30): # Changed to 30s
     stack_name = "continuous-software-traceability-thesis"
     focus_targets = ["ollama", "neo4j_knowledge_graph"]
     
-    # Dynamically find your machine's total logical core count (16)
+    # 1. FIND THE CONTAINERS ONCE BEFORE THE LOOP STARTS
+    all_containers = client.containers.list()
+    tracked_containers = []
+    
+    for c in all_containers:
+        labels = c.attrs.get('Config', {}).get('Labels', {})
+        if labels.get('com.docker.compose.project') == stack_name:
+            tracked_containers.append(c) # Lock them into memory once
+            
     total_cores = psutil.cpu_count()
     
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([
-            "Timestamp", 
-            "Total_Host_CPU_%", "Total_Host_Mem_MB", 
-            "Stack_Total_CPU_%", "Stack_Total_Mem_MB",
-            "Ollama_CPU_%", "Ollama_Mem_MB", 
-            "Neo4j_CPU_%", "Neo4j_Mem_MB"
-        ])
+        writer.writerow(["Timestamp", "Total_Host_CPU_%", "Total_Host_Mem_MB", "Ollama_CPU_%", "Ollama_Mem_MB"])
         
-        print(f"Logging raw performance data directly to {filename} (Max scale: {total_cores * 100}%)...")
-        _ = psutil.cpu_percent(interval=None) # Initialize baseline
+        psutil.cpu_percent(interval=None) 
         
         while not stop_event.is_set():
             timestamp = datetime.now().isoformat()
             
-            # 1. Fetch host CPU (0-100%) and instantly scale it to match the 16-core max (0-1600%)
-            host_percent_normalized = psutil.cpu_percent(interval=0.1)
-            total_host_raw_cpu = host_percent_normalized * total_cores
-            
+            # Fetch host metrics
+            host_percent = psutil.cpu_percent(interval=0.1)
+            total_host_raw_cpu = host_percent * total_cores
             total_host_mem_mb = psutil.virtual_memory().used / (1024 * 1024)
             
-            # 2. Fetch raw stack components
-            stack_data = get_all_pipeline_stats(stack_name, focus_targets)
+            # Initialize metrics for this specific step
+            ollama_cpu, ollama_mem = 0.0, 0.0
             
-            o_stats = stack_data["container_breakdown"]["ollama"]
-            n_stats = stack_data["container_breakdown"]["neo4j_knowledge_graph"]
+            # 2. REUSE THE EXISTING OBJECTS (No new memory allocations!)
+            for container in tracked_containers:
+                try:
+                    stats = container.stats(stream=False, timeout=2) # Safe timeout added
+                    if "ollama" in container.name:
+                        ollama_cpu = calculate_container_raw_cpu(stats)
+                        ollama_mem = stats['memory_stats'].get('usage', 0) / (1024 * 1024)
+                except Exception:
+                    continue # Skip smoothly if the engine is temporarily busy
             
-            # 3. Log everything directly to the CSV
-            writer.writerow([
-                timestamp, 
-                round(total_host_raw_cpu, 1), round(total_host_mem_mb, 1),
-                round(stack_data["stack_cpu"], 1), round(stack_data["stack_mem"], 1), 
-                round(o_stats["cpu"], 1), round(o_stats["mem"], 1),
-                round(n_stats["cpu"], 1), round(n_stats["mem"], 1)
-            ])
-            
+            # 3. DIRECT WRITE TO DISK
+            writer.writerow([timestamp, round(total_host_raw_cpu, 1), round(total_host_mem_mb, 1), round(ollama_cpu, 1), round(ollama_mem, 1)])
             file.flush() 
+            
             time.sleep(interval)
 
 # --- APPLICATION WORKLOAD EXECUTION ---
@@ -128,7 +134,7 @@ if __name__ == "__main__":
     # Start background CSV logger thread
     monitor_thread = threading.Thread(
         target=monitor_and_save, 
-        args=(stop_monitoring, "run_metrics.csv", 1) # Capture every 1 second
+        args=(stop_monitoring, "run_metrics.csv", 30) # Capture every 30 seconds
     )
     monitor_thread.daemon = True
     monitor_thread.start()

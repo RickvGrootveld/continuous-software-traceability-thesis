@@ -43,7 +43,7 @@ metrics_window = {
     "db_hits": [],
 }
 
-WINDOW_SECONDS = 5
+WINDOW_SECONDS = 140
 CSV_FILE = "/app/enrichment_service/log_run_results.csv"
 
 class EnrichmentService:
@@ -56,8 +56,8 @@ class EnrichmentService:
             self.neo4j,
         )
         print("starting LLM client...")
-        #self.llm = GPTClient()
-        self.llm = QwenClient()
+        self.llm = GPTClient()
+        #self.llm = QwenClient()
 
     def add_to_window(self, nodes, edges):
         global window_start_time
@@ -67,7 +67,6 @@ class EnrichmentService:
                 window_buffer_v2["nodes"].append(node)
             for edge in edges:
                 window_buffer_v2["edges"].append(edge)
-                #print(f"Buffered node: {node}")
                 
             if (len(window_buffer_v2["nodes"]) > 0 and window_start_time is None):
                 window_start_time = time.time()
@@ -129,15 +128,11 @@ class EnrichmentService:
                 window_buffer_v2["edges"].clear()
                 window_start_time = None
 
-            #print(f"window_buffer_v2: {window_buffer_v2}")
-            #print(f"current window: {current_window}")
             # Retrieve nodes from the graph to get context for the LLM
             #context_nodes, context_edges = self.retriever.retrieve_context(current_window)
             print("start retrieving ...")
             context, metrics_context = self.retriever.retrieve_context(current_window)
 
-            #print(f"Retrieved {len(context_nodes)} nodes")
-            #print(f"context: {context}")
             # Enrich the graph with the LLM
             try:
                 inferred_edges, llm_duration, generated_edges, correct_edges = self.llm.call_llm(context)

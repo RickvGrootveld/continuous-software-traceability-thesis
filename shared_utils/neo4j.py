@@ -5,11 +5,7 @@ from neo4j import GraphDatabase
 NEO4J_URI = "bolt://neo4j:7687"
 NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = "password"
-
-WINDOW_SECONDS = 10
 K_HOPS = 1
-MAX_VECTOR_RESULTS = 20
-MAX_CONTEXT_NODES = 200
 
 
 class Neo4jClient:
@@ -264,10 +260,7 @@ class Neo4jClient:
                 edges.append({
                     "source id": source_id,
                     "target id": edge_entry["target_id"],
-                    "source type": source_labels,
-                    "target type": target_labels,
                     "label": rel.type,
-                    "properties": dict(rel)
                     })
                 
         return nodes, edges, total_nodes, total_edges, total_db_hits, db_retrieval_time_ms 
@@ -278,35 +271,59 @@ class Neo4jClient:
           - Edges with system='dataset' → 2 hops
           - Edges with system='LLM'     → 1 hop
         This function returns the nodes that have incoming and outgoing edges from the giving list of nodes, using -(m) instead of ->(m).
-        Both result sets are merged and deduplicated. This function filters out ghost nodes that do not have the properties such as embedding
+        Both result sets are merged and deduplicated. This function filters out ghost nodes that do not have the properties such as embedding.
+        It also excludes the code files from including as neighbours, since code files have many neighbours.
         """
-
+        top_p = len(node_ids)
         # 2-hop traversal restricted to dataset edges only
-        dataset_query = f"""
+        dataset_query = dataset_query = f"""
         MATCH (n)
-        WHERE n.id IN $node_ids AND n.embedding IS NOT NULL
+        WHERE n.id IN $node_ids 
+          AND n.embedding IS NOT NULL
+          AND NOT 'Code' IN labels(n)
 
+        // 1. Find all valid paths up to depth k
         MATCH p=(n)-[r*1..{k}]-(m)
         WHERE ALL(rel IN relationships(p) WHERE rel.system = 'dataset')
           AND ALL(node IN nodes(p) WHERE node.embedding IS NOT NULL)
+          AND NONE(node IN tail(nodes(p)) WHERE 'Release' IN labels(node))
 
-        RETURN DISTINCT
-            nodes(p)         AS nodes,
-            relationships(p) AS rels
+        // 2. Group by the starting node and slice the first 25 paths found
+        WITH n, collect(p)[..$limit] AS truncated_paths
+
+        // 3. Unwind the restricted path set and return
+        UNWIND truncated_paths AS path
+        RETURN 
+            nodes(path)         AS nodes,
+            relationships(path) AS rels
         """
 
         # 1-hop traversal restricted to LLM edges only
         llm_query = """
         MATCH (n)
-        WHERE n.id IN $node_ids AND n.embedding IS NOT NULL
+        WHERE n.id IN $node_ids 
+          AND n.embedding IS NOT NULL
+          AND NOT 'Code' IN labels(n)
 
-        MATCH p=(n)-[r*1..1]-(m)
-        WHERE ALL(rel IN relationships(p) WHERE rel.system = 'LLM')
-          AND ALL(node IN nodes(p) WHERE node.embedding IS NOT NULL)
+        // 1. Match the direct neighbors
+        MATCH (n)-[r]-(m)
+        WHERE r.system = 'LLM'
+          AND m.embedding IS NOT NULL
+          AND NOT 'Code' IN labels(m)
+          AND NOT 'Release' IN labels(m)
 
-        RETURN DISTINCT
-            nodes(p)         AS nodes,
-            relationships(p) AS rels
+        // 2. Sort neighbors if you want specific ones (e.g., newest first)
+        WITH n, r, m
+        ORDER BY m.timestamp DESC
+
+        // 3. Group by 'n' and slice the top 25 connections
+        WITH n, collect({rel: r, neighbor: m})[..$limit] AS truncated_neighborhood
+
+        // 4. Unwind back to rows and format to match your expected 'nodes' and 'rels' output
+        UNWIND truncated_neighborhood AS edge
+        RETURN 
+            [n, edge.neighbor] AS nodes,
+            [edge.rel] AS rels
         """
 
         all_nodes = []
@@ -339,20 +356,17 @@ class Neo4jClient:
                         all_edges.append({
                             "source id":     src,
                             "target id":     tgt,
-                            "source type": ", ".join(start_node.labels),
-                            "target type": ", ".join(end_node.labels),
                             "label":      label,
-                            "properties": dict(rel),
                         })
 
-        results_dataset, total_nodes, total_edges, total_db_hits_dataset, db_retrieval_time_ms_dataset = self.get_neo4j_metrics(dataset_query, node_ids=node_ids)
-        results_llm, total_nodes, total_edges, total_db_hits_llm, db_retrieval_time_ms_llm = self.get_neo4j_metrics(llm_query, node_ids=node_ids)
+        results_dataset, total_nodes, total_edges, total_db_hits_dataset, db_retrieval_time_ms_dataset = self.get_neo4j_metrics(dataset_query, node_ids=node_ids, limit=30)
+        results_llm, total_nodes, total_edges, total_db_hits_llm, db_retrieval_time_ms_llm = self.get_neo4j_metrics(llm_query, node_ids=node_ids, limit=20)
         _collect(results_dataset)
         _collect(results_llm)
 
         return all_nodes, all_edges, total_nodes, total_edges, total_db_hits_dataset + total_db_hits_llm, db_retrieval_time_ms_dataset + db_retrieval_time_ms_llm
 
-    def query_similar_nodes(self, embedding, top_k=50):
+    def query_similar_nodes(self, embedding, top_k=25):
         """
         returns the similar nodes in the graph of the passed node using vector
         indexing in Neo4j with cosine similarity. The returned list is in descending

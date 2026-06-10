@@ -1,10 +1,9 @@
 from typing import List, Dict
 
 K_HOPS = 1
-MAX_CONTENT_NODES = 70
-MAX_NEIGHBOUR_NODES = 25
-MAX_VECTOR_NODES = 15
-MIN_VECTOR_NODES = 5
+MAX_CONTENT_NODES = 150
+MAX_VECTOR_NODES = 30
+MIN_VECTOR_NODES = 15
 
 
 class ContextRetriever:
@@ -24,7 +23,6 @@ class ContextRetriever:
         4. Up to MAX_VECTOR_NODES vector nodes if budget remains
         """
         seen_node_ids = set()
-    
         # Deduplicate each category and remove embeddings
         deduplicated = {}  # category -> list of unique nodes
     
@@ -41,11 +39,15 @@ class ContextRetriever:
     
                 node_id = node["id"]
                 if node_id not in seen_node_ids:
+                    if "SOLR" in node_id or "LUCENE" in node_id:
+                        summary = node.get("summary") or ""
+                        if len(summary) > 500:
+                            node.update({"summary": summary[:100]})
+
                     seen_node_ids.add(node_id)
                     unique_nodes.append(node)
     
             deduplicated[category] = unique_nodes
-            print(f"After deduplication, category '{category}' has {len(unique_nodes)} unique nodes.")
     
         # Apply budget                                                
         sliding_nodes  = deduplicated.get("sliding_window_events", [])
@@ -69,24 +71,19 @@ class ContextRetriever:
         kept_vector_extra   = vector_nodes[MIN_VECTOR_NODES:MIN_VECTOR_NODES + max(0, extra_vector_budget)]
         kept_vector         = kept_vector_min + kept_vector_extra
     
-        print(f"Node budget — sliding: {len(kept_sliding)}, "
-              f"k_hop: {len(kept_khop)}, "
-              f"vector: {len(kept_vector)} "
-              f"(total: {len(kept_sliding) + len(kept_khop) + len(kept_vector)} / {MAX_CONTENT_NODES})")
-    
-        # Build kept ID sets per category for edge filtering
+        # Build kept ID sets of all categories for edge filtering
         kept_ids = (
             {n["id"] for n in kept_sliding} |
             {n["id"] for n in kept_khop} |
-            {n["id"] for n in kept_vector},
+            {n["id"] for n in kept_vector}
         )
     
         # Write back nodes and filter edges
         final_data = {}
         category_nodes = {
             "sliding_window_events":       kept_sliding,
-            "k_hop_neighbourhood":         kept_khop,
             "vector_similarity_retrieval": kept_vector,
+            "k_hop_neighbourhood":         kept_khop,
         }
     
         for category, content in data.items():
@@ -98,16 +95,15 @@ class ContextRetriever:
             for edge in content.get("edges", []):
                 if edge["source id"] in kept_ids and edge["target id"] in kept_ids:
                     filtered_edges.append(edge)
-    
-            #removed_edges = len(content.get("edges", [])) - len(filtered_edges)
-            #if removed_edges:
-            #    print(f"Removed {removed_edges} edges from '{category}' referencing dropped nodes.")
-    
+
+            if category == "k_hop_neighbourhood":
+                print(f"len edges k_hop {len(filtered_edges)}")
+                filtered_edges = filtered_edges[:100]
             final_data[category] = {
                 "nodes": kept_nodes,
                 "edges": filtered_edges,
             }
-    
+
         return final_data
 
     def retrieve_context(self, current_window: dict) -> dict:
@@ -129,8 +125,8 @@ class ContextRetriever:
         # Merge
         merged = {
             "sliding_window_events": {},
-            "k_hop_neighbourhood": {},
-            "vector_similarity_retrieval": {}
+            "vector_similarity_retrieval": {},
+            "k_hop_neighbourhood": {}
         }
 
         merged["sliding_window_events"] = {
@@ -149,12 +145,6 @@ class ContextRetriever:
         # remove duplicates
         merged = self.deduplicate_graph_nodes(merged)
 
-        # Shorten the context to make it fit in the LLM's context window
-        #max_neighbour_nodes = max(MAX_NEIGHBOUR_NODES, MAX_CONTENT_NODES - len(merged["sliding_window_events"]["nodes"]) - MIN_VECTOR_NODES)
-        #merged["k_hop_neighbourhood"]["nodes"] = merged["k_hop_neighbourhood"]["nodes"][:max_neighbour_nodes]
-
-        #max_vector_nodes = max(MAX_VECTOR_NODES, MAX_CONTENT_NODES - len(merged["sliding_window_events"]["nodes"]) - len(merged["k_hop_neighbourhood"]["nodes"]))
-        #merged["vector_similarity_retrieval"]["nodes"] = merged["vector_similarity_retrieval"]["nodes"][:max_vector_nodes]
         metrics_data = {
             "total_nodes_neighbour": total_nodes_neighbour,
             "total_edges_neighbour": total_edges_neighbour,

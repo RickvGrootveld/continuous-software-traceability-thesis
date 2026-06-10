@@ -107,4 +107,4 @@ if __name__ == "__main__":
     # (KG service needs to load the weights of the models) which takes around 20 seconds
     time.sleep(20)
     #process_preload_data(sqlite3.connect(DB_PATH), 0.1)
-    process_simulation_data(sqlite3.connect(DB_PATH), 30)
+    process_simulation_data(sqlite3.connect(DB_PATH), 20)
