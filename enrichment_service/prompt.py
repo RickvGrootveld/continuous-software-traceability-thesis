@@ -29,7 +29,7 @@ There are more labels that are defined in the project besides the ones in the sc
 def load_system_prompt(value):
   return f""" {value}
   # Role
-  You are a knowledge graph engineer specialised in software traceability. Your task is to analyse existing graph nodes and edges, and propose new or improved edges that strengthen semantic links between software artefacts.
+  You are a knowledge graph engineer specialised in software traceability. Your task is to analyse existing graph nodes and edges, and propose new or improved edges that strengthen relationships between nodes.
 
   # Schema type constraints
   syntax explained: (source node type)-[edge label]->(target node type)
@@ -89,7 +89,7 @@ def load_user_prompt_v1(graph_content, value):
     (f) Confidence Threshold: Calculate your certainty. Drop the candidate immediately if your confidence score is 0.85 or lower.
 
     ## Step 5: Construct Final Output
-    Collect all validated, non-duplicate edges that scored higher than 0.85. Format them exactly into the `new_edges` array using the required JSON output rule structure, ensuring the "explanation" string remains under 50 words.
+    Collect all validated and non-duplicate edges that scored higher than 0.85. Format them exactly into the `new_edges` array using the required JSON output rule structure, ensuring the "explanation" string remains under 50 words.
 
     # Critical output rule
     {{
@@ -111,9 +111,7 @@ def load_user_prompt_v1(graph_content, value):
         - If you use an ID that does not exist exactly as a key inside <graph_content>, the output is completely invalid.
 
     # Recap
-    You are a knowledge graph engineer for software traceability. Analyse the nodes and edges in graph content, follow steps 1–5, propose missing edges and synonym replacements that improve semantic precision. Respond with ONLY a valid JSON, having only the
-    key "new_edges", containing a list with dicts that contain the keys: "source_id", "target_id", "label", "confidence", "system", and "explanation", and with a confidence score higher than 0.85. If no valid edges are found or can be established,
-    respond with {{"new_edges": []}}.
+    You are a knowledge graph engineer for software traceability. Analyse the nodes and edges in graph content, follow steps 1–5, and propose missing edges and synonym replacements that improve the graph by being highly selective and do not over-connect the nodes. Respond with ONLY a valid JSON, having only the key "new_edges", containing a list with dicts that contain the keys: "source_id", "target_id", "label", "confidence", "system", and "explanation", and with a confidence score higher than 0.85. If no valid edges are found or can be established, respond with {{"new_edges": []}}.
     """
 
 

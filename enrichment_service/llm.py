@@ -21,7 +21,7 @@ if USE_LOCAL_QWEN:
 #USE_GPT = True
 USE_GPT = False
 
-OPENAI_API_KEY = "<YOUR_API_KEY>"
+OPENAI_API_KEY = "<YOUR_OPENAI_KEY>"
 GPT_MODEL = "gpt-5.1"
 
 if USE_GPT:
@@ -100,7 +100,7 @@ class GPTClient:
         """
         Calls GPT-5.1 via the OpenAI API.
         """
-
+        print("Starting GPT call...")
         start_time = time.perf_counter()
 
         response = self.client.chat.completions.create(
@@ -114,8 +114,7 @@ class GPTClient:
         total_duration = (time.perf_counter() - start_time) * 1000 #convert to ms, same as neo4j time responses
 
         # Extract raw content using OpenAI's response format
-        raw = response.choices[0].message.content 
-        print(f"response: {raw}")
+        raw = response.choices[0].message.content
 
         # Process JSON data using your extraction function
         result, generated_edges, correct_edges = extract_json(raw)
@@ -127,13 +126,6 @@ class GPTClient:
         for edge in result.get("new_edges", []):
             if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
                 valid_edges.append(edge)
-
-        # OpenAI equivalent token and finish reason logging
-        print(f"prompt tokens: {response.usage.prompt_tokens}")
-        print(f"eval count (output tokens): {response.usage.completion_tokens}")
-        print(f"stop reason: {response.choices[0].finish_reason}")
-        print(f"Valid edges extracted: {len(valid_edges)}")
-        print(f"Valid edges extracted v2: {correct_edges}")
 
         return (result, total_duration, generated_edges, correct_edges)
 
@@ -165,9 +157,9 @@ class QwenClient:
             format="json",
             keep_alive=0,
             options={
-                "temperature": 0.2,
+                "temperature": 0.1,
                 "num_ctx": 36864,
-                "num_predict": 1200,
+                "num_predict": 2048,
                 "num_batch": 512,
                 "seed": random.randint(1, 9999999),
                 "num_thread": 6,
@@ -176,7 +168,6 @@ class QwenClient:
         )
 
         total_duration = (time.perf_counter() - start_time) * 1000 #convert to ms, same as neo4j time responses
-        #print(f"Qwen call duration: {response.total_duration} seconds")
 
         prefix = "{\n  \"new_edges\": ["
         raw = prefix + response.message.content 

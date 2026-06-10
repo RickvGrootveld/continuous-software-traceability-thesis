@@ -43,7 +43,7 @@ metrics_window = {
     "db_hits": [],
 }
 
-WINDOW_SECONDS = 140
+WINDOW_SECONDS = 1496
 CSV_FILE = "/app/enrichment_service/log_run_results.csv"
 
 class EnrichmentService:
@@ -56,8 +56,8 @@ class EnrichmentService:
             self.neo4j,
         )
         print("starting LLM client...")
-        self.llm = GPTClient()
-        #self.llm = QwenClient()
+        #self.llm = GPTClient()
+        self.llm = QwenClient()
 
     def add_to_window(self, nodes, edges):
         global window_start_time
@@ -179,7 +179,7 @@ class EnrichmentService:
             self.log_experiment_run(metrics)
 
             # let the LLM rest for a little to prevent CPU overload
-            time.sleep(30)
+            time.sleep(45)
 
     def run(self):
         print("Starting LLM Enrichment Service")

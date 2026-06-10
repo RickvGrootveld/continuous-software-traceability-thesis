@@ -97,7 +97,6 @@ class ContextRetriever:
                     filtered_edges.append(edge)
 
             if category == "k_hop_neighbourhood":
-                print(f"len edges k_hop {len(filtered_edges)}")
                 filtered_edges = filtered_edges[:100]
             final_data[category] = {
                 "nodes": kept_nodes,
