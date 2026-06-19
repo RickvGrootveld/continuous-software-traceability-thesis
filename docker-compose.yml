@@ -1,5 +1,11 @@
+#x-logging: &default-logging
+#  driver: "none"
+
 x-logging: &default-logging
-  driver: "none"
+  driver: "json-file"
+  options:
+    max-size: "10m"     # A file will never exceed 10 Megabytes
+    max-file: "3"       # It will only keep 3 old files maximum (30MB total)
 
 services:
   
@@ -75,8 +81,8 @@ services:
     environment:
       - OLLAMA_NUM_PARALLEL=1
       - OLLAMA_MAX_LOADED_MODELS=1
-      - LLAMA_ARG_N_BUFFER=4096
-      - OLLAMA_FLASH_ATTENTION=1
+      #- LLAMA_ARG_N_BUFFER=4096
+      #- OLLAMA_FLASH_ATTENTION=1
     healthcheck:
       test: ["CMD-SHELL", "ollama list > /dev/null 2>&1 || exit 1"]
       interval: 15s
@@ -89,7 +95,7 @@ services:
       context: .
       dockerfile: event_engine_service/Dockerfile
     container_name: event_engine_service
-    #logging: *default-logging
+    logging: *default-logging
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
@@ -139,6 +145,7 @@ services:
     volumes:
       - ./enrichment_service:/app/enrichment_service
       - ./shared_utils:/app/shared_utils
+      - C:\Users\rickv\OneDrive\Documenten\Universiteit\Master\Jaar2\Thesis\fase 2\continuous-software-traceability-thesis\logs:/app/logs
 
 volumes: 
   ollama_data:

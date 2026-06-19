@@ -400,6 +400,7 @@ class Neo4jClient:
         SEARCH node IN (
           VECTOR INDEX node_embeddings 
           FOR $embedding 
+          LIMIT $top_k
         ) SCORE AS score
         WHERE score >= 0.88
         RETURN node
@@ -407,7 +408,7 @@ class Neo4jClient:
         """
 
         nodes = []
-
+        top_k = 1000
         results, total_nodes, total_edges, total_db_hits, db_retrieval_time_ms = self.get_neo4j_metrics(query, embedding=embedding, top_k=top_k)
 
         for record in results:

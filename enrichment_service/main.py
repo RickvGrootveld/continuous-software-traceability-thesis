@@ -35,7 +35,8 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("/app/logs/enrichment.log"),
+        #logging.FileHandler("/app/logs/enrichment.log"),
+        logging.FileHandler("/app/logs/enrichment.log", encoding='utf-8')
         # logging.StreamHandler() # Uncomment this if you ever want standard prints back
     ]
 )

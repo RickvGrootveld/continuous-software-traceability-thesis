@@ -10,3 +10,10 @@ Use the following command to run the program in Docker:
 
 docker-compose up --build -d
 ```
+
+Add the file .wslconfig to your path: "C:\Users\/<user>\.wslconfig"
+With the content: 
+[wsl2]
+memory=12GB
+cores=6
+localhostForwarding=true

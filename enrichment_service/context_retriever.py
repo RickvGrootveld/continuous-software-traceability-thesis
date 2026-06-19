@@ -145,8 +145,8 @@ class ContextRetriever:
         # remove duplicates
         merged = self.deduplicate_graph_nodes(merged)
 
-        logging.info(f"window nodes: {current_window["nodes"]}")
-        logging.info(f"window edges: {current_window["edges"]}")
+        logging.info(f"window nodes: {current_window['nodes']}")
+        logging.info(f"window edges: {current_window['edges']}")
         logging.info(f"neighbourhood nodes: {neighbour_nodes}")
         logging.info(f"neighbourhood edges {neighbour_edges}")
         logging.info(f"vector nodes: {len(vector_nodes)}")

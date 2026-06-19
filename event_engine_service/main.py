@@ -69,7 +69,7 @@ def process_simulation_data(conn, interval):
     
     query = """
         SELECT source_table, id, created_date
-        FROM issue_commit_events_simulation
+        FROM issue_commit_scalability_10_100
         ORDER BY created_date ASC
     """
 
@@ -106,5 +106,5 @@ if __name__ == "__main__":
     # Wait for the knowledge graph to be ready 
     # (KG service needs to load the weights of the models) which takes around 20 seconds
     time.sleep(20)
-    process_preload_data(sqlite3.connect(DB_PATH), 0.4)
-    #process_simulation_data(sqlite3.connect(DB_PATH), 213)
+    #process_preload_data(sqlite3.connect(DB_PATH), 0.4)
+    process_simulation_data(sqlite3.connect(DB_PATH), 30)
