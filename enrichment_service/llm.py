@@ -80,7 +80,7 @@ def extract_json(raw: str) -> tuple[dict, int, int]:
 
 def messages_object(graph_content):
 
-    user_prompt = load_user_prompt_v1(json.dumps(graph_content, separators=(',', ':'))[:85000], random.randint(0,999999))
+    user_prompt = load_user_prompt_v1(json.dumps(graph_content, separators=(',', ':')), random.randint(0,999999))
     return [
         {"role": "system",    "content": load_system_prompt(random.randint(0,999999))},
         {"role": "user",      "content": user_prompt},
