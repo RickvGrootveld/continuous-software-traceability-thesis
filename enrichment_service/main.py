@@ -18,11 +18,27 @@ import threading
 from threading import Lock
 import csv
 import os
+import logging
 from datetime import datetime
 
 from context_retriever import ContextRetriever
 from llm import GPTClient, QwenClient
 from shared_utils.neo4j import Neo4jClient
+
+
+# Ensure the logs directory exists inside the container
+os.makedirs("/app/logs", exist_ok=True)
+
+# Configure logging to write to both the file and console if needed,
+# or just the file to completely eliminate container memory usage.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("/app/logs/enrichment.log"),
+        # logging.StreamHandler() # Uncomment this if you ever want standard prints back
+    ]
+)
 
 # ============================================================
 # SLIDING WINDOW
@@ -43,19 +59,19 @@ metrics_window = {
     "db_hits": [],
 }
 
-WINDOW_SECONDS = 1496
+WINDOW_SECONDS = 10 #1496
 CSV_FILE = "/app/enrichment_service/log_run_results.csv"
 
 class EnrichmentService:
 
     def __init__(self):
-        print("Starting neo4j client...")
+        logging.info("Starting neo4j client...")
         self.neo4j = Neo4jClient()
-        print("starting context retriever...")
+        logging.info("starting context retriever...")
         self.retriever = ContextRetriever(
             self.neo4j,
         )
-        print("starting LLM client...")
+        logging.info("starting LLM client...")
         #self.llm = GPTClient()
         self.llm = QwenClient()
 
@@ -70,7 +86,7 @@ class EnrichmentService:
                 
             if (len(window_buffer_v2["nodes"]) > 0 and window_start_time is None):
                 window_start_time = time.time()
-                print(f"Started {WINDOW_SECONDS}s window")
+                #print(f"Started {WINDOW_SECONDS}s window")
 
     def poll_neo4j(self):
         while True:
@@ -78,7 +94,7 @@ class EnrichmentService:
                 recent_nodes, recent_edges, total_nodes, total_edges, total_db_hits, time_window  = self.neo4j.get_recent_nodes()
 
                 if len(recent_nodes) > 0:
-                    print("adding to window")
+                    logging.info("adding to window")
                     metrics_window["time_window"].append(time_window)
                     metrics_window["graph_nodes"].append(total_nodes)
                     metrics_window["graph_edges"].append(total_edges)
@@ -86,7 +102,7 @@ class EnrichmentService:
                     self.add_to_window(recent_nodes, recent_edges)
 
             except Exception as e:
-                print("Neo4j polling error:", e)
+                logging.info("Neo4j polling error:", e)
             time.sleep(1)
     
     def log_experiment_run(self, columns):
@@ -100,7 +116,7 @@ class EnrichmentService:
         while True:
             time.sleep(1)
             #print(f"Current window buffer loop: {window_buffer_v2}")
-            print("looping to check window...")
+            #print("looping to check window...")
             with window_lock:
                 if window_start_time is None:
                     continue
@@ -130,7 +146,7 @@ class EnrichmentService:
 
             # Retrieve nodes from the graph to get context for the LLM
             #context_nodes, context_edges = self.retriever.retrieve_context(current_window)
-            print("start retrieving ...")
+            logging.info("start retrieving ...")
             context, metrics_context = self.retriever.retrieve_context(current_window)
 
             # Enrich the graph with the LLM
@@ -138,15 +154,15 @@ class EnrichmentService:
                 inferred_edges, llm_duration, generated_edges, correct_edges = self.llm.call_llm(context)
 
             except Exception as e:
-                print("LLM error:", e)
+                logging.info("LLM error:", e)
                 continue
             
-            print("LLM enrichment done.")
+            logging.info("LLM enrichment done.")
 
             try:
                 metrics_insertion = self.neo4j.insert_llm_edges(inferred_edges["new_edges"])
             except Exception as e:
-                print("Neo4j insertion error:", e)
+                logging.info("Neo4j insertion error:", e)
 
             metrics = [
                 datetime.now().isoformat(),
@@ -182,7 +198,7 @@ class EnrichmentService:
             time.sleep(45)
 
     def run(self):
-        print("Starting LLM Enrichment Service")
+        logging.info("Starting LLM Enrichment Service")
 
         polling_thread = threading.Thread(
             target=self.poll_neo4j,
@@ -201,7 +217,7 @@ class EnrichmentService:
         
         processing_thread.start()
 
-        print("Service running...")
+        logging.info("Service running...")
 
         polling_thread.join()
         processing_thread.join()

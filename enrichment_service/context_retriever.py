@@ -1,9 +1,10 @@
 from typing import List, Dict
+import logging
 
 K_HOPS = 1
-MAX_CONTENT_NODES = 150
-MAX_VECTOR_NODES = 30
-MIN_VECTOR_NODES = 15
+MAX_CONTENT_NODES = 99999999#150
+MAX_VECTOR_NODES = 99999999#30
+MIN_VECTOR_NODES = 0#15
 
 
 class ContextRetriever:
@@ -96,8 +97,8 @@ class ContextRetriever:
                 if edge["source id"] in kept_ids and edge["target id"] in kept_ids:
                     filtered_edges.append(edge)
 
-            if category == "k_hop_neighbourhood":
-                filtered_edges = filtered_edges[:100]
+            #if category == "k_hop_neighbourhood":
+            #    filtered_edges = filtered_edges[:100]
             final_data[category] = {
                 "nodes": kept_nodes,
                 "edges": filtered_edges,
@@ -143,6 +144,12 @@ class ContextRetriever:
 
         # remove duplicates
         merged = self.deduplicate_graph_nodes(merged)
+
+        logging.info(f"window nodes: {current_window["nodes"]}")
+        logging.info(f"window edges: {current_window["edges"]}")
+        logging.info(f"neighbourhood nodes: {neighbour_nodes}")
+        logging.info(f"neighbourhood edges {neighbour_edges}")
+        logging.info(f"vector nodes: {len(vector_nodes)}")
 
         metrics_data = {
             "total_nodes_neighbour": total_nodes_neighbour,

@@ -1,0 +1,53 @@
+simulation scope: 367 issue records, 120 change_set records
+
+=== issue ===
+source rows in scope: 367
+missing_nodes: 0
+property_mismatches: 0
+missing_assignee_edges: 2
+  SOLR-9197
+  SOLR-6234
+
+=== change_set ===
+source rows in scope: 120
+missing_nodes: 0
+property_mismatches: 0
+missing_author_edges: 0
+
+=== code_change ===
+source rows in scope: 2178
+missing_nodes: 0
+missing_edges: 0
+Received notification from DBMS server: <GqlStatusObject gql_status='01N51', status_description='warn: relationship type does not exist. The relationship type `None` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=1, column=31, offset=30>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 30, 'line': 1, 'column': 31}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: 'MATCH (s:Issue {id: $sid})-[r:`None`]->(t:Issue {id: $tid})\n                RETURN r'
+Received notification from DBMS server: <GqlStatusObject gql_status='01N51', status_description='warn: relationship type does not exist. The relationship type `None` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=1, column=31, offset=30>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 30, 'line': 1, 'column': 31}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: 'MATCH (s:Issue {id: $sid})-[r:`None`]->(t:Issue {id: $tid})\n                RETURN r'
+Received notification from DBMS server: <GqlStatusObject gql_status='01N51', status_description='warn: relationship type does not exist. The relationship type `None` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=1, column=31, offset=30>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 30, 'line': 1, 'column': 31}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: 'MATCH (s:Issue {id: $sid})-[r:`None`]->(t:Issue {id: $tid})\n                RETURN r'
+Received notification from DBMS server: <GqlStatusObject gql_status='01N51', status_description='warn: relationship type does not exist. The relationship type `None` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=1, column=31, offset=30>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 30, 'line': 1, 'column': 31}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: 'MATCH (s:Issue {id: $sid})-[r:`None`]->(t:Issue {id: $tid})\n                RETURN r'
+Received notification from DBMS server: <GqlStatusObject gql_status='01N51', status_description='warn: relationship type does not exist. The relationship type `None` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=1, column=31, offset=30>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 30, 'line': 1, 'column': 31}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: 'MATCH (s:Issue {id: $sid})-[r:`None`]->(t:Issue {id: $tid})\n                RETURN r'
+Received notification from DBMS server: <GqlStatusObject gql_status='01N51', status_description='warn: relationship type does not exist. The relationship type `None` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=1, column=31, offset=30>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 30, 'line': 1, 'column': 31}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: 'MATCH (s:Issue {id: $sid})-[r:`None`]->(t:Issue {id: $tid})\n                RETURN r'
+Received notification from DBMS server: <GqlStatusObject gql_status='01N51', status_description='warn: relationship type does not exist. The relationship type `None` does not exist in database `neo4j`. Verify that the spelling is correct.', position=<SummaryInputPosition line=1, column=31, offset=30>, raw_classification='UNRECOGNIZED', classification=<NotificationClassification.UNRECOGNIZED: 'UNRECOGNIZED'>, raw_severity='WARNING', severity=<NotificationSeverity.WARNING: 'WARNING'>, diagnostic_record={'_classification': 'UNRECOGNIZED', '_severity': 'WARNING', '_position': {'offset': 30, 'line': 1, 'column': 31}, 'OPERATION': '', 'OPERATION_CODE': '0', 'CURRENT_SCHEMA': '/'}> for query: 'MATCH (s:Issue {id: $sid})-[r:`None`]->(t:Issue {id: $tid})\n                RETURN r'
+
+=== issue_link ===
+source rows in scope: 110
+missing_edges: 27
+  (showing first 10)
+  ('LUCENE-7315', 'LUCENE-2605', 'relates to')
+  ('LUCENE-7320', 'LUCENE-7746', 'relates to')
+  ('LUCENE-7323', 'SOLR-9596', 'breaks')
+  ('SOLR-9217', 'SOLR-10986', 'breaks')
+  ('SOLR-9209', 'SOLR-9256', 'incorporates')
+  ('SOLR-9200', 'SOLR-9324', 'relates to')
+  ('SOLR-9207', 'SOLR-11475', 'relates to')
+  ('SOLR-6234', 'LUCENE-5868', 'relates to')
+  ('SOLR-6234', 'SOLR-8395', 'relates to')
+  ('SOLR-6234', 'SOLR-6357', 'depends upon')
+
+=== issue_fix_version ===
+source rows in scope: 695
+missing_nodes: 0
+missing_edges: 1
+  ('SOLR-6234', '5.3')
+
+=== change_set_link ===
+source rows in scope: 93
+missing_edges: 1
+  ('fce10ae1097fa7f764516f2b343365e86afc273d', 'SOLR-2199')

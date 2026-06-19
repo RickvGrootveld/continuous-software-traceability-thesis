@@ -3,6 +3,7 @@ import re
 import json
 import os
 import random
+import logging
 
 from prompt import SYSTEM_PROMPT, load_system_prompt, load_user_prompt_v1 #, load_user_prompt
 
@@ -89,18 +90,18 @@ def messages_object(graph_content):
 class GPTClient:
 
     def __init__(self):
-        print("Loading GPT...")
+        logging.info("Loading GPT...")
         self.client = OpenAI(
             api_key=OPENAI_API_KEY,
             base_url="https://api.openai.com/v1",
         )
-        print("GPT-5.1 initialized")
+        logging.info("GPT-5.1 initialized")
 
     def call_llm(self, graph_content: dict) -> dict:
         """
         Calls GPT-5.1 via the OpenAI API.
         """
-        print("Starting GPT call...")
+        logging.info("Starting GPT call...")
         start_time = time.perf_counter()
 
         response = self.client.chat.completions.create(
@@ -132,22 +133,22 @@ class GPTClient:
 class QwenClient:
 
     def __init__(self):
-        print("Loading Qwen...")
+        logging.info("Loading Qwen...")
         self.client = ollama.Client(host="http://ollama:11434")
         self.ensure_model()
-        print("Qwen initialized")
+        logging.info("Qwen initialized")
 
     def ensure_model(self) -> None:
         available = [m["model"] for m in self.client.list()["models"]]
         if QWEN_MODEL_NAME not in available:
-            print(f"Model '{QWEN_MODEL_NAME}' not found locally. Pulling — this may take a few minutes...")
+            logging.info(f"Model '{QWEN_MODEL_NAME}' not found locally. Pulling — this may take a few minutes...")
             self.client.pull(QWEN_MODEL_NAME)
-            print("Model ready.")
+            logging.info("Model ready.")
         else:
-            print(f"Model '{QWEN_MODEL_NAME}' already available.")
+            logging.info(f"Model '{QWEN_MODEL_NAME}' already available.")
 
     def call_llm(self, graph_content: dict) -> dict:
-        print("starting Qwen call...")
+        logging.info("starting Qwen call...")
 
         start_time = time.perf_counter()
 
@@ -181,5 +182,11 @@ class QwenClient:
         for edge in result.get("new_edges", []):
             if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
                 valid_edges.append(edge)
+
+        logging.info(f"prompt tokens: {response.prompt_eval_count}")
+        logging.info(f"eval count (output tokens): {response.eval_count}")
+        logging.info(f"stop reason: {response.done_reason}")
+        logging.info(f"Valid edges extracted: {valid_edges}")
+        logging.info(f"Valid edges extracted v2: {correct_edges}")
 
         return {"new_edges": valid_edges}, total_duration, generated_edges, correct_edges

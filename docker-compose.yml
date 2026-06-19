@@ -89,7 +89,7 @@ services:
       context: .
       dockerfile: event_engine_service/Dockerfile
     container_name: event_engine_service
-    logging: *default-logging
+    #logging: *default-logging
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app

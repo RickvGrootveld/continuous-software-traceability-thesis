@@ -276,54 +276,76 @@ class Neo4jClient:
         """
         top_p = len(node_ids)
         # 2-hop traversal restricted to dataset edges only
-        dataset_query = dataset_query = f"""
+        #dataset_query = f"""
+        #MATCH (n)
+        #WHERE n.id IN $node_ids 
+        #  AND n.embedding IS NOT NULL
+        #  AND NOT 'Code' IN labels(n)
+#
+        #// 1. Find all valid paths up to depth k
+        #MATCH p=(n)-[r*1..{k}]-(m)
+        #WHERE ALL(rel IN relationships(p) WHERE rel.system = 'dataset')
+        #  AND ALL(node IN nodes(p) WHERE node.embedding IS NOT NULL)
+        #  AND NONE(node IN tail(nodes(p)) WHERE 'Release' IN labels(node))
+#
+        #// 2. Group by the starting node and slice the first 25 paths found
+        #WITH n, collect(p)[..$limit] AS truncated_paths
+#
+        #// 3. Unwind the restricted path set and return
+        #UNWIND truncated_paths AS path
+        #RETURN 
+        #    nodes(path)         AS nodes,
+        #    relationships(path) AS rels
+        #"""
+        dataset_query = """
         MATCH (n)
-        WHERE n.id IN $node_ids 
-          AND n.embedding IS NOT NULL
-          AND NOT 'Code' IN labels(n)
+        WHERE n.id IN $node_ids
 
-        // 1. Find all valid paths up to depth k
-        MATCH p=(n)-[r*1..{k}]-(m)
-        WHERE ALL(rel IN relationships(p) WHERE rel.system = 'dataset')
-          AND ALL(node IN nodes(p) WHERE node.embedding IS NOT NULL)
-          AND NONE(node IN tail(nodes(p)) WHERE 'Release' IN labels(node))
+        MATCH (n)-[r]-(m)
+        WHERE r.system = 'dataset'
 
-        // 2. Group by the starting node and slice the first 25 paths found
-        WITH n, collect(p)[..$limit] AS truncated_paths
-
-        // 3. Unwind the restricted path set and return
-        UNWIND truncated_paths AS path
         RETURN 
-            nodes(path)         AS nodes,
-            relationships(path) AS rels
+            [n, m] AS nodes,
+            [r]   AS rels
         """
 
         # 1-hop traversal restricted to LLM edges only
+        #llm_query = """
+        #MATCH (n)
+        #WHERE n.id IN $node_ids 
+        #  AND n.embedding IS NOT NULL
+        #  AND NOT 'Code' IN labels(n)
+#
+        #// 1. Match the direct neighbors
+        #MATCH (n)-[r]-(m)
+        #WHERE r.system = 'LLM'
+        #  AND m.embedding IS NOT NULL
+        #  AND NOT 'Code' IN labels(m)
+        #  AND NOT 'Release' IN labels(m)
+#
+        #// 2. Sort neighbors if you want specific ones (e.g., newest first)
+        #WITH n, r, m
+        #ORDER BY m.timestamp DESC
+#
+        #// 3. Group by 'n' and slice the top 25 connections
+        #WITH n, collect({rel: r, neighbor: m})[..$limit] AS truncated_neighborhood
+#
+        #// 4. Unwind back to rows and format to match your expected 'nodes' and 'rels' output
+        #UNWIND truncated_neighborhood AS edge
+        #RETURN 
+        #    [n, edge.neighbor] AS nodes,
+        #    [edge.rel] AS rels
+        #"""
         llm_query = """
         MATCH (n)
-        WHERE n.id IN $node_ids 
-          AND n.embedding IS NOT NULL
-          AND NOT 'Code' IN labels(n)
+        WHERE n.id IN $node_ids
 
-        // 1. Match the direct neighbors
         MATCH (n)-[r]-(m)
         WHERE r.system = 'LLM'
-          AND m.embedding IS NOT NULL
-          AND NOT 'Code' IN labels(m)
-          AND NOT 'Release' IN labels(m)
 
-        // 2. Sort neighbors if you want specific ones (e.g., newest first)
-        WITH n, r, m
-        ORDER BY m.timestamp DESC
-
-        // 3. Group by 'n' and slice the top 25 connections
-        WITH n, collect({rel: r, neighbor: m})[..$limit] AS truncated_neighborhood
-
-        // 4. Unwind back to rows and format to match your expected 'nodes' and 'rels' output
-        UNWIND truncated_neighborhood AS edge
         RETURN 
-            [n, edge.neighbor] AS nodes,
-            [edge.rel] AS rels
+            [n, m] AS nodes,
+            [r]   AS rels
         """
 
         all_nodes = []
@@ -378,7 +400,6 @@ class Neo4jClient:
         SEARCH node IN (
           VECTOR INDEX node_embeddings 
           FOR $embedding 
-          LIMIT $top_k
         ) SCORE AS score
         WHERE score >= 0.88
         RETURN node
