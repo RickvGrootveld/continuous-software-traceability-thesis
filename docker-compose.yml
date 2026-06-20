@@ -90,6 +90,17 @@ services:
       retries: 10
       start_period: 20s
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
   event_engine_service:
     build: 
       context: .
@@ -117,12 +128,16 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     env_file:
       - .env
     depends_on:
       kafka:
         condition: service_healthy
       neo4j:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - ./knowledge_graph_service:/app/knowledge_graph_service
@@ -137,10 +152,14 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       neo4j:
         condition: service_healthy
       ollama:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - ./enrichment_service:/app/enrichment_service

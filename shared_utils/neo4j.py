@@ -202,7 +202,7 @@ class Neo4jClient:
         query = """
         // 1. Fetch the recent source nodes
         MATCH (n:TraceabilityNode)
-        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT1S') AND n.embedding IS NOT NULL
+        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL
         WITH n
         ORDER BY n.timestamp DESC
         LIMIT $limit

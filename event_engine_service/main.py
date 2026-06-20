@@ -63,7 +63,6 @@ def process_preload_data(conn, interval):
         send_event(event)
         time.sleep(interval)
 
-# Automatic replay mode
 def process_simulation_data(conn, interval):
     print("Starting streaming replay...")
     
@@ -95,6 +94,23 @@ def process_simulation_data(conn, interval):
 
         time.sleep(interval)
 
+#def process_scalability_data(conn):
+#    print("Starting scalability...")
+#    
+#    timeline = run_10_100[0]
+#
+#    source_table = timeline["source_table"]
+#    entity_id = timeline["id"]
+#    timestamp = datetime.now().isoformat()
+#
+#    if source_table == "issue":
+#        event = process_issue(conn, entity_id, timestamp)
+#
+#    elif source_table == "change_set":
+#        event = process_change_set(conn, entity_id, timestamp)
+#
+#    send_event(event)
+
 # Send event to Kafka
 def send_event(event):
     producer.send(TOPIC, event)
@@ -107,4 +123,5 @@ if __name__ == "__main__":
     # (KG service needs to load the weights of the models) which takes around 20 seconds
     time.sleep(20)
     #process_preload_data(sqlite3.connect(DB_PATH), 0.4)
-    process_simulation_data(sqlite3.connect(DB_PATH), 30)
+    process_simulation_data(sqlite3.connect(DB_PATH), 60)
+    #process_scalability_data(sqlite3.connect(DB_PATH))

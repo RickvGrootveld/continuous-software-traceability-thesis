@@ -145,11 +145,11 @@ class ContextRetriever:
         # remove duplicates
         merged = self.deduplicate_graph_nodes(merged)
 
-        logging.info(f"window nodes: {current_window['nodes']}")
-        logging.info(f"window edges: {current_window['edges']}")
-        logging.info(f"neighbourhood nodes: {neighbour_nodes}")
-        logging.info(f"neighbourhood edges {neighbour_edges}")
-        logging.info(f"vector nodes: {len(vector_nodes)}")
+        logging.info(f"window nodes: {len(merged['sliding_window_events']['nodes'])}")
+        logging.info(f"window edges: {len(merged['sliding_window_events']['edges'])}")
+        logging.info(f"vector nodes: {len(merged['vector_similarity_retrieval']['nodes'])}")
+        logging.info(f"neighbourhood nodes: {len(merged['k_hop_neighbourhood']['nodes'])}")
+        logging.info(f"neighbourhood edges {len(merged['k_hop_neighbourhood']['edges'])}")
 
         metrics_data = {
             "total_nodes_neighbour": total_nodes_neighbour,

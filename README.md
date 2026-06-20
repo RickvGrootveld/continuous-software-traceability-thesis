@@ -17,3 +17,10 @@ With the content:
 memory=12GB
 cores=6
 localhostForwarding=true
+
+
+For scalaibility runs:
+[wsl2]
+memory=12GB
+processors=8
+localhostForwarding=true

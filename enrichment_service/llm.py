@@ -161,7 +161,7 @@ class QwenClient:
             options={
                 "temperature": 0.1,
                 "num_ctx": 128000,#36864,
-                "num_predict": 2048,
+                "num_predict": 4096,#2048,
                 #"num_batch": 512,
                 #"seed": random.randint(1, 9999999),
                 #"num_thread": 6,
@@ -175,6 +175,8 @@ class QwenClient:
         raw = prefix + response.message.content 
         # Content will only contain what the LLM has generated after the prefix. So, concatenate them
 
+        logging.info(f"raw response: {response.message.content}")
+
         result, generated_edges, correct_edges = extract_json(raw)
         
         # Validate and filter edge objects
@@ -184,10 +186,11 @@ class QwenClient:
             if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
                 valid_edges.append(edge)
 
+        logging.info(f"response generation time: {response.total_duration}")
         logging.info(f"prompt tokens: {response.prompt_eval_count}")
         logging.info(f"eval count (output tokens): {response.eval_count}")
         logging.info(f"stop reason: {response.done_reason}")
         logging.info(f"Valid edges extracted: {valid_edges}")
-        logging.info(f"Valid edges extracted v2: {correct_edges}")
+        logging.info(f"Valid edges extracted length: {correct_edges}")
 
         return {"new_edges": valid_edges}, total_duration, generated_edges, correct_edges
