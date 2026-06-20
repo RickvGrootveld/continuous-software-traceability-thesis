@@ -15,7 +15,7 @@ CSV_FILE = "/app/knowledge_graph_service/log_db_results.csv"
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
 READY_CHANNEL = "enrichment_ready"
-GATE_TIMEOUT_SECONDS = 120  # safety valve, see note below
+GATE_TIMEOUT_SECONDS = 3600  # safety valve, after 60 minutes
 
 consumer = KafkaConsumer(
     TOPIC,
