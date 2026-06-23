@@ -48,16 +48,9 @@ class EnrichmentGate:
             if message["type"] == "message":
                 self.ready_event.set()
 
-    def wait_for_ready(self, timeout=GATE_TIMEOUT_SECONDS):
-        got_signal = self.ready_event.wait(timeout=timeout)
+    def wait_for_ready(self):
+        self.ready_event.wait()
         self.ready_event.clear()
-        if not got_signal:
-            print(
-                f"WARNING: no enrichment 'ready' signal after {timeout}s — "
-                "proceeding anyway to avoid a permanent deadlock. Check the "
-                "enrichment service logs."
-            )
-        return got_signal
 
 
 def assemble_edge(raw: dict) -> dict:

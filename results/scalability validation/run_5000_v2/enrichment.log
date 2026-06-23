@@ -1,0 +1,419 @@
+2026-06-22 09:34:16,961 [INFO] Starting neo4j client...
+2026-06-22 09:34:17,172 [INFO] Received notification from DBMS server: {severity: INFORMATION} {code: Neo.ClientNotification.Schema.IndexOrConstraintAlreadyExists} {category: SCHEMA} {title: `CREATE VECTOR INDEX node_embeddings IF NOT EXISTS FOR (e:TraceabilityNode) ON (e.embedding) OPTIONS {indexConfig: {`vector.dimensions`: 384, `vector.similarity_function`: "cosine"}}` has no effect.} {description: `VECTOR INDEX node_embeddings FOR (e:TraceabilityNode) ON (e.embedding)` already exists.} {position: None} for query: "\n        CREATE VECTOR INDEX node_embeddings IF NOT EXISTS\n        FOR (n:TraceabilityNode)\n        ON n.embedding\n        OPTIONS {\n            indexConfig: {\n                `vector.dimensions`: 384,\n                `vector.similarity_function`: 'cosine'\n            }\n        }\n        "
+2026-06-22 09:34:17,173 [INFO] starting context retriever...
+2026-06-22 09:34:17,174 [INFO] starting LLM client...
+2026-06-22 09:34:17,175 [INFO] Loading Qwen...
+2026-06-22 09:34:17,185 [INFO] HTTP Request: GET http://ollama:11434/api/tags "HTTP/1.1 200 OK"
+2026-06-22 09:34:17,187 [INFO] Model 'qwen3.5:4b' already available.
+2026-06-22 09:34:17,188 [INFO] Qwen initialized
+2026-06-22 09:34:17,189 [INFO] Connecting to Redis at redis:6379...
+2026-06-22 09:34:17,195 [INFO] Starting LLM Enrichment Service
+2026-06-22 09:34:17,197 [INFO] Service running...
+2026-06-22 09:34:55,287 [INFO] adding to window
+2026-06-22 09:34:56,351 [INFO] adding to window
+2026-06-22 09:35:11,205 [INFO] start retrieving ...
+2026-06-22 09:35:12,236 [INFO] window nodes: 6
+2026-06-22 09:35:12,237 [INFO] window edges: 5
+2026-06-22 09:35:12,238 [INFO] vector nodes: 255
+2026-06-22 09:35:12,239 [INFO] neighbourhood nodes: 388
+2026-06-22 09:35:12,239 [INFO] neighbourhood edges 515
+2026-06-22 09:35:12,240 [INFO] starting Qwen call...
+2026-06-22 14:27:08,237 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 14:27:08,316 [INFO] raw response: 
+    {
+      "source_id": "c13c9548d1fd64b6736eb9b8f891ada785d2066e",
+      "target_id": "SOLR-23",
+      "label": "RESOLVES",
+      "confidence": 0.98,
+      "system": "LLM",
+      "explanation": "Commit message 'store termvectors: SOLR-23' explicitly references issue ID; commit modifies schema fields involved in the feature."
+    },
+    {
+      "source_id": "c1460bf233e1ae09826d82b5e6bda5fb424d0a1a",
+      "target_id": "SOLR-23",
+      "label": "RESOLVES",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "Commit message 'positionIncrementGap schema support' relates to term vector storage logic addressed in SOLR-23."
+    },
+    {
+      "source_id": "c1460bf233e1ae09826d82b5e6bda5fb424d0a1a",
+      "target_id": "src/java/org/apache/solr/schema/FieldType.java",
+      "label": "MODIFIES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "Commit adds positionIncrementGap support to FieldType; this field is central to the term vector feature in SOLR-23."
+    },
+    {
+      "source_id": "c1460bf233e1ae09826d82b5e6bda5fb424d0a1a",
+      "target_id": "src/test/org/apache/solr/BasicFunctionalityTest.java",
+      "label": "TESTS",
+      "confidence": 0.87,
+      "system": "LLM",
+      "explanation": "Commit modifies test file to verify schema field behavior; this feature is tested as part of the SOLR-23 implementation."
+    },
+    {
+      "source_id": "c1460bf233e1ae09826d82b5e6bda5fb424d0a1a",
+      "target_id": "src/test/test-files/solr/conf/schema.xml",
+      "label": "CONFIGURES",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "Commit updates schema configuration to include positionIncrementGap; this config is used by FieldType for term vectors."
+    },
+    {
+      "source_id": "c1460bf233e1ae09826d82b5e6bda5fb424d0a1a",
+      "target_id": "CHANGES.txt",
+      "label": "DOCUMENTS_IN",
+      "confidence": 0.88,
+      "system": "LLM",
+      "explanation": "Commit updates CHANGES.txt to reflect the new schema support feature."
+    }
+2026-06-22 14:27:08,333 [INFO] response generation time: 17517058232373
+2026-06-22 14:27:08,335 [INFO] prompt tokens: 125876
+2026-06-22 14:27:08,336 [INFO] eval count (output tokens): 755
+2026-06-22 14:27:08,337 [INFO] stop reason: stop
+2026-06-22 14:27:08,338 [INFO] Valid edges extracted: [{'source_id': 'c13c9548d1fd64b6736eb9b8f891ada785d2066e', 'target_id': 'SOLR-23', 'label': 'RESOLVES', 'confidence': 0.98, 'system': 'LLM', 'explanation': "Commit message 'store termvectors: SOLR-23' explicitly references issue ID; commit modifies schema fields involved in the feature."}, {'source_id': 'c1460bf233e1ae09826d82b5e6bda5fb424d0a1a', 'target_id': 'SOLR-23', 'label': 'RESOLVES', 'confidence': 0.92, 'system': 'LLM', 'explanation': "Commit message 'positionIncrementGap schema support' relates to term vector storage logic addressed in SOLR-23."}, {'source_id': 'c1460bf233e1ae09826d82b5e6bda5fb424d0a1a', 'target_id': 'src/java/org/apache/solr/schema/FieldType.java', 'label': 'MODIFIES', 'confidence': 0.95, 'system': 'LLM', 'explanation': 'Commit adds positionIncrementGap support to FieldType; this field is central to the term vector feature in SOLR-23.'}, {'source_id': 'c1460bf233e1ae09826d82b5e6bda5fb424d0a1a', 'target_id': 'src/test/org/apache/solr/BasicFunctionalityTest.java', 'label': 'TESTS', 'confidence': 0.87, 'system': 'LLM', 'explanation': 'Commit modifies test file to verify schema field behavior; this feature is tested as part of the SOLR-23 implementation.'}, {'source_id': 'c1460bf233e1ae09826d82b5e6bda5fb424d0a1a', 'target_id': 'src/test/test-files/solr/conf/schema.xml', 'label': 'CONFIGURES', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'Commit updates schema configuration to include positionIncrementGap; this config is used by FieldType for term vectors.'}, {'source_id': 'c1460bf233e1ae09826d82b5e6bda5fb424d0a1a', 'target_id': 'CHANGES.txt', 'label': 'DOCUMENTS_IN', 'confidence': 0.88, 'system': 'LLM', 'explanation': 'Commit updates CHANGES.txt to reflect the new schema support feature.'}]
+2026-06-22 14:27:08,339 [INFO] Valid edges extracted length: 6
+2026-06-22 14:27:08,341 [INFO] LLM enrichment done.
+2026-06-22 14:27:10,427 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 14:27:18,769 [INFO] adding to window
+2026-06-22 14:27:19,801 [INFO] adding to window
+2026-06-22 14:27:34,433 [INFO] start retrieving ...
+2026-06-22 14:27:35,411 [INFO] window nodes: 6
+2026-06-22 14:27:35,413 [INFO] window edges: 10
+2026-06-22 14:27:35,415 [INFO] vector nodes: 255
+2026-06-22 14:27:35,416 [INFO] neighbourhood nodes: 388
+2026-06-22 14:27:35,418 [INFO] neighbourhood edges 520
+2026-06-22 14:27:35,423 [INFO] starting Qwen call...
+2026-06-22 14:28:23,015 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 500 Internal Server Error"
+2026-06-22 14:28:23,975 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 14:28:28,936 [INFO] adding to window
+2026-06-22 14:28:30,010 [INFO] adding to window
+2026-06-22 14:28:44,001 [INFO] start retrieving ...
+2026-06-22 14:28:45,622 [INFO] window nodes: 3
+2026-06-22 14:28:45,624 [INFO] window edges: 2
+2026-06-22 14:28:45,626 [INFO] vector nodes: 221
+2026-06-22 14:28:45,630 [INFO] neighbourhood nodes: 157
+2026-06-22 14:28:45,633 [INFO] neighbourhood edges 239
+2026-06-22 14:28:45,640 [INFO] starting Qwen call...
+2026-06-22 16:24:44,903 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:24:44,937 [INFO] raw response: 
+    {
+      "source_id": "148b4dbc923c915e8c15ac9c1ffab5c53312850c",
+      "target_id": "src/java/org/apache/solr/request/XMLWriter.java",
+      "label": "ADD",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "The commit message 'initial version' combined with the existing MODIFY edge and file path structure implies this initial addition of XMLWriter."
+    },
+    {
+      "source_id": "c13c9548d1fd64b6736eb9b8f891ada785d2066e",
+      "target_id": "src/java/org/apache/solr/request/XMLWriter.java",
+      "label": "MODIFY",
+      "confidence": 0.88,
+      "system": "LLM",
+      "explanation": "The commit message 'store termvectors: SOLR-23' and the presence of XML-related code in Solr suggests this commit modified or utilized XMLWriter for data handling."
+    },
+    {
+      "source_id": "LUCENE-586",
+      "target_id": "src/java/org/apache/solr/search/DocSet.java",
+      "label": "SOLVES",
+      "confidence": 0.91,
+      "system": "LLM",
+      "explanation": "The commit 'Very inefficient implementation of MultiTermDocs.skipTo' directly addresses the issue LUCENE-586 by optimizing DocSet operations."
+    },
+    {
+      "source_id": "LUCENE-439",
+      "target_id": "src/java/org/apache/solr/analysis/SynonymFilter.java",
+      "label": "SOLVES",
+      "confidence": 0.87,
+      "system": "LLM",
+      "explanation": "The commit 'add hashCode and equals to filters LUCENE-439' implies the implementation of these methods for filter classes like SynonymFilter."
+    },
+    {
+      "source_id": "LUCENE-516",
+      "target_id": "src/test/org/apache/solr/TestFSDirectory.java",
+      "label": "SOLVES",
+      "confidence": 0.89,
+      "system": "LLM",
+      "explanation": "The commit 'TestFSDirectory fails on Windows' (LUCENE-516) likely contains the fix for this specific test failure."
+    }
+2026-06-22 16:24:44,941 [INFO] response generation time: 6959559097602
+2026-06-22 16:24:44,943 [INFO] prompt tokens: 70192
+2026-06-22 16:24:44,944 [INFO] eval count (output tokens): 602
+2026-06-22 16:24:44,945 [INFO] stop reason: stop
+2026-06-22 16:24:44,946 [INFO] Valid edges extracted: [{'source_id': '148b4dbc923c915e8c15ac9c1ffab5c53312850c', 'target_id': 'src/java/org/apache/solr/request/XMLWriter.java', 'label': 'ADD', 'confidence': 0.92, 'system': 'LLM', 'explanation': "The commit message 'initial version' combined with the existing MODIFY edge and file path structure implies this initial addition of XMLWriter."}, {'source_id': 'c13c9548d1fd64b6736eb9b8f891ada785d2066e', 'target_id': 'src/java/org/apache/solr/request/XMLWriter.java', 'label': 'MODIFY', 'confidence': 0.88, 'system': 'LLM', 'explanation': "The commit message 'store termvectors: SOLR-23' and the presence of XML-related code in Solr suggests this commit modified or utilized XMLWriter for data handling."}, {'source_id': 'LUCENE-586', 'target_id': 'src/java/org/apache/solr/search/DocSet.java', 'label': 'SOLVES', 'confidence': 0.91, 'system': 'LLM', 'explanation': "The commit 'Very inefficient implementation of MultiTermDocs.skipTo' directly addresses the issue LUCENE-586 by optimizing DocSet operations."}, {'source_id': 'LUCENE-439', 'target_id': 'src/java/org/apache/solr/analysis/SynonymFilter.java', 'label': 'SOLVES', 'confidence': 0.87, 'system': 'LLM', 'explanation': "The commit 'add hashCode and equals to filters LUCENE-439' implies the implementation of these methods for filter classes like SynonymFilter."}, {'source_id': 'LUCENE-516', 'target_id': 'src/test/org/apache/solr/TestFSDirectory.java', 'label': 'SOLVES', 'confidence': 0.89, 'system': 'LLM', 'explanation': "The commit 'TestFSDirectory fails on Windows' (LUCENE-516) likely contains the fix for this specific test failure."}]
+2026-06-22 16:24:44,947 [INFO] Valid edges extracted length: 5
+2026-06-22 16:24:44,949 [INFO] LLM enrichment done.
+2026-06-22 16:24:46,040 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:24:49,224 [INFO] adding to window
+2026-06-22 16:25:05,047 [INFO] start retrieving ...
+2026-06-22 16:25:05,491 [INFO] window nodes: 1
+2026-06-22 16:25:05,493 [INFO] window edges: 0
+2026-06-22 16:25:05,494 [INFO] vector nodes: 10
+2026-06-22 16:25:05,496 [INFO] neighbourhood nodes: 0
+2026-06-22 16:25:05,497 [INFO] neighbourhood edges 0
+2026-06-22 16:25:05,532 [INFO] starting Qwen call...
+2026-06-22 16:29:43,700 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:29:43,742 [INFO] raw response: 
+    {
+      "source_id": "LUCENE-603",
+      "target_id": "LUCENE-140",
+      "label": "BREAKS",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "The anchor issue LUCENE-603 involves a loop indexing batches of documents (indexing optimization). Issue LUCENE-140 reports docs appearing out of order after operations. Indexing loops often disrupt document ordering logic, causing the 'docs out of order' symptom."
+    },
+    {
+      "source_id": "LUCENE-603",
+      "target_id": "LUCENE-86",
+      "label": "BREAKS",
+      "confidence": 0.91,
+      "system": "LLM",
+      "explanation": "Anchor LUCENE-603 describes a loop during indexing batches. Issue LUCENE-86 explicitly states the index becomes unusable after insert/delete/optimize operations. The batch processing logic in 603 likely causes the state corruption described in 86."
+    },
+    {
+      "source_id": "LUCENE-140",
+      "target_id": "LUCENE-268",
+      "label": "DEPENDS_UPON",
+      "confidence": 0.93,
+      "system": "LLM",
+      "explanation": "Both issues involve Lucene index corruption and exceptions during write operations ('docs out of order' vs 'IndexWriter ArrayIndexOutOfBoundsException'). They share similar root causes related to concurrent modification or state inconsistency."
+    },
+    {
+      "source_id": "LUCENE-140",
+      "target_id": "LUCENE-552",
+      "label": "DEPENDS_UPON",
+      "confidence": 0.89,
+      "system": "LLM",
+      "explanation": "Issue LUCENE-140 involves document ordering failures during indexing. Issue LUCENE-552 reports a JVM crash (NPE) after running for hours while indexing large volumes of articles. Both relate to stability and correctness issues in the indexing process."
+    },
+    {
+      "source_id": "LUCENE-603",
+      "target_id": "LUCENE-157",
+      "label": "BREAKS",
+      "confidence": 0.88,
+      "system": "LLM",
+      "explanation": "Anchor LUCENE-603 involves a loop in the indexing function. Issue LUCENE-157 describes content-dependent failures when adding documents (Blocker severity). The batch processing logic may fail on specific document contents."
+    }
+2026-06-22 16:29:43,754 [INFO] response generation time: 278014190226
+2026-06-22 16:29:43,755 [INFO] prompt tokens: 3483
+2026-06-22 16:29:43,756 [INFO] eval count (output tokens): 622
+2026-06-22 16:29:43,758 [INFO] stop reason: stop
+2026-06-22 16:29:43,760 [INFO] Valid edges extracted: [{'source_id': 'LUCENE-603', 'target_id': 'LUCENE-140', 'label': 'BREAKS', 'confidence': 0.92, 'system': 'LLM', 'explanation': "The anchor issue LUCENE-603 involves a loop indexing batches of documents (indexing optimization). Issue LUCENE-140 reports docs appearing out of order after operations. Indexing loops often disrupt document ordering logic, causing the 'docs out of order' symptom."}, {'source_id': 'LUCENE-603', 'target_id': 'LUCENE-86', 'label': 'BREAKS', 'confidence': 0.91, 'system': 'LLM', 'explanation': 'Anchor LUCENE-603 describes a loop during indexing batches. Issue LUCENE-86 explicitly states the index becomes unusable after insert/delete/optimize operations. The batch processing logic in 603 likely causes the state corruption described in 86.'}, {'source_id': 'LUCENE-140', 'target_id': 'LUCENE-268', 'label': 'DEPENDS_UPON', 'confidence': 0.93, 'system': 'LLM', 'explanation': "Both issues involve Lucene index corruption and exceptions during write operations ('docs out of order' vs 'IndexWriter ArrayIndexOutOfBoundsException'). They share similar root causes related to concurrent modification or state inconsistency."}, {'source_id': 'LUCENE-140', 'target_id': 'LUCENE-552', 'label': 'DEPENDS_UPON', 'confidence': 0.89, 'system': 'LLM', 'explanation': 'Issue LUCENE-140 involves document ordering failures during indexing. Issue LUCENE-552 reports a JVM crash (NPE) after running for hours while indexing large volumes of articles. Both relate to stability and correctness issues in the indexing process.'}, {'source_id': 'LUCENE-603', 'target_id': 'LUCENE-157', 'label': 'BREAKS', 'confidence': 0.88, 'system': 'LLM', 'explanation': 'Anchor LUCENE-603 involves a loop in the indexing function. Issue LUCENE-157 describes content-dependent failures when adding documents (Blocker severity). The batch processing logic may fail on specific document contents.'}]
+2026-06-22 16:29:43,762 [INFO] Valid edges extracted length: 5
+2026-06-22 16:29:43,764 [INFO] LLM enrichment done.
+2026-06-22 16:29:45,207 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:29:47,186 [INFO] adding to window
+2026-06-22 16:30:02,210 [INFO] start retrieving ...
+2026-06-22 16:30:02,325 [INFO] window nodes: 1
+2026-06-22 16:30:02,326 [INFO] window edges: 0
+2026-06-22 16:30:02,327 [INFO] vector nodes: 1
+2026-06-22 16:30:02,329 [INFO] neighbourhood nodes: 0
+2026-06-22 16:30:02,330 [INFO] neighbourhood edges 0
+2026-06-22 16:30:02,331 [INFO] starting Qwen call...
+2026-06-22 16:31:36,944 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:31:36,957 [INFO] raw response: 
+    {
+      "source_id": "LUCENE-604",
+      "target_id": "LUCENE-308",
+      "label": "SUPERCEDS",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": \"LUCENE-604 proposes a flag for open status (Wish), while LUCENE-308 requests an isClosed() method; the latter supersedes or refines the former's intent with concrete implementation details.\"
+    }
+2026-06-22 16:31:36,960 [INFO] response generation time: 94581609738
+2026-06-22 16:31:36,964 [INFO] prompt tokens: 1945
+2026-06-22 16:31:36,966 [INFO] eval count (output tokens): 128
+2026-06-22 16:31:36,968 [INFO] stop reason: stop
+2026-06-22 16:31:36,971 [INFO] Valid edges extracted: []
+2026-06-22 16:31:36,974 [INFO] Valid edges extracted length: 0
+2026-06-22 16:31:36,976 [INFO] LLM enrichment done.
+2026-06-22 16:31:37,465 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:31:39,195 [INFO] adding to window
+2026-06-22 16:31:40,223 [INFO] adding to window
+2026-06-22 16:31:54,469 [INFO] start retrieving ...
+2026-06-22 16:31:54,695 [INFO] window nodes: 2
+2026-06-22 16:31:54,697 [INFO] window edges: 2
+2026-06-22 16:31:54,698 [INFO] vector nodes: 1
+2026-06-22 16:31:54,699 [INFO] neighbourhood nodes: 13
+2026-06-22 16:31:54,701 [INFO] neighbourhood edges 16
+2026-06-22 16:31:54,703 [INFO] starting Qwen call...
+2026-06-22 16:36:26,412 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:36:26,434 [INFO] raw response: 
+    {
+      "source_id": "LUCENE-605",
+      "target_id": "Hoss Man",
+      "label": "AssignedTo",
+      "confidence": 1.0,
+      "system": "LLM",
+      "explanation": "The existing edge is valid and precise; no replacement needed as 'AssignedTo' accurately reflects the relationship between issue LUCENE-605 and developer Hoss Man."
+    },
+    {
+      "source_id": "LUCENE-451",
+      "target_id": "Hoss Man",
+      "label": "AssignedTo",
+      "confidence": 1.0,
+      "system": "LLM",
+      "explanation": "Existing edge is precise; LUCENE-451 was assigned to Hoss Man for fixing the BooleanWeight explain issue."
+    },
+    {
+      "source_id": "LUCENE-605",
+      "target_id": "Hoss Man",
+      "label": "AssignedTo",
+      "confidence": 1.0,
+      "system": "LLM",
+      "explanation": "Duplicate edge found in graph content; keeping one instance is sufficient for traceability."
+    }
+2026-06-22 16:36:26,437 [INFO] response generation time: 271667475626
+2026-06-22 16:36:26,439 [INFO] prompt tokens: 4867
+2026-06-22 16:36:26,440 [INFO] eval count (output tokens): 283
+2026-06-22 16:36:26,441 [INFO] stop reason: stop
+2026-06-22 16:36:26,443 [INFO] Valid edges extracted: [{'source_id': 'LUCENE-605', 'target_id': 'Hoss Man', 'label': 'AssignedTo', 'confidence': 1.0, 'system': 'LLM', 'explanation': "The existing edge is valid and precise; no replacement needed as 'AssignedTo' accurately reflects the relationship between issue LUCENE-605 and developer Hoss Man."}, {'source_id': 'LUCENE-451', 'target_id': 'Hoss Man', 'label': 'AssignedTo', 'confidence': 1.0, 'system': 'LLM', 'explanation': 'Existing edge is precise; LUCENE-451 was assigned to Hoss Man for fixing the BooleanWeight explain issue.'}, {'source_id': 'LUCENE-605', 'target_id': 'Hoss Man', 'label': 'AssignedTo', 'confidence': 1.0, 'system': 'LLM', 'explanation': 'Duplicate edge found in graph content; keeping one instance is sufficient for traceability.'}]
+2026-06-22 16:36:26,445 [INFO] Valid edges extracted length: 3
+2026-06-22 16:36:26,447 [INFO] LLM enrichment done.
+2026-06-22 16:36:26,531 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:36:27,979 [INFO] adding to window
+2026-06-22 16:36:29,074 [INFO] adding to window
+2026-06-22 16:36:43,552 [INFO] start retrieving ...
+2026-06-22 16:36:46,909 [INFO] window nodes: 8
+2026-06-22 16:36:46,913 [INFO] window edges: 14
+2026-06-22 16:36:46,915 [INFO] vector nodes: 1437
+2026-06-22 16:36:46,916 [INFO] neighbourhood nodes: 188
+2026-06-22 16:36:46,917 [INFO] neighbourhood edges 500
+2026-06-22 16:36:46,919 [INFO] starting Qwen call...
+2026-06-22 16:36:54,078 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 500 Internal Server Error"
+2026-06-22 16:36:54,127 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:36:55,721 [INFO] adding to window
+2026-06-22 16:36:56,752 [INFO] adding to window
+2026-06-22 16:37:11,133 [INFO] start retrieving ...
+2026-06-22 16:37:12,487 [INFO] window nodes: 3
+2026-06-22 16:37:12,489 [INFO] window edges: 2
+2026-06-22 16:37:12,490 [INFO] vector nodes: 1442
+2026-06-22 16:37:12,491 [INFO] neighbourhood nodes: 174
+2026-06-22 16:37:12,492 [INFO] neighbourhood edges 483
+2026-06-22 16:37:12,497 [INFO] starting Qwen call...
+2026-06-22 16:39:08,878 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:39:08,920 [INFO] raw response: 
+    {
+      "source_type": "Commit",
+      "target_type": "Issue:Feature",
+      "label": "IMPLEMENTED_IN"
+    },
+    {
+      "schema_label": true,
+      "source_type": "Bug",
+      "target_type": "Code",
+      "label": "FIXES"
+    }
+2026-06-22 16:39:08,929 [INFO] response generation time: 116304482842
+2026-06-22 16:39:08,932 [INFO] prompt tokens: 471
+2026-06-22 16:39:08,933 [INFO] eval count (output tokens): 78
+2026-06-22 16:39:08,934 [INFO] stop reason: stop
+2026-06-22 16:39:08,936 [INFO] Valid edges extracted: []
+2026-06-22 16:39:08,938 [INFO] Valid edges extracted length: 0
+2026-06-22 16:39:08,942 [INFO] LLM enrichment done.
+2026-06-22 16:39:09,041 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:39:12,900 [INFO] adding to window
+2026-06-22 16:39:28,051 [INFO] start retrieving ...
+2026-06-22 16:39:28,228 [INFO] window nodes: 1
+2026-06-22 16:39:28,230 [INFO] window edges: 0
+2026-06-22 16:39:28,231 [INFO] vector nodes: 1
+2026-06-22 16:39:28,233 [INFO] neighbourhood nodes: 0
+2026-06-22 16:39:28,234 [INFO] neighbourhood edges 0
+2026-06-22 16:39:28,401 [INFO] starting Qwen call...
+2026-06-22 16:41:07,447 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:41:07,451 [INFO] raw response: 
+    {
+      "source_id": "LUCENE-606",
+      "target_id": "LUCENE-561",
+      "label": "CAUSED_BY",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "The feature LUCENE-606 addresses behavior in ParallelReader.document(int), which is directly impacted by the bugs described in LUCENE-561 regarding doDelete() and doUndelete()."
+    }
+2026-06-22 16:41:07,453 [INFO] response generation time: 98985012521
+2026-06-22 16:41:07,455 [INFO] prompt tokens: 1904
+2026-06-22 16:41:07,456 [INFO] eval count (output tokens): 121
+2026-06-22 16:41:07,457 [INFO] stop reason: stop
+2026-06-22 16:41:07,458 [INFO] Valid edges extracted: [{'source_id': 'LUCENE-606', 'target_id': 'LUCENE-561', 'label': 'CAUSED_BY', 'confidence': 0.92, 'system': 'LLM', 'explanation': 'The feature LUCENE-606 addresses behavior in ParallelReader.document(int), which is directly impacted by the bugs described in LUCENE-561 regarding doDelete() and doUndelete().'}]
+2026-06-22 16:41:07,460 [INFO] Valid edges extracted length: 1
+2026-06-22 16:41:07,461 [INFO] LLM enrichment done.
+2026-06-22 16:41:08,407 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:41:10,019 [INFO] adding to window
+2026-06-22 16:41:11,053 [INFO] adding to window
+2026-06-22 16:41:25,410 [INFO] start retrieving ...
+2026-06-22 16:41:31,947 [INFO] window nodes: 11
+2026-06-22 16:41:31,952 [INFO] window edges: 20
+2026-06-22 16:41:31,954 [INFO] vector nodes: 1842
+2026-06-22 16:41:31,955 [INFO] neighbourhood nodes: 174
+2026-06-22 16:41:31,956 [INFO] neighbourhood edges 357
+2026-06-22 16:41:31,957 [INFO] starting Qwen call...
+2026-06-22 16:42:06,636 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:42:06,637 [INFO] raw response: 
+    {
+      "source_type": "Commit",
+      "target_type": "Issue:Feature",
+      "label": "IMPLEMENTED_BY"
+    },
+    {
+      "source_type": "Bug",
+      "target_type": "Release",
+      "title": "FIXES_IN_RELEASE",
+      "description": "A bug is fixed in a specific release."
+    }
+  ]
+2026-06-22 16:42:06,639 [INFO] response generation time: 34669423302
+2026-06-22 16:42:06,640 [INFO] prompt tokens: 471
+2026-06-22 16:42:06,641 [INFO] eval count (output tokens): 90
+2026-06-22 16:42:06,641 [INFO] stop reason: stop
+2026-06-22 16:42:06,642 [INFO] Valid edges extracted: []
+2026-06-22 16:42:06,643 [INFO] Valid edges extracted length: 0
+2026-06-22 16:42:06,644 [INFO] LLM enrichment done.
+2026-06-22 16:42:06,659 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:42:07,363 [INFO] adding to window
+2026-06-22 16:42:08,388 [INFO] adding to window
+2026-06-22 16:42:22,665 [INFO] start retrieving ...
+2026-06-22 16:42:24,011 [INFO] window nodes: 4
+2026-06-22 16:42:24,012 [INFO] window edges: 6
+2026-06-22 16:42:24,013 [INFO] vector nodes: 1707
+2026-06-22 16:42:24,014 [INFO] neighbourhood nodes: 20
+2026-06-22 16:42:24,015 [INFO] neighbourhood edges 31
+2026-06-22 16:42:24,018 [INFO] starting Qwen call...
+2026-06-22 16:43:04,811 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-22 16:43:04,813 [INFO] raw response: 
+    {
+      "source_type": "Commit",
+      "target_type": "Issue:Feature",
+      "label": "IMPLEMENTED_IN"
+    },
+    {
+      "schema_constraint": "(Developer)-[:CREATES]->(:Commit)",
+      "proposed_edge_label": "CONTRIBUTOR_OF",
+      "source_node_type": "Developer",
+      "target_node_type": "Issue:Feature",
+      "description": "Establishes a direct link between developers and the features they contribute to, bypassing commits."
+    },
+    {
+      "schema_constraint": "(Commit)-[:IMPLEMENTS]->(:Issue:Feature)",
+      "proposed_edge_label": "RESOLVES",
+      "source_node_type": "Bug",
+      "target_node_type": "Code"
+    }
+2026-06-22 16:43:04,815 [INFO] response generation time: 40784939218
+2026-06-22 16:43:04,817 [INFO] prompt tokens: 471
+2026-06-22 16:43:04,819 [INFO] eval count (output tokens): 182
+2026-06-22 16:43:04,821 [INFO] stop reason: stop
+2026-06-22 16:43:04,823 [INFO] Valid edges extracted: []
+2026-06-22 16:43:04,825 [INFO] Valid edges extracted length: 0
+2026-06-22 16:43:04,826 [INFO] LLM enrichment done.
+2026-06-22 16:43:04,842 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-22 16:43:09,188 [INFO] adding to window
+2026-06-22 16:43:10,210 [INFO] adding to window
+2026-06-22 16:43:24,846 [INFO] start retrieving ...
+2026-06-22 16:43:25,489 [INFO] window nodes: 6
+2026-06-22 16:43:25,491 [INFO] window edges: 10
+2026-06-22 16:43:25,492 [INFO] vector nodes: 256
+2026-06-22 16:43:25,493 [INFO] neighbourhood nodes: 389
+2026-06-22 16:43:25,495 [INFO] neighbourhood edges 523
+2026-06-22 16:43:25,497 [INFO] starting Qwen call...

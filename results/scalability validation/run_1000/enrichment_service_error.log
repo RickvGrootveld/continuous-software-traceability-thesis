@@ -1,0 +1,45 @@
+2026-06-21 23:58:03 --- Logging error ---
+2026-06-21 23:58:03 Traceback (most recent call last):
+2026-06-21 23:58:03   File "/app/enrichment_service/main.py", line 163, in process_windows
+2026-06-21 23:58:03     inferred_edges, llm_duration, generated_edges, correct_edges = self.llm.call_llm(context)
+2026-06-21 23:58:03                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-06-21 23:58:03   File "/app/enrichment_service/llm.py", line 163, in call_llm
+2026-06-21 23:58:03     response = self.client.chat(
+2026-06-21 23:58:03                ^^^^^^^^^^^^^^^^^
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/site-packages/ollama/_client.py", line 387, in chat
+2026-06-21 23:58:03     return self._request(
+2026-06-21 23:58:03            ^^^^^^^^^^^^^^
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/site-packages/ollama/_client.py", line 199, in _request
+2026-06-21 23:58:03     return cls(**self._request_raw(*args, **kwargs).json())
+2026-06-21 23:58:03                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/site-packages/ollama/_client.py", line 143, in _request_raw
+2026-06-21 23:58:03     raise ResponseError(e.response.text, e.response.status_code) from None
+2026-06-21 23:58:03 ollama._types.ResponseError: model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details (status code: 500)
+2026-06-21 23:58:03 
+2026-06-21 23:58:03 During handling of the above exception, another exception occurred:
+2026-06-21 23:58:03 
+2026-06-21 23:58:03 Traceback (most recent call last):
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/logging/__init__.py", line 1110, in emit
+2026-06-21 23:58:03     msg = self.format(record)
+2026-06-21 23:58:03           ^^^^^^^^^^^^^^^^^^^
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/logging/__init__.py", line 953, in format
+2026-06-21 23:58:03     return fmt.format(record)
+2026-06-21 23:58:03            ^^^^^^^^^^^^^^^^^^
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/logging/__init__.py", line 687, in format
+2026-06-21 23:58:03     record.message = record.getMessage()
+2026-06-21 23:58:03                      ^^^^^^^^^^^^^^^^^^^
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/logging/__init__.py", line 377, in getMessage
+2026-06-21 23:58:03     msg = msg % self.args
+2026-06-21 23:58:03           ~~~~^~~~~~~~~~~
+2026-06-21 23:58:03 TypeError: not all arguments converted during string formatting
+2026-06-21 23:58:03 Call stack:
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/threading.py", line 1002, in _bootstrap
+2026-06-21 23:58:03     self._bootstrap_inner()
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/threading.py", line 1045, in _bootstrap_inner
+2026-06-21 23:58:03     self.run()
+2026-06-21 23:58:03   File "/usr/local/lib/python3.11/threading.py", line 982, in run
+2026-06-21 23:58:03     self._target(*self._args, **self._kwargs)
+2026-06-21 23:58:03   File "/app/enrichment_service/main.py", line 166, in process_windows
+2026-06-21 23:58:03     logging.info("LLM error:", e)
+2026-06-21 23:58:03 Message: 'LLM error:'
+2026-06-21 23:58:03 Arguments: (ResponseError('model runner has unexpectedly stopped, this may be due to resource limitations or an internal error, check ollama server logs for details'),)

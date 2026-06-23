@@ -1,0 +1,1034 @@
+2026-06-20 11:19:33,347 [INFO] Starting neo4j client...
+2026-06-20 11:19:34,944 [INFO] starting context retriever...
+2026-06-20 11:19:34,946 [INFO] starting LLM client...
+2026-06-20 11:19:34,947 [INFO] Loading Qwen...
+2026-06-20 11:19:34,958 [INFO] HTTP Request: GET http://ollama:11434/api/tags "HTTP/1.1 200 OK"
+2026-06-20 11:19:34,960 [INFO] Model 'qwen3.5:4b' already available.
+2026-06-20 11:19:34,962 [INFO] Qwen initialized
+2026-06-20 11:19:34,963 [INFO] Connecting to Redis at redis:6379...
+2026-06-20 11:19:34,969 [INFO] Starting LLM Enrichment Service
+2026-06-20 11:19:34,972 [INFO] Service running...
+2026-06-20 11:19:37,714 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:37,715 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:37,717 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:38,749 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:38,750 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:38,752 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:39,781 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:39,783 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:39,785 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:40,830 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:40,831 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:40,832 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:41,879 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:41,882 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:41,883 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:42,908 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:42,909 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:42,911 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:43,938 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:43,939 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:43,940 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:44,976 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:44,977 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:44,978 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:46,045 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:46,048 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:46,049 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:47,154 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:47,155 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:47,158 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:48,218 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:48,219 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:48,221 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:49,247 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:49,249 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:49,250 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:50,274 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:50,275 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:50,276 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:51,298 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:51,299 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:51,300 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:52,319 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:52,320 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:52,321 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:53,338 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:53,339 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:53,341 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:54,378 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:54,382 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:54,383 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:55,401 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:55,403 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:55,404 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:56,421 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:56,422 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:56,423 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:57,440 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:57,441 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:57,442 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:58,459 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:58,460 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:58,461 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:59,478 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:59,480 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:19:59,481 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:20:00,510 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 4, column: 26, offset: 113} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:20:00,511 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: timestamp)} {position: line: 6, column: 20, offset: 236} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:20:00,512 [WARNING] Received notification from DBMS server: {severity: WARNING} {code: Neo.ClientNotification.Statement.UnknownPropertyKeyWarning} {category: UNRECOGNIZED} {title: The provided property key is not in the database} {description: One of the property names in your query is not available in the database, make sure you didn't misspell it or that the label is available when you run this statement in your application (the missing property name is: id)} {position: line: 22, column: 35, offset: 868} for query: "PROFILE \n        // 1. Fetch the recent source nodes\n        MATCH (n:TraceabilityNode)\n        WHERE datetime(n.timestamp) >= datetime({timezone: 'UTC'}) - duration('PT2S') AND n.embedding IS NOT NULL\n        WITH n\n        ORDER BY n.timestamp DESC\n        LIMIT $limit\n\n        // 2. Collect the nodes so we can find relationships connecting ONLY this subset\n        WITH collect(n) AS node_list\n        UNWIND node_list AS n\n\n        // 3. Find edges where both the start and end nodes are inside our collected list neglect ghost nodes\n        OPTIONAL MATCH (n)-[r]->(target)\n        WHERE target IN node_list AND target.embedding IS NOT NULL\n\n        RETURN \n            n, \n            coll.sort([label IN labels(n) WHERE label <> 'TraceabilityNode']) AS filtered_labels,\n            collect(DISTINCT {\n                rel: r,\n                target_id: target.id,\n                target_labels: coll.sort([label IN labels(target) WHERE label <> 'TraceabilityNode'])\n            }) AS connected_edges\n        "
+2026-06-20 11:20:01,696 [INFO] adding to window
+2026-06-20 11:20:02,738 [INFO] adding to window
+2026-06-20 11:20:16,976 [INFO] start retrieving ...
+2026-06-20 11:20:18,066 [INFO] window nodes: 32
+2026-06-20 11:20:18,067 [INFO] window edges: 31
+2026-06-20 11:20:18,068 [INFO] vector nodes: 0
+2026-06-20 11:20:18,069 [INFO] neighbourhood nodes: 0
+2026-06-20 11:20:18,070 [INFO] neighbourhood edges 31
+2026-06-20 11:20:18,071 [INFO] starting Qwen call...
+2026-06-20 11:35:49,673 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 11:35:49,710 [INFO] raw response: 
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/whoweare.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/stylesheets/project.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/resources.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/powered.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/index.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/images/lucene-logo.gif",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/images/dcutting.gif",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/features.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/background.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "xdocs/applications.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "velocity.log",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "lib/xerces-1.3.0.jar",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "lib/velocity-1.2-dev.jar",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "lib/jdom-b7.jar",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "lib/ant-1.3.jar",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/whoweare.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/resources.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/powered.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/index.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/images/lucene.gif",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/images/lucene-logo.gif",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/images/dcutting.gif",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/features.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/background.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "docs/applications.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "cpappend.bat",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "build.xml",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "build.sh",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "build.bat",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "Attic/api/overview.html",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."
+    }
+2026-06-20 11:35:49,726 [INFO] response generation time: 931612312844
+2026-06-20 11:35:49,727 [INFO] prompt tokens: 6933
+2026-06-20 11:35:49,728 [INFO] eval count (output tokens): 2582
+2026-06-20 11:35:49,729 [INFO] stop reason: stop
+2026-06-20 11:35:49,731 [INFO] Valid edges extracted: [{'source_id': 'Sam Ruby', 'target_id': 'xdocs/whoweare.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/stylesheets/project.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/resources.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/powered.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/index.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/images/lucene-logo.gif', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/images/dcutting.gif', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/features.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/background.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'xdocs/applications.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'velocity.log', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'lib/xerces-1.3.0.jar', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'lib/velocity-1.2-dev.jar', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'lib/jdom-b7.jar', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'lib/ant-1.3.jar', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/whoweare.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/resources.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/powered.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/index.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/images/lucene.gif', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/images/lucene-logo.gif', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/images/dcutting.gif', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/features.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/background.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'docs/applications.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'cpappend.bat', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'build.xml', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'build.sh', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'build.bat', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}, {'source_id': 'Sam Ruby', 'target_id': 'Attic/api/overview.html', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly credits Sam Ruby as the author of 'Initial revision', establishing a direct creator relationship."}]
+2026-06-20 11:35:49,732 [INFO] Valid edges extracted length: 30
+2026-06-20 11:35:49,734 [INFO] LLM enrichment done.
+2026-06-20 11:35:50,224 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 11:35:56,101 [INFO] adding to window
+2026-06-20 11:35:57,136 [INFO] adding to window
+2026-06-20 11:36:11,227 [INFO] start retrieving ...
+2026-06-20 11:36:11,822 [INFO] window nodes: 32
+2026-06-20 11:36:11,824 [INFO] window edges: 122
+2026-06-20 11:36:11,825 [INFO] vector nodes: 0
+2026-06-20 11:36:11,827 [INFO] neighbourhood nodes: 0
+2026-06-20 11:36:11,828 [INFO] neighbourhood edges 61
+2026-06-20 11:36:11,830 [INFO] starting Qwen call...
+2026-06-20 11:46:03,285 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 11:46:03,291 [INFO] raw response: 
+    {
+      "source_id": "xdocs/features.xml",
+      "target_id": "lib/jdom-b7.jar",
+      "label": "DEPENDS_UPON",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "The features XML likely defines API capabilities that require the JDOM library for parsing/xml processing."
+    },
+    {
+      "source_id": "xdocs/features.xml",
+      "target_id": "lib/velocity-1.2-dev.jar",
+      "label": "DEPENDS_UPON",
+      "confidence": 0.89,
+      "system": "LLM",
+      "explanation": "Feature definitions often utilize Velocity templates for dynamic rendering or documentation generation."
+    },
+    {
+      "source_id": "xdocs/features.xml",
+      "target_id": "lib/xerces-1.3.0.jar",
+      "label": "DEPENDS_UPON",
+      "confidence": 0.87,
+      "system": "LLM",
+      "explanation": "Xerces is a standard XML parser; features defined in the project likely rely on it for validation."
+    }
+2026-06-20 11:46:03,295 [INFO] response generation time: 591473263354
+2026-06-20 11:46:03,296 [INFO] prompt tokens: 10423
+2026-06-20 11:46:03,298 [INFO] eval count (output tokens): 275
+2026-06-20 11:46:03,299 [INFO] stop reason: stop
+2026-06-20 11:46:03,301 [INFO] Valid edges extracted: [{'source_id': 'xdocs/features.xml', 'target_id': 'lib/jdom-b7.jar', 'label': 'DEPENDS_UPON', 'confidence': 0.92, 'system': 'LLM', 'explanation': 'The features XML likely defines API capabilities that require the JDOM library for parsing/xml processing.'}, {'source_id': 'xdocs/features.xml', 'target_id': 'lib/velocity-1.2-dev.jar', 'label': 'DEPENDS_UPON', 'confidence': 0.89, 'system': 'LLM', 'explanation': 'Feature definitions often utilize Velocity templates for dynamic rendering or documentation generation.'}, {'source_id': 'xdocs/features.xml', 'target_id': 'lib/xerces-1.3.0.jar', 'label': 'DEPENDS_UPON', 'confidence': 0.87, 'system': 'LLM', 'explanation': 'Xerces is a standard XML parser; features defined in the project likely rely on it for validation.'}]
+2026-06-20 11:46:03,304 [INFO] Valid edges extracted length: 3
+2026-06-20 11:46:03,305 [INFO] LLM enrichment done.
+2026-06-20 11:46:03,552 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 11:46:05,074 [INFO] adding to window
+2026-06-20 11:46:06,092 [INFO] adding to window
+2026-06-20 11:46:20,556 [INFO] start retrieving ...
+2026-06-20 11:46:20,682 [INFO] window nodes: 2
+2026-06-20 11:46:20,684 [INFO] window edges: 1
+2026-06-20 11:46:20,685 [INFO] vector nodes: 1
+2026-06-20 11:46:20,686 [INFO] neighbourhood nodes: 0
+2026-06-20 11:46:20,688 [INFO] neighbourhood edges 1
+2026-06-20 11:46:20,690 [INFO] starting Qwen call...
+2026-06-20 11:48:11,281 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 11:48:11,284 [INFO] raw response: 
+    {
+      "source_id": "(no author)",
+      "target_id": "a0e7ee9d0d12370e8d2b5ae0a23b6e687e018d85",
+      "label": "CREATES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The existing 'CreatedBy' edge direction is semantically inverted for the schema constraint (:Developer)-[:CREATES]->(:Commit). The developer created this commit."
+    }
+2026-06-20 11:48:11,286 [INFO] response generation time: 110587428754
+2026-06-20 11:48:11,287 [INFO] prompt tokens: 2049
+2026-06-20 11:48:11,288 [INFO] eval count (output tokens): 134
+2026-06-20 11:48:11,290 [INFO] stop reason: stop
+2026-06-20 11:48:11,291 [INFO] Valid edges extracted: [{'source_id': '(no author)', 'target_id': 'a0e7ee9d0d12370e8d2b5ae0a23b6e687e018d85', 'label': 'CREATES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The existing 'CreatedBy' edge direction is semantically inverted for the schema constraint (:Developer)-[:CREATES]->(:Commit). The developer created this commit."}]
+2026-06-20 11:48:11,292 [INFO] Valid edges extracted length: 1
+2026-06-20 11:48:11,294 [INFO] LLM enrichment done.
+2026-06-20 11:48:11,448 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 11:48:12,352 [INFO] adding to window
+2026-06-20 11:48:13,364 [INFO] adding to window
+2026-06-20 11:48:27,451 [INFO] start retrieving ...
+2026-06-20 11:48:27,530 [INFO] window nodes: 5
+2026-06-20 11:48:27,533 [INFO] window edges: 8
+2026-06-20 11:48:27,535 [INFO] vector nodes: 0
+2026-06-20 11:48:27,536 [INFO] neighbourhood nodes: 0
+2026-06-20 11:48:27,538 [INFO] neighbourhood edges 4
+2026-06-20 11:48:27,539 [INFO] starting Qwen call...
+2026-06-20 11:51:11,418 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 11:51:11,420 [INFO] raw response: 
+    {
+      "source_id": "749b4aaf7e922884dba4d01223742f83ecfe57fe",
+      "target_id": "lib/JavaCC.zip",
+      "label": "ADD",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit message explicitly mentions adding the JavaCC zip file to the repository alongside other libraries."
+    },
+    {
+      "source_id": "749b4aaf7e922884dba4d01223742f83ecfe57fe",
+      "target_id": "lib/junit_35.jar",
+      "label": "ADD",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit message explicitly mentions adding the junit jar file to the repository alongside other libraries."
+    },
+    {
+      "source_id": "749b4aaf7e922884dba4d01223742f83ecfe57fe",
+      "target_id": "lib/LICENSE.txt",
+      "label": "ADD",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit message explicitly mentions adding the LICENSE file to the repository alongside other libraries."
+    }
+2026-06-20 11:51:11,423 [INFO] response generation time: 163882875692
+2026-06-20 11:51:11,424 [INFO] prompt tokens: 2627
+2026-06-20 11:51:11,426 [INFO] eval count (output tokens): 341
+2026-06-20 11:51:11,428 [INFO] stop reason: stop
+2026-06-20 11:51:11,429 [INFO] Valid edges extracted: [{'source_id': '749b4aaf7e922884dba4d01223742f83ecfe57fe', 'target_id': 'lib/JavaCC.zip', 'label': 'ADD', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit message explicitly mentions adding the JavaCC zip file to the repository alongside other libraries.'}, {'source_id': '749b4aaf7e922884dba4d01223742f83ecfe57fe', 'target_id': 'lib/junit_35.jar', 'label': 'ADD', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit message explicitly mentions adding the junit jar file to the repository alongside other libraries.'}, {'source_id': '749b4aaf7e922884dba4d01223742f83ecfe57fe', 'target_id': 'lib/LICENSE.txt', 'label': 'ADD', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit message explicitly mentions adding the LICENSE file to the repository alongside other libraries.'}]
+2026-06-20 11:51:11,430 [INFO] Valid edges extracted length: 3
+2026-06-20 11:51:11,432 [INFO] LLM enrichment done.
+2026-06-20 11:51:11,449 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 11:51:14,146 [INFO] adding to window
+2026-06-20 11:51:29,452 [INFO] start retrieving ...
+2026-06-20 11:51:34,149 [INFO] window nodes: 100
+2026-06-20 11:51:34,151 [INFO] window edges: 0
+2026-06-20 11:51:34,152 [INFO] vector nodes: 34
+2026-06-20 11:51:34,153 [INFO] neighbourhood nodes: 1
+2026-06-20 11:51:34,155 [INFO] neighbourhood edges 100
+2026-06-20 11:51:34,156 [INFO] starting Qwen call...
+2026-06-20 12:29:05,106 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 12:29:05,118 [INFO] raw response: 
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter to the analysis module; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LetterTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LetterTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LetterTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LetterTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseFilter; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "src/java/org/apache/lucene/analysis/LowerCaseFilter.java",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The
+2026-06-20 12:29:05,122 [INFO] response generation time: 2251073823816
+2026-06-20 12:29:05,124 [INFO] prompt tokens: 16955
+2026-06-20 12:29:05,127 [INFO] eval count (output tokens): 4096
+2026-06-20 12:29:05,128 [INFO] stop reason: length
+2026-06-20 12:29:05,130 [INFO] Valid edges extracted: [{'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.92, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter to the analysis module; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LetterTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LetterTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LetterTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LetterTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseFilter.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseFilter; existing ADD label is vague for code modification.'}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'src/java/org/apache/lucene/analysis/LowerCaseTokenizer.java', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'The commit adds the LowerCaseTokenizer; existing ADD label is vague for code modification.'}]
+2026-06-20 12:29:05,132 [INFO] Valid edges extracted length: 33
+2026-06-20 12:29:05,133 [INFO] LLM enrichment done.
+2026-06-20 12:29:05,459 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 12:29:07,031 [INFO] adding to window
+2026-06-20 12:29:22,463 [INFO] start retrieving ...
+2026-06-20 12:29:22,521 [INFO] window nodes: 3
+2026-06-20 12:29:22,523 [INFO] window edges: 2
+2026-06-20 12:29:22,525 [INFO] vector nodes: 6
+2026-06-20 12:29:22,526 [INFO] neighbourhood nodes: 1
+2026-06-20 12:29:22,528 [INFO] neighbourhood edges 4
+2026-06-20 12:29:22,536 [INFO] starting Qwen call...
+2026-06-20 12:32:33,473 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 12:32:33,476 [INFO] raw response: 
+    {
+      "source_id": "903b4b0178f8fbe8ce3fde8f80774527592db1ff",
+      "target_id": "build.properties",
+      "label": "MODIFIES",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly states 'properties for the lucene build', indicating a modification to file content rather than just addition."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "build.properties",
+      "label": "MODIFIES",
+      "confidence": 0.88,
+      "system": "LLM",
+      "explanation": "Commit message mentions 'additional libs' and references the lucene trunk revision where build properties are typically updated."
+    },
+    {
+      "source_id": "749b4aaf7e922884dba4d01223742f83ecfe57fe",
+      "target_id": "build.properties",
+      "label": "MODIFIES",
+      "confidence": 0.86,
+      "system": "LLM",
+      "explanation": "Commit message references 'additional libs' and the lucene trunk context implies configuration updates."
+    }
+2026-06-20 12:32:33,478 [INFO] response generation time: 190938097319
+2026-06-20 12:32:33,480 [INFO] prompt tokens: 3036
+2026-06-20 12:32:33,481 [INFO] eval count (output tokens): 352
+2026-06-20 12:32:33,482 [INFO] stop reason: stop
+2026-06-20 12:32:33,484 [INFO] Valid edges extracted: [{'source_id': '903b4b0178f8fbe8ce3fde8f80774527592db1ff', 'target_id': 'build.properties', 'label': 'MODIFIES', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly states 'properties for the lucene build', indicating a modification to file content rather than just addition."}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'build.properties', 'label': 'MODIFIES', 'confidence': 0.88, 'system': 'LLM', 'explanation': "Commit message mentions 'additional libs' and references the lucene trunk revision where build properties are typically updated."}, {'source_id': '749b4aaf7e922884dba4d01223742f83ecfe57fe', 'target_id': 'build.properties', 'label': 'MODIFIES', 'confidence': 0.86, 'system': 'LLM', 'explanation': "Commit message references 'additional libs' and the lucene trunk context implies configuration updates."}]
+2026-06-20 12:32:33,486 [INFO] Valid edges extracted length: 3
+2026-06-20 12:32:33,487 [INFO] LLM enrichment done.
+2026-06-20 12:32:33,608 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 12:32:33,808 [INFO] adding to window
+2026-06-20 12:32:34,817 [INFO] adding to window
+2026-06-20 12:32:49,611 [INFO] start retrieving ...
+2026-06-20 12:32:49,681 [INFO] window nodes: 3
+2026-06-20 12:32:49,682 [INFO] window edges: 4
+2026-06-20 12:32:49,684 [INFO] vector nodes: 6
+2026-06-20 12:32:49,685 [INFO] neighbourhood nodes: 2
+2026-06-20 12:32:49,687 [INFO] neighbourhood edges 7
+2026-06-20 12:32:49,689 [INFO] starting Qwen call...
+2026-06-20 12:36:53,093 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 12:36:53,096 [INFO] raw response: 
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "build.properties",
+      "label": "MODIFY",
+      "confidence": 0.92,
+      "system": "LLM",
+      "explanation": "Commit message explicitly states 'incorporates ted's work' and modifies the build jar; properties file is a core component of Lucene builds modified in this revision."
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "build.sh",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "Commit message indicates modification of the build jar; shell scripts are standard executable components within such builds."
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "build.bat",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "Commit message indicates modification of the build jar; batch scripts are standard executable components within such builds."
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "903b4b0178f8fbe8ce3fde8f80774527592db1ff",
+      "label": "SUPERCEDS",
+      "confidence": 0.86,
+      "system": "LLM",
+      "explanation": "Commit @149575 ('incorporates ted's work') logically supersedes commit @149574 which only modified properties without the broader integration."
+    },
+    {
+      "source_id": "bd3948c539ec1065db8b05b433ea55dbf844ff27",
+      "target_id": "build.xml",
+      "label": "SUPERCEDS",
+      "confidence": 0.88,
+      "system": "LLM",
+      "explanation": "Commit @149570 ('Initial revision') logically supersedes commit @149565 which was an earlier initial revision."
+    }
+2026-06-20 12:36:53,099 [INFO] response generation time: 243414323296
+2026-06-20 12:36:53,100 [INFO] prompt tokens: 3340
+2026-06-20 12:36:53,102 [INFO] eval count (output tokens): 644
+2026-06-20 12:36:53,103 [INFO] stop reason: stop
+2026-06-20 12:36:53,105 [INFO] Valid edges extracted: [{'source_id': '7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc', 'target_id': 'build.properties', 'label': 'MODIFY', 'confidence': 0.92, 'system': 'LLM', 'explanation': "Commit message explicitly states 'incorporates ted's work' and modifies the build jar; properties file is a core component of Lucene builds modified in this revision."}, {'source_id': '7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc', 'target_id': 'build.sh', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'Commit message indicates modification of the build jar; shell scripts are standard executable components within such builds.'}, {'source_id': '7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc', 'target_id': 'build.bat', 'label': 'MODIFY', 'confidence': 0.9, 'system': 'LLM', 'explanation': 'Commit message indicates modification of the build jar; batch scripts are standard executable components within such builds.'}, {'source_id': '7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc', 'target_id': '903b4b0178f8fbe8ce3fde8f80774527592db1ff', 'label': 'SUPERCEDS', 'confidence': 0.86, 'system': 'LLM', 'explanation': "Commit @149575 ('incorporates ted's work') logically supersedes commit @149574 which only modified properties without the broader integration."}, {'source_id': 'bd3948c539ec1065db8b05b433ea55dbf844ff27', 'target_id': 'build.xml', 'label': 'SUPERCEDS', 'confidence': 0.88, 'system': 'LLM', 'explanation': "Commit @149570 ('Initial revision') logically supersedes commit @149565 which was an earlier initial revision."}]
+2026-06-20 12:36:53,106 [INFO] Valid edges extracted length: 5
+2026-06-20 12:36:53,108 [INFO] LLM enrichment done.
+2026-06-20 12:36:53,177 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 12:36:54,034 [INFO] adding to window
+2026-06-20 12:36:55,043 [INFO] adding to window
+2026-06-20 12:37:09,180 [INFO] start retrieving ...
+2026-06-20 12:37:09,260 [INFO] window nodes: 5
+2026-06-20 12:37:09,262 [INFO] window edges: 8
+2026-06-20 12:37:09,264 [INFO] vector nodes: 2
+2026-06-20 12:37:09,265 [INFO] neighbourhood nodes: 6
+2026-06-20 12:37:09,266 [INFO] neighbourhood edges 10
+2026-06-20 12:37:09,268 [INFO] starting Qwen call...
+2026-06-20 12:41:54,538 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 12:41:54,541 [INFO] raw response: 
+    {
+      "source_id": "412a00a07db2b91cfd39d80a18f7c08224a6515c",
+      "target_id": ".cvsignore",
+      "label": "ADD",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly states 'adding ignore file', confirming the addition of .cvsignore."
+    },
+    {
+      "source_id": "412a00a07db2b91cfd39d80a18f7c08224a6515c",
+      "target_id": "LICENSE",
+      "label": "ADD",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly states 'removing velocity.log' and lists LICENSE as added."
+    },
+    {
+      "source_id": "412a00a07db2b91cfd39d80a18f7c08224a6515c",
+      "target_id": "velocity.log",
+      "label": "DELETE",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "The commit message explicitly states 'removing velocity.log', confirming the deletion."
+    },
+    {
+      "source_id": "412a00a07db2b91cfd39d80a18f7c08224a6515c",
+      "target_id": "Jason van Zyl",
+      "label": "CREATED_BY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit message states 'Submitted by: Jason van Zyl', establishing the creator relationship."
+    },
+    {
+      "source_id": "5a2615650e104c0713407637d65ae0ce7c2b257a",
+      "target_id": "velocity.log",
+      "label": "ADD",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The commit message for this node states 'Initial revision' and includes velocity.log in the context of adding libs."
+    },
+    {
+      "source_id": "Sam Ruby",
+      "target_id": "velocity.log",
+      "label": "CREATES",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": "The edge exists in the graph; this confirms Sam Ruby's creation of velocity.log."
+    }
+2026-06-20 12:41:54,544 [INFO] response generation time: 285282287381
+2026-06-20 12:41:54,545 [INFO] prompt tokens: 3993
+2026-06-20 12:41:54,547 [INFO] eval count (output tokens): 661
+2026-06-20 12:41:54,548 [INFO] stop reason: stop
+2026-06-20 12:41:54,550 [INFO] Valid edges extracted: [{'source_id': '412a00a07db2b91cfd39d80a18f7c08224a6515c', 'target_id': '.cvsignore', 'label': 'ADD', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly states 'adding ignore file', confirming the addition of .cvsignore."}, {'source_id': '412a00a07db2b91cfd39d80a18f7c08224a6515c', 'target_id': 'LICENSE', 'label': 'ADD', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly states 'removing velocity.log' and lists LICENSE as added."}, {'source_id': '412a00a07db2b91cfd39d80a18f7c08224a6515c', 'target_id': 'velocity.log', 'label': 'DELETE', 'confidence': 0.95, 'system': 'LLM', 'explanation': "The commit message explicitly states 'removing velocity.log', confirming the deletion."}, {'source_id': '412a00a07db2b91cfd39d80a18f7c08224a6515c', 'target_id': 'Jason van Zyl', 'label': 'CREATED_BY', 'confidence': 0.9, 'system': 'LLM', 'explanation': "The commit message states 'Submitted by: Jason van Zyl', establishing the creator relationship."}, {'source_id': '5a2615650e104c0713407637d65ae0ce7c2b257a', 'target_id': 'velocity.log', 'label': 'ADD', 'confidence': 0.9, 'system': 'LLM', 'explanation': "The commit message for this node states 'Initial revision' and includes velocity.log in the context of adding libs."}, {'source_id': 'Sam Ruby', 'target_id': 'velocity.log', 'label': 'CREATES', 'confidence': 0.9, 'system': 'LLM', 'explanation': "The edge exists in the graph; this confirms Sam Ruby's creation of velocity.log."}]
+2026-06-20 12:41:54,552 [INFO] Valid edges extracted length: 6
+2026-06-20 12:41:54,553 [INFO] LLM enrichment done.
+2026-06-20 12:41:54,688 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 12:41:55,794 [INFO] adding to window
+2026-06-20 12:41:56,804 [INFO] adding to window
+2026-06-20 12:42:11,693 [INFO] start retrieving ...
+2026-06-20 12:42:11,769 [INFO] window nodes: 4
+2026-06-20 12:42:11,771 [INFO] window edges: 6
+2026-06-20 12:42:11,773 [INFO] vector nodes: 9
+2026-06-20 12:42:11,775 [INFO] neighbourhood nodes: 2
+2026-06-20 12:42:11,776 [INFO] neighbourhood edges 9
+2026-06-20 12:42:11,778 [INFO] starting Qwen call...
+2026-06-20 12:48:43,741 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 200 OK"
+2026-06-20 12:48:43,753 [INFO] raw response: 
+    {
+      "source_id": "1a3dd53ada1bd479590459bf7d0d24887f202afa",
+      "target_id": "Jason van Zyl",
+      "label": "CREATED_BY",
+      "confidence": 0.95,
+      "system": "LLM",
+      "explanation": "Replaces generic 'CreatedBy' with precise schema-compliant label for commit authorship."
+    },
+    {
+      "source_id": "1a3dd53ada1bd479590459bf7d0d24887f202afa",
+      "target_id": "datasheet.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Upgrades vague ADD to MODIFY based on commit message mentioning documentation placement.'
+    },
+    {
+      "source_id": "1a3dd53ada1bd479590459bf7d0d24887f202afa",
+      "target_id": "API.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Upgrades vague ADD to MODIFY based on commit message mentioning documentation placement.'
+    },
+    {
+      "source_id": "412a00a07db2b91cfd39d80a18f7c08224a6515c",
+      "target_id": "Jason van Zyl",
+      "label": "CREATED_BY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Replaces generic CREATED_BY with precise schema-compliant label for commit authorship.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "Jason van Zyl",
+      "label": "CREATED_BY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Replaces generic CREATED_BY with precise schema-compliant label for commit authorship.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "datasheet.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Inferred MODIFY based on commit message mentioning documentation visibility.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "API.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Inferred MODIFY based on commit message mentioning documentation visibility.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "docs/index.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Inferred MODIFY based on commit message mentioning documentation visibility.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "docs/resources.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Inferred MODIFY based on commit message mentioning documentation visibility.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "docs/applications.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Inferred MODIFY based on commit message mentioning documentation visibility.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "docs/features.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Inferred MODIFY based on commit message mentioning documentation visibility.'
+    },
+    {
+      "source_id": "7fb01d68ac7381ff5d28ab2d064d5c88a2aefadc",
+      "target_id": "docs/powered.html",
+      "label": "MODIFY",
+      "confidence": 0.9,
+      "system": "LLM",
+      "explanation": 'Inferred MODIFY based on commit message mentioning documentation visibility.'
+    }
+2026-06-20 12:48:43,756 [INFO] response generation time: 391981493806
+2026-06-20 12:48:43,758 [INFO] prompt tokens: 4106
+2026-06-20 12:48:43,761 [INFO] eval count (output tokens): 1287
+2026-06-20 12:48:43,765 [INFO] stop reason: stop
+2026-06-20 12:48:43,768 [INFO] Valid edges extracted: [{'source_id': '1a3dd53ada1bd479590459bf7d0d24887f202afa', 'target_id': 'Jason van Zyl', 'label': 'CREATED_BY', 'confidence': 0.95, 'system': 'LLM', 'explanation': "Replaces generic 'CreatedBy' with precise schema-compliant label for commit authorship."}]
+2026-06-20 12:48:43,771 [INFO] Valid edges extracted length: 1
+2026-06-20 12:48:43,775 [INFO] LLM enrichment done.
+2026-06-20 12:48:43,937 [INFO] Published 'ready' signal to knowledge graph service.
+2026-06-20 12:48:44,749 [INFO] adding to window
+2026-06-20 12:48:45,758 [INFO] adding to window
+2026-06-20 12:48:59,939 [INFO] start retrieving ...
+2026-06-20 12:49:00,025 [INFO] window nodes: 4
+2026-06-20 12:49:00,027 [INFO] window edges: 6
+2026-06-20 12:49:00,028 [INFO] vector nodes: 6
+2026-06-20 12:49:00,030 [INFO] neighbourhood nodes: 4
+2026-06-20 12:49:00,032 [INFO] neighbourhood edges 20
+2026-06-20 12:49:00,034 [INFO] starting Qwen call...
+2026-06-20 12:56:01,284 [INFO] HTTP Request: POST http://ollama:11434/api/chat "HTTP/1.1 500 Internal Server Error"
+2026-06-20 12:56:01,686 [INFO] Published 'ready' signal to knowledge graph service.

@@ -116,6 +116,7 @@ class GPTClient:
 
         # Extract raw content using OpenAI's response format
         raw = response.choices[0].message.content
+        logging.info(f"raw response: {raw}")
 
         # Process JSON data using your extraction function
         result, generated_edges, correct_edges = extract_json(raw)
@@ -127,6 +128,13 @@ class GPTClient:
         for edge in result.get("new_edges", []):
             if required_keys.issubset(edge.keys()) and edge.get("confidence", 0) > 0.85:
                 valid_edges.append(edge)
+
+        logging.info(f"response generation time (calculated myself, not from the server): {total_duration}")
+        logging.info(f"prompt tokens: {response.usage.prompt_tokens}")
+        logging.info(f"eval count (output tokens): {response.usage.completion_tokens}")
+        logging.info(f"stop reason: {response.choices[0].finish_reason}")
+        logging.info(f"Valid edges extracted: {valid_edges}")
+        logging.info(f"Valid edges extracted length: {correct_edges}")
 
         return (result, total_duration, generated_edges, correct_edges)
 

@@ -68,7 +68,7 @@ def process_simulation_data(conn, interval):
     
     query = """
         SELECT source_table, id, created_date
-        FROM issue_commit_scalability_10_100
+        FROM issue_commit_scalability_10000
         ORDER BY created_date ASC
     """
 
@@ -123,5 +123,5 @@ if __name__ == "__main__":
     # (KG service needs to load the weights of the models) which takes around 20 seconds
     time.sleep(20)
     #process_preload_data(sqlite3.connect(DB_PATH), 0.4)
-    process_simulation_data(sqlite3.connect(DB_PATH), 60)
+    process_simulation_data(sqlite3.connect(DB_PATH), 120)
     #process_scalability_data(sqlite3.connect(DB_PATH))

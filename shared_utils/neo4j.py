@@ -358,6 +358,9 @@ class Neo4jClient:
                     id = node["id"]
                     # check if the id is already captured, if not, add it
                     if id not in ids_seen:
+                        # Skip the nodes that don't have an embedding, Those nodes are ghost nodes
+                        if 'embedding' not in node:
+                            continue
                         ids_seen.add(id)
                         all_nodes.append({
                             "id": id,
@@ -371,15 +374,17 @@ class Neo4jClient:
                     start_node, end_node = rel.nodes
                     src   = start_node["id"]
                     tgt   = end_node["id"]
-                    label = rel.type
-                    key   = (src, tgt, label)
-                    if key not in ids_seen:
-                        ids_seen.add(key)
-                        all_edges.append({
-                            "source id":     src,
-                            "target id":     tgt,
-                            "label":      label,
-                        })
+                    # when node is skipped that has no embedding, the edge should not be inserted
+                    if src in ids_seen and tgt in ids_seen:
+                        label = rel.type
+                        key   = (src, tgt, label)
+                        if key not in ids_seen:
+                            ids_seen.add(key)
+                            all_edges.append({
+                                "source id":     src,
+                                "target id":     tgt,
+                                "label":      label,
+                            })
 
         results_dataset, total_nodes, total_edges, total_db_hits_dataset, db_retrieval_time_ms_dataset = self.get_neo4j_metrics(dataset_query, node_ids=node_ids, limit=30)
         results_llm, total_nodes, total_edges, total_db_hits_llm, db_retrieval_time_ms_llm = self.get_neo4j_metrics(llm_query, node_ids=node_ids, limit=20)
