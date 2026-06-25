@@ -10,9 +10,6 @@ the graph correctly" - not "every row in issue/change_set is in the graph".
 Secondary tables (issue_link, issue_fix_version, code_change, change_set_link)
 are scoped the same way, since the mapping code only pulls those rows for
 the specific issue_id/commit_hash being processed.
-
-Adjust SOURCE_TABLE_ISSUE / SOURCE_TABLE_CHANGE_SET below if the literal
-values stored in issue_commit_events_simulation.source_table differ.
 """
 
 import sqlite3

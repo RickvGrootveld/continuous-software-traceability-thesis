@@ -109,7 +109,7 @@ class GPTClient:
             messages=messages_object(graph_content),
             reasoning_effort="low",
             response_format={"type": "json_object"},
-            max_completion_tokens=38000
+            max_completion_tokens=4096
         )
 
         total_duration = (time.perf_counter() - start_time) * 1000 #convert to ms, same as neo4j time responses
@@ -168,11 +168,8 @@ class QwenClient:
             #keep_alive=0,
             options={
                 "temperature": 0.1,
-                "num_ctx": 128000,#36864,
-                "num_predict": 4096,#2048,
-                #"num_batch": 512,
-                #"seed": random.randint(1, 9999999),
-                #"num_thread": 6,
+                "num_ctx": 128000,
+                "num_predict": 4096,
                 "stop": ["]\n}"],
             },
         )
