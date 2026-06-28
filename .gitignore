@@ -13,3 +13,5 @@ neo4j_non_enrichment.dump
 neo4j_preload_data_clean.dump
 neo4j_preload_data.dump
 neo4j.dump
+
+neo4j*
