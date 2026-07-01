@@ -9,3 +9,10 @@ event_engine_service/__pycache__
 shared_utils/__pycache__
 neo4j_dump_files
 neo4j.dump
+
+results
+results_v2
+
+analysis
+analysis_claude
+analysis_v2
