@@ -1,0 +1,57 @@
+[CIA] Graph      : bolt://localhost:7687
+[CIA] Max hops   : 4
+[CIA] Commits    : 7
+[CIA] Output dir : cia_results/non4/
+
+[1/7] Commit: e9e7d0a287ad95e71f02eef61a190b2c02e3b21b
+         Cutoff timestamp : 2026-06-09T13:30:48.973606
+         Nodes reached    : 1886
+         Impacted (same-batch) : 5
+         Precision : 0.0027  Recall : 1.0  F1 : 0.0053
+         Saved to         : cia_results/non4\cia_e9e7d0a287ad.json
+
+[2/7] Commit: 95c7e6d716ae5e96a9fff3b68bbbb2a383f4c073
+         Cutoff timestamp : 2026-06-09T13:35:36.854569
+         Nodes reached    : 4361
+         Impacted (same-batch) : 3
+         Precision : 0.0005  Recall : 0.6667  F1 : 0.0009
+         Saved to         : cia_results/non4\cia_95c7e6d716ae.json
+
+[3/7] Commit: 1e2ba9fe9be84f0b5defe4965735eae892fabf7b
+         Cutoff timestamp : 2026-06-09T13:29:44.291513
+         Nodes reached    : 4558
+         Impacted (same-batch) : 5
+         Precision : 0.0011  Recall : 1.0  F1 : 0.0022
+         Saved to         : cia_results/non4\cia_1e2ba9fe9be8.json
+
+[4/7] Commit: 6ffd1ba9787e4c8ae881663a93cb7958e84e3891
+         Cutoff timestamp : 2026-06-09T13:31:03.876865
+         Nodes reached    : 2278
+         Impacted (same-batch) : 3
+         Precision : 0.0013  Recall : 1.0  F1 : 0.0026
+         Saved to         : cia_results/non4\cia_6ffd1ba9787e.json
+
+[5/7] Commit: 7e86ba8c7327f99ca8708494b6d402af4cd0b4ec
+         Cutoff timestamp : 2026-06-09T13:33:13.222182
+         Nodes reached    : 3535
+         Impacted (same-batch) : 4
+         Precision : 0.0011  Recall : 1.0  F1 : 0.0023
+         Saved to         : cia_results/non4\cia_7e86ba8c7327.json
+
+[6/7] Commit: 87016b5f0ce7a895447ee19d3f567f4135cae2a6
+         Cutoff timestamp : 2026-06-09T13:37:12.657278
+         Nodes reached    : 7135
+         Impacted (same-batch) : 236
+         Precision : 0.0057  Recall : 0.1737  F1 : 0.0111
+         Saved to         : cia_results/non4\cia_87016b5f0ce7.json
+
+[7/7] Commit: bd7ddb8fbfedd29711c8f5e466022ecb3810b70a
+         Cutoff timestamp : 2026-06-09T13:36:33.157168
+         Nodes reached    : 4850
+         Impacted (same-batch) : 4
+         Precision : 0.0008  Recall : 1.0  F1 : 0.0016
+         Saved to         : cia_results/non4\cia_bd7ddb8fbfed.json
+
+============================================================
+[CIA] Done — 7/7 commits processed successfully.
+============================================================

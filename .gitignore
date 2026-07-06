@@ -9,10 +9,10 @@ event_engine_service/__pycache__
 shared_utils/__pycache__
 neo4j_dump_files
 neo4j.dump
-
-results
-results_v2
-
 analysis
-analysis_claude
-analysis_v2
+results/correctness_simulation/
+results/scalability issue commit validation
+results/scalability validation
+results/result_schema_validation_run.txt
+results/survey_value_results.csv
+results/survey_label_results.csv

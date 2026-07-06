@@ -2,18 +2,16 @@
 Change Impact Analysis (CIA) query runner for software traceability knowledge graph.
 
 Usage:
-    python cia_query.py <commit_hash> [--output <file>] [--max-hops <n>]
+    python cia_use_case.py
 
-Examples:
-    python cia_query.py abc123def456
-    python cia_query.py abc123def456 --output results/cia_abc123.json
-    python cia_query.py abc123def456 --max-hops 4 --output results/cia_abc123.json
+Configure commit_hashes, max_hops, and output_dir at the top of main() before running.
 
 The script:
-  1. Looks up the source commit node and its insertion timestamp.
-  2. Traverses all edges whose timestamp <= commit insertion time (temporal filter).
-  3. Collects all reachable nodes, their types, hop distance, and the edge path taken.
-  4. Saves structured JSON output for downstream analysis.
+  1. Looks up each source commit node and reads its insertion timestamp as the cutoff.
+  2. Traverses edges where edge.timestamp < cutoff (strict), excluding same-batch
+     edges such as commit->codefile and commit->developer at hop 1.
+  3. Returns a flat list of reached node IDs (the CIA impact set).
+  4. Saves one JSON file per commit to output_dir.
 """
 
 import json
@@ -42,17 +40,14 @@ def get_driver():
 
 def fetch_source_node(tx, commit_hash: str) -> dict | None:
     """
-    Retrieve the source commit node and its insertion timestamp.
-    Returns None if the commit is not found in the graph.
+    Retrieve the source commit node. Returns id only — the cutoff timestamp
+    is supplied separately via commit_cutoffs in main() to avoid drift between
+    node.timestamp and edge.timestamp caused by batch insertion timing.
     """
     result = tx.run(
         """
         MATCH (c:TraceabilityNode:Commit {id: $commit_hash})
-        RETURN
-            c.id           AS id,
-            c.timestamp    AS timestamp,
-            labels(c)      AS labels,
-            properties(c)  AS props
+        RETURN c.id AS id
         LIMIT 1
         """,
         commit_hash=commit_hash,
@@ -60,129 +55,125 @@ def fetch_source_node(tx, commit_hash: str) -> dict | None:
     record = result.single()
     if record is None:
         return None
-    return {
-        "id":        record["id"],
-        "timestamp": record["timestamp"],
-        "labels":    record["labels"],
-        "props":     dict(record["props"]),
-    }
+    return {"id": record["id"]}
 
 
-def run_cia_traversal(tx, commit_hash: str, cutoff_ts: str, max_hops: int) -> list[dict]:
+def run_cia_traversal(tx, commit_hash: str, cutoff_ts: str, max_hops: int) -> list[str]:
     """
-    Traverse the graph from the source commit with three constraints:
+    Traverse the graph from the source commit with one constraint:
 
-    1. TEMPORAL: every edge in the path must have timestamp < cutoff_ts
-       (strictly less than, so same-batch edges such as commit->codefile are excluded).
-    2. NODE EXCLUSION: CodeFile nodes are never traversed into. The commit->codefile
-       edges share the same batch timestamp as the commit itself, so strict < already
-       excludes them from hop 1. This label filter acts as an explicit safeguard and
-       also prevents re-entry via indirect paths at deeper hops.
-    3. ALL-EDGES checked: the ALL() predicate applies the temporal filter to every
-       relationship in the path, not just the last one, preventing traversal through
-       future-timestamped intermediate edges.
+    TEMPORAL: every edge in the path must have timestamp < cutoff_ts (strictly
+    less than). This excludes all same-batch edges at hop 1: commit->codefile
+    and commit->developer share the commit batch timestamp and are therefore
+    excluded. The commit->issue edge is older (the issue existed before the
+    commit batch) and is the only valid hop-1 traversal.
 
-    Returns a list of reached nodes with metadata.
+    Nodes excluded at hop 1 by the temporal filter can still be reached
+    indirectly via older edges at deeper hops (e.g. issue->other_commit->developer),
+    which is valid CIA signal.
+
+    Returns a flat list of reached node IDs (impact set).
     """
     query = """
     MATCH (source:TraceabilityNode:Commit {id: $commit_hash})
 
-    // Variable-length traversal, both directions, depth 1..max_hops
-    MATCH path = (source)-[rels*1..{max_hops}]-(reached)
+    // Step 1: unconditionally hop to the parent issue.
+    // This edge shares the commit batch timestamp so it cannot pass the
+    // temporal filter — we allow it explicitly as the entry point.
+    MATCH (source)-[*1..1]-(issue:Issue)
 
-    // 1. Every edge in the path must be strictly before the commit's batch timestamp
+    // Step 2: from the issue, traverse the rest of the graph up to (max_hops - 1)
+    // further hops, applying the temporal filter to every edge from here on.
+    MATCH path = (issue)-[*0..{remaining_hops}]-(reached)
+
     WHERE ALL(r IN relationships(path) WHERE r.timestamp < $cutoff_ts)
-
-    // 2. Block direct source->codefile hop only, not codefiles reached via other nodes
-    AND NOT (length(path) = 1 AND reached:CodeFile)
-
-    // 3. Do not return the source node itself
     AND reached <> source
 
-    WITH
-        reached,
-        length(path)                          AS hops,
-        last(relationships(path))             AS last_rel,
-        [n IN nodes(path) | n.id]             AS path_node_ids,
-        [r IN relationships(path) | type(r)]  AS path_edge_types
-
-    // Keep shortest path per reached node (BFS equivalent)
-    WITH reached, min(hops) AS hops, last_rel, path_node_ids, path_edge_types
-
-    RETURN DISTINCT
-        reached.id                        AS node_id,
-        labels(reached)                   AS node_labels,
-        reached.timestamp                 AS node_timestamp,
-        hops                              AS hop_distance,
-        last_rel.timestamp                AS edge_timestamp,
-        type(last_rel)                    AS edge_type,
-        last_rel.system                   AS edge_system,
-        path_node_ids                     AS path_node_ids,
-        path_edge_types                   AS path_edge_types
-
-    ORDER BY hops ASC, node_id ASC
+    RETURN DISTINCT reached.id AS node_id
+    ORDER BY node_id ASC
     """
-    # Inject max_hops into the query string (Cypher does not support
-    # parameters inside relationship length syntax *1..n)
     query = query.replace("{max_hops}", str(max_hops))
+    query = query.replace("{remaining_hops}", str(max(0, max_hops - 1)))
 
     results = tx.run(
         query,
         commit_hash=commit_hash,
         cutoff_ts=cutoff_ts,
-        max_hops=max_hops,
     )
 
-    rows = []
-    for record in results:
-        rows.append({
-            "node_id":        record["node_id"],
-            "node_labels":    record["node_labels"],
-            "node_timestamp": record["node_timestamp"],
-            "hop_distance":   record["hop_distance"],
-            "edge_type":      record["edge_type"],
-            "edge_system":    record["edge_system"],   # 'dataset' | 'LLM' | None
-            "edge_timestamp": record["edge_timestamp"],
-            "path_node_ids":  record["path_node_ids"],
-            "path_edge_types":record["path_edge_types"],
-        })
-    return rows
+    return [record["node_id"] for record in results]
 
 
 # ---------------------------------------------------------------------------
 # Analysis helpers
 # ---------------------------------------------------------------------------
 
-def summarise(source: dict, reached: list[dict]) -> dict:
-    """Build a summary dict for easy inspection and downstream analysis."""
+def fetch_impacted_nodes(tx, commit_hash: str, cutoff_ts: str) -> list[str]:
+    """
+    Retrieve the nodes that are directly connected to the source commit with
+    edge.timestamp = cutoff_ts. These are the same-batch nodes (codefiles,
+    developer) that the temporal filter blocks at hop 1 during traversal.
 
-    # Separate node types (strip 'TraceabilityNode' label which is on everything)
-    def primary_label(labels: list[str]) -> str:
-        filtered = [l for l in labels if l != "TraceabilityNode"]
-        return filtered[0] if filtered else "Unknown"
+    Saving these allows downstream analysis to check whether the enriched
+    graph's reachable set eventually reaches any of these directly changed nodes
+    via indirect paths — which is the core CIA signal.
+    """
+    result = tx.run(
+        """
+        MATCH (source:TraceabilityNode:Commit {id: $commit_hash})-[r]-(impacted)
+        WHERE r.timestamp = $cutoff_ts
+        RETURN DISTINCT impacted.id AS node_id
+        ORDER BY node_id ASC
+        """,
+        commit_hash=commit_hash,
+        cutoff_ts=cutoff_ts,
+    )
+    return [record["node_id"] for record in result]
 
-    by_type: dict[str, list] = {}
-    by_hop:  dict[int, list] = {}
-    llm_only_nodes = []   # nodes reachable ONLY via at least one LLM edge in their path
-    dataset_nodes  = []
 
-    for node in reached:
-        ptype = primary_label(node["node_labels"])
-        by_type.setdefault(ptype, []).append(node["node_id"])
-        by_hop.setdefault(node["hop_distance"], []).append(node["node_id"])
+def summarise(reached: list[str]) -> dict:
+    """Build a minimal summary: total count and flat ID list."""
+    return {
+        "total_reached": len(reached),
+        "reached_ids":   reached,
+    }
 
-        if node["edge_system"] == "LLM":
-            llm_only_nodes.append(node["node_id"])
-        else:
-            dataset_nodes.append(node["node_id"])
+
+def analyse(impacted: list[str], reached: list[str]) -> dict:
+    """
+    Compare the impacted (directly impacted same-batch) nodes against the
+    reachable set to compute CIA effectiveness metrics.
+
+    - true_positives  : impacted nodes that were also reached via traversal
+    - false_negatives : impacted nodes that were NOT reached (missed impact)
+    - false_positives : reached nodes that are not in the impacted set
+                        (indirectly reachable but not directly changed)
+    - precision : TP / (TP + FP)  — of all reached nodes, how many were directly impacted
+    - recall    : TP / (TP + FN)  — of all directly impacted nodes, how many were reached
+    - f1        : harmonic mean of precision and recall
+    """
+    impacted_set = set(impacted)
+    reached_set = set(reached)
+
+    tp = impacted_set & reached_set          # directly impacted AND reached
+    fn = impacted_set - reached_set          # directly impacted but NOT reached
+    fp = reached_set - impacted_set          # reached but not directly impacted
+
+    precision = len(tp) / (len(tp) + len(fp)) if (len(tp) + len(fp)) > 0 else 0.0
+    recall    = len(tp) / (len(tp) + len(fn)) if (len(tp) + len(fn)) > 0 else 0.0
+    f1        = (2 * precision * recall / (precision + recall)
+                 if (precision + recall) > 0 else 0.0)
 
     return {
-        "total_reached":        len(reached),
-        "by_node_type":         {k: len(v) for k, v in by_type.items()},
-        "by_hop_distance":      {k: len(v) for k, v in by_hop.items()},
-        "llm_edge_reached":     len(llm_only_nodes),   # last edge into node was LLM
-        "dataset_edge_reached": len(dataset_nodes),
-        "node_types_reached":   sorted(by_type.keys()),
+        "true_positives":       sorted(tp),
+        "false_negatives":      sorted(fn),
+        "false_positives":      sorted(fp),
+        "true_positive_count":  len(tp),
+        "false_negative_count": len(fn),
+        "false_positive_count": len(fp),
+        "precision":            round(precision, 4),
+        "recall":               round(recall, 4),
+        "f1_score":             round(f1, 4),
     }
 
 
@@ -195,11 +186,23 @@ def main():
     # ---------------------------------------------------------------------------
     # Configure your run here
     # ---------------------------------------------------------------------------
-    commit_hashes = [
-        "e9e7d0a287ad95e71f02eef61a190b2c02e3b21b "   # replace with your 7 commit hashes
-    ]
+    # Map each commit hash to its cutoff timestamp.
+    # Use the timestamp of the commit->issue edge (the oldest edge in the
+    # commit's batch), not the commit node's own timestamp, to avoid
+    # node/edge insertion drift.
+    # Format: "YYYY-MM-DDTHH:MM:SS.ffffff"
+    commit_cutoffs = {                                                                         #non                        qwen                               gpt
+        "e9e7d0a287ad95e71f02eef61a190b2c02e3b21b": "2026-06-11T05:28:26.616966", #"2026-06-09T13:30:48.973606", #"2026-06-11T05:28:26.616966", #"2026-06-10T17:34:02.011630",
+        "95c7e6d716ae5e96a9fff3b68bbbb2a383f4c073": "2026-06-11T14:49:46.893876", #"2026-06-09T13:35:36.854569", #"2026-06-11T14:49:46.893876", #"2026-06-10T18:28:40.953277",
+        "1e2ba9fe9be84f0b5defe4965735eae892fabf7b": "2026-06-11T03:54:53.457032", #"2026-06-09T13:29:44.291513", #"2026-06-11T03:54:53.457032", #"2026-06-10T17:24:39.774887",
+        "6ffd1ba9787e4c8ae881663a93cb7958e84e3891": "2026-06-11T05:50:02.372220", #"2026-06-09T13:31:03.876865", #"2026-06-11T05:50:02.372220", #"2026-06-10T17:36:11.797279",
+        "7e86ba8c7327f99ca8708494b6d402af4cd0b4ec": "2026-06-11T10:46:02.906379", #"2026-06-09T13:33:13.222182", #"2026-06-11T10:46:02.906379", #"2026-06-10T18:04:42.882924",
+        "87016b5f0ce7a895447ee19d3f567f4135cae2a6": "2026-06-11T17:10:02.017657", #"2026-06-09T13:37:12.657278", #"2026-06-11T17:10:02.017657", #"2026-06-10T18:42:37.936939",
+        "bd7ddb8fbfedd29711c8f5e466022ecb3810b70a": "2026-06-11T16:12:32.829394", #"2026-06-09T13:36:33.157168", #"2026-06-11T16:12:32.829394", #"2026-06-10T18:36:53.460173"
+    }
+    commit_hashes = list(commit_cutoffs.keys())
     max_hops   = DEFAULT_MAX_HOPS   # Maximum traversal depth (default: 4)
-    output_dir = "cia_results"      # Directory where all result files are saved
+    output_dir = f"cia_results/qwen{max_hops}"      # Directory where all result files are saved
     # ---------------------------------------------------------------------------
 
     print(f"[CIA] Graph      : {NEO4J_URI}")
@@ -226,10 +229,10 @@ def main():
                     failed.append({"commit_hash": commit_hash, "reason": "not found in graph"})
                     continue
 
-                cutoff_ts = source["timestamp"]
-                if cutoff_ts is None:
-                    print(f"         ERROR — commit has no timestamp property, skipping.\n")
-                    failed.append({"commit_hash": commit_hash, "reason": "missing timestamp"})
+                cutoff_ts = commit_cutoffs.get(commit_hash, "").strip()
+                if not cutoff_ts:
+                    print(f"         ERROR — no cutoff timestamp configured for this commit, skipping.\n")
+                    failed.append({"commit_hash": commit_hash, "reason": "missing cutoff timestamp in commit_cutoffs"})
                     continue
 
                 print(f"         Cutoff timestamp : {cutoff_ts}")
@@ -244,8 +247,22 @@ def main():
 
                 print(f"         Nodes reached    : {len(reached)}")
 
-                # 3. Build output payload
-                summary = summarise(source, reached)
+                # 3. Fetch directly impacted (same-batch) nodes
+                impacted = session.execute_read(
+                    fetch_impacted_nodes,
+                    commit_hash,
+                    cutoff_ts,
+                )
+                print(f"         Impacted (same-batch) : {len(impacted)}")
+
+                # 3.5 Analyse: compare impacted nodes against reachable set
+                analysis = analyse(impacted, reached)
+                print(f"         Precision : {analysis['precision']}  "
+                      f"Recall : {analysis['recall']}  "
+                      f"F1 : {analysis['f1_score']}")
+
+                # 4. Build output payload
+                summary = summarise(reached)
 
                 output = {
                     "meta": {
@@ -255,9 +272,13 @@ def main():
                         "neo4j_uri":        NEO4J_URI,
                         "run_at":           datetime.now(timezone.utc).isoformat(),
                     },
-                    "source_node":   source,
-                    "summary":       summary,
-                    "reached_nodes": reached,
+                    "source_node_id":  commit_hash,
+                    "cutoff_source":   "commit_cutoffs (manual)",
+                    "total_impacted":    len(impacted),
+                    "impacted_node_ids": impacted,
+                    "total_reached":    summary["total_reached"],
+                    "reached_ids":      summary["reached_ids"],
+                    "analysis":         analysis,
                 }
 
                 # 4. Save individual result file
@@ -265,8 +286,7 @@ def main():
                 with open(output_path, "w", encoding="utf-8") as f:
                     json.dump(output, f, indent=2, default=str)
 
-                print(f"Saved to    : {output_path}")
-                print(f"By node type: {summary['by_node_type']}")
+                print(f"         Saved to         : {output_path}")
                 print()
 
                 succeeded.append({"commit_hash": commit_hash, "output_path": output_path})
