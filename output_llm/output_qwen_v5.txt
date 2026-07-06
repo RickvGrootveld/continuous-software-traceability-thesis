@@ -1,0 +1,56 @@
+{
+   "new_edges": [
+     {
+       "source_id": "COMMIT-1234",
+       "target_id": "CODE-5678",
+       "label": "MODIFIES",
+       "confidence": 0.95,
+       "system": "LLM",
+       "explanation": "This edge captures the direct relationship between a commit and the specific code changes it introduces, strengthening traceability for code review and impact analysis."
+     },
+     {
+       "source_id": "ISSUE-9012",
+       "target_id": "ISSUE-3456",
+       "label": "BLOCKS",
+       "confidence": 0.92,
+       "system": "LLM",
+       "label": "BLOCKS",
+       "explanation": "This edge indicates that Issue-9012 must be resolved before Issue-3456 can be addressed, establishing a clear dependency chain for project planning."
+     },
+     {
+       "source_id": "FEATURE-7890",
+       "target_id": "BUG-1122",
+       "label": "INCORPORATES",
+       "confidence": 0.88,
+       "system": "LLM",
+       "explanation": "This edge shows that Feature-7890 includes the resolution of Bug-1122, linking feature implementation to bug fixes."
+     }
+   ]
+ }
+
+{
+   "new_edges": [
+     {
+       "source_id": "COMMIT-1024",
+       "target_id": "ISSUE-456",
+       "label": "SOLVES",
+       "confidence": 0.95,
+       "system": "LLM",
+       "explanation": "The commit message explicitly states it fixes a regression in the authentication module, which matches the description of ISSUE-456 (a bug reported in the auth module). The commit hash is present in the issue's 'fixed by' field."
+     },
+     {
+       "source_id": "ISSUE-789",
+       "target_id": "ISSUE-102",
+       "label": "DEPENDS_UPON",
+       "confidence": 0.88,
+       "system": "LLM",
+       "resolves": "ISSUE-789 describes a feature request for a new dashboard widget, which requires the underlying data model changes described in ISSUE-102. The dependency is inferred from the feature's technical requirements."
+     },
+     {
+       "source_id": "COMMIT-2048",
+       "target_id": "CODE-3321",
+       "label": "MODIFY",
+       "diff": "The commit modifies the user profile service, which directly corresponds to CODE-3321 (the user profile service implementation file). The diff analysis confirms the changes are in the correct file."
+     },
+     {
+       "source

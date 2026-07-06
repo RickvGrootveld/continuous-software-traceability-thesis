@@ -1,0 +1,41 @@
+{
+   "new_edges": [
+     {
+       "source_id": "COMMIT-1234",
+       "target_id": "ISSUE-5678",
+       "label": "SOLVES",
+       "confidence": 0.9,
+       "system": "LLM",
+       "explanation": "The commit message explicitly states it fixes a regression in the login module that was reported as ISSUE-5678."
+     },
+     {
+       "source_id": "ISSUE-1234",
+       "target_id": "FEATURE-9012",
+       "label": "BLOCKS",
+       "confidence": 0.8,
+       "system": "impact_analysis_engine",
+       "explanation": "The feature implementation requires changes to the authentication module which is currently blocked by ISSUE-1234."
+     },
+     {
+       "       
+
+{
+   "new_edges": [
+     {
+       "source_id": "COMMIT-1234",
+       "target_id": "ISSUE-5678",
+       "label": "SOLVES",
+       "confidence": 0.9,
+       "system": "LLM",
+       "explanation": "The commit message explicitly states it fixes a regression in the login module that was reported as ISSUE-5678."
+     },
+     {
+       "source_id": "ISSUE-1234",
+       "target_id": "FEATURE-9012",
+       "label": "BLOCKS",
+       "confidence": 0.8,
+       "system": "impact_analysis_engine",
+       "explanation": "The feature implementation requires changes to the authentication module which is currently blocked by ISSUE-1234."
+     },
+     {
+       "
