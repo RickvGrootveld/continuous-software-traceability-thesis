@@ -1,5 +1,4 @@
 timestamp,llm_generation_time,llm_generated_edges,llm_correct_generated_edges,neo4j_retrieval_time_window,graph_nodes_window,graph_edges_window,db_hits_window,neo4j_retrieval_time_neighbourhood,graph_nodes_neighbourhood,graph_edges_neighbourhood,db_hits_neighbourhood,neo4j_retrieval_time_vector,graph_nodes_vector,graph_edges_vector,db_hits_vector,llm_insertion_time,llm_graph_nodes,llm_graph_edges
-
 2026-06-10T16:49:18.472240,42123.19087300057,35,35,90.5,35738.625,126086.5,0.0,489,35739,126087,0,4,35739,126087,0,1388,35739,126122
 2026-06-10T16:52:23.600460,64284.21634799997,52,52,77.14285714285714,35739.0,126112.0,0.0,190,35739,126122,0,5,35739,126122,0,1809,35739,126168
 2026-06-10T16:54:38.369370,39684.038616999715,25,25,71.625,35739.0,126150.75,0.0,260,35739,126168,0,4,35739,126168,0,874,35740,126193

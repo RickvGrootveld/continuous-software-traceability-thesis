@@ -9,7 +9,6 @@ event_engine_service/__pycache__
 shared_utils/__pycache__
 neo4j_dump_files
 neo4j.dump
-analysis
 results/correctness_simulation/
 results/scalability issue commit validation
 results/scalability validation
