@@ -952,6 +952,7 @@ def scatter_reg(ax, x, y, model: str, label: str = "", jitter: float = 0):
 
 
 def line_milestone(ax, scale_data: dict, col: str, src: str, unit: float = 1):
+    x = SCALE_NODECOUNTS
     for model in scale_data:  # iterate only the keys passed in
         df = scale_data[model].get(src)
         if df is None or col not in df.columns:
@@ -960,13 +961,12 @@ def line_milestone(ax, scale_data: dict, col: str, src: str, unit: float = 1):
                  for ms in SCALE_LABELS]
         sds   = [df[df["milestone"] == ms][col].std()  * unit
                  for ms in SCALE_LABELS]
-        x = range(len(SCALE_LABELS))
         ax.plot(x, means, "o-", color=COLORS[model], label=model, linewidth=2)
         ax.fill_between(x,
                         np.array(means) - np.array(sds),
                         np.array(means) + np.array(sds),
                         color=COLORS[model], alpha=0.15)
-    ax.set_xticks(range(len(SCALE_LABELS)))
+    ax.set_xticks(SCALE_NODECOUNTS)
     ax.set_xticklabels(SCALE_LABELS, rotation=15, ha="right")
     ax.grid(linestyle="--", alpha=0.35)
     ax.legend()
@@ -1020,31 +1020,49 @@ def scatter_reg_event(ax, df: "pd.DataFrame", x_col: str, y_col: str,
 def line_milestone_event(ax, scale_data: dict, col: str, src: str,
                          unit: float = 1, event_col: str = "event"):
     """
-    Mean ± SD trend lines across milestones, split by model AND event type.
-    Colour = model, linestyle = event type.
+    Mean ± SD trend lines across milestones per model, showing:
+      - issue line       (solid,   circle marker)
+      - commit line      (dashed,  square marker)
+      - combined line    (dotted,  diamond marker) — all events together
+    Colour = model, linestyle/marker = event type.
     """
-    x = np.arange(len(SCALE_LABELS))
+    x = SCALE_NODECOUNTS
     for model in scale_data:  # iterate only the keys passed in
         df = scale_data[model].get(src)
         if df is None or col not in df.columns:
             continue
         ec = event_col if event_col in df.columns else None
-        events_present = df[ec].dropna().unique() if ec else ["all"]
-        for evt in (EVENT_TYPES if ec else ["all"]):
-            sub = df[df[ec] == evt] if ec else df
+
+        # Build list of (subset, label, linestyle, marker)
+        splits = []
+        if ec:
+            for evt in EVENT_TYPES:
+                sub = df[df[ec] == evt]
+                if not sub.empty:
+                    splits.append((sub, evt,
+                                   EVENT_LINESTYLE[evt],
+                                   EVENT_MARKERS[evt]))
+        # Combined (all events regardless of type)
+        splits.append((df, "combined", ":", "D"))
+
+        for sub, label, ls, mk in splits:
             if sub.empty:
                 continue
-            means = [sub[sub["milestone"] == ms][col].mean() * unit for ms in SCALE_LABELS]
-            sds   = [sub[sub["milestone"] == ms][col].std()  * unit for ms in SCALE_LABELS]
-            ls    = EVENT_LINESTYLE.get(evt, "-")
-            mk    = EVENT_MARKERS.get(evt, "o")
+            means = [sub[sub["milestone"] == ms][col].mean() * unit
+                     for ms in SCALE_LABELS]
+            sds   = [sub[sub["milestone"] == ms][col].std()  * unit
+                     for ms in SCALE_LABELS]
+            # Combined line slightly thinner and more transparent
+            lw    = 1.5 if label == "combined" else 2
+            alpha = 0.07 if label == "combined" else 0.12
             ax.plot(x, means, ls, marker=mk, color=COLORS[model],
-                    linewidth=2, label=f"{model} – {evt}")
+                    linewidth=lw, label=f"{model} – {label}",
+                    alpha=0.75 if label == "combined" else 1.0)
             ax.fill_between(x,
                             np.array(means) - np.array(sds),
                             np.array(means) + np.array(sds),
-                            color=COLORS[model], alpha=0.10)
-    ax.set_xticks(x)
+                            color=COLORS[model], alpha=alpha)
+    ax.set_xticks(SCALE_NODECOUNTS)
     ax.set_xticklabels(SCALE_LABELS, rotation=15, ha="right")
     ax.grid(linestyle="--", alpha=0.35)
     ax.legend(fontsize=7, ncol=2)
@@ -2033,6 +2051,356 @@ def r11b_5c_nodes_vs_valid_edges(sim_data: dict):
         tbl_x.to_csv(FIGURES_DIR / "R11b_table_neighbourhood_nodes.csv")
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SQ3_SCALE — Scalability analysis results (GPT-5.1 vs Qwen3.5-4B)
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _scale_desc(scale_data: dict, src: str, col: str, label: str,
+                unit: str = "", mult: float = 1.0) -> "pd.DataFrame":
+    """Descriptive table per model across all milestones for a scalability metric."""
+    rows = []
+    for model in LLM_MODELS:
+        df = scale_data[model].get(src)
+        if df is None or col not in df.columns:
+            continue
+        s = df[col].dropna() * mult
+        rows.append({
+            "Model": model, "n": len(s),
+            "Mean": round(s.mean(), 3), "Median": round(s.median(), 3),
+            "SD": round(s.std(), 3), "Min": round(s.min(), 3), "Max": round(s.max(), 3),
+        })
+    tbl = pd.DataFrame(rows).set_index("Model")
+    u   = f" ({unit})" if unit else ""
+    print(f"\n  {label}{u}:")
+    print(tbl.to_string())
+    safe = label.replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "")
+    tbl.to_csv(FIGURES_DIR / f"SQ3_table_{safe}.csv")
+    return tbl
+
+
+def _scale_desc_milestone(scale_data: dict, src: str, col: str, label: str,
+                           unit: str = "", mult: float = 1.0):
+    """Descriptive table split by model AND milestone."""
+    print(f"\n  {label}{' (' + unit + ')' if unit else ''} — by milestone:")
+    rows = []
+    for model in LLM_MODELS:
+        df = scale_data[model].get(src)
+        if df is None or col not in df.columns or "milestone" not in df.columns:
+            continue
+        for ms in SCALE_LABELS:
+            s = df[df["milestone"] == ms][col].dropna() * mult
+            if s.empty:
+                continue
+            rows.append({
+                "Model": model, "Milestone": ms, "n": len(s),
+                "Mean": round(s.mean(), 3), "Median": round(s.median(), 3),
+                "SD": round(s.std(), 3), "Min": round(s.min(), 3), "Max": round(s.max(), 3),
+            })
+    tbl = pd.DataFrame(rows).set_index(["Model", "Milestone"])
+    print(tbl.to_string())
+    safe = label.replace(" ", "_").replace("/", "_").replace("(", "").replace(")", "")
+    tbl.to_csv(FIGURES_DIR / f"SQ3_table_{safe}_by_milestone.csv")
+    return tbl
+
+
+def _clip_ax(ax, pct: int = 99, unit: str = ""):
+    """Clip y-axis at percentile, annotate clipped count."""
+    y_data = []
+    for coll in ax.collections:
+        offsets = coll.get_offsets()
+        if len(offsets):
+            y_data.extend(offsets[:, 1].tolist())
+    if not y_data:
+        return
+    ceil    = float(np.percentile(y_data, pct))
+    n_clip  = sum(1 for v in y_data if v > ceil)
+    pct_c   = n_clip / len(y_data) * 100
+    ax.set_ylim(bottom=0, top=ceil * 1.05)
+    if n_clip > 0:
+        ax.annotate(
+            f"{n_clip} outlier{'s' if n_clip > 1 else ''} ({pct_c:.1f}%) "
+            f"above {ceil:.2f}{' ' + unit if unit else ''} not shown",
+            xy=(0.01, 0.98), xycoords="axes fraction",
+            va="top", ha="left", fontsize=7, color="#6B7280",
+            bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.7),
+        )
+
+
+def _line_milestone_multi(ax, scale_data: dict, src: str,
+                          cols: list[tuple[str, str, str]],
+                          model: str, unit: float = 1):
+    """
+    Multi-line chart for one model: one line per (col, label, linestyle).
+    x = milestone index, y = mean per milestone.
+    """
+    x = SCALE_NODECOUNTS
+    df = scale_data[model].get(src)
+    for col, label, ls in cols:
+        if df is None or col not in df.columns:
+            continue
+        means = [df[df["milestone"] == ms][col].mean() * unit for ms in SCALE_LABELS]
+        sds   = [df[df["milestone"] == ms][col].std()  * unit for ms in SCALE_LABELS]
+        ax.plot(x, means, ls, marker="o", linewidth=2, label=label)
+        ax.fill_between(x,
+                        np.array(means) - np.array(sds),
+                        np.array(means) + np.array(sds), alpha=0.12)
+    ax.set_xticks(x)
+    ax.set_xticklabels(SCALE_LABELS, rotation=15, ha="right")
+    ax.grid(linestyle="--", alpha=0.35)
+    ax.legend(fontsize=8)
+
+
+def _scatter_scale(ax, scale_data: dict, src: str,
+                   x_col: str, y_col: str,
+                   model: str, x_mult: float = 1, y_mult: float = 1):
+    """Scatter + regression for one model on a pre-created axis."""
+    df = scale_data[model].get(src)
+    if df is None or x_col not in df.columns or y_col not in df.columns:
+        return None
+    valid = df[[x_col, y_col]].dropna()
+    x_v   = valid[x_col].values.astype(float) * x_mult
+    y_v   = valid[y_col].values.astype(float) * y_mult
+    ax.scatter(x_v, y_v, color=COLORS[model], alpha=0.4,
+               s=25, marker=MARKERS.get(model, "o"), label=model)
+    sl, ic, r2 = regression(x_v, y_v)
+    if len(x_v) >= 3:
+        xr = np.linspace(x_v.min(), x_v.max(), 200)
+        ax.plot(xr, sl * xr + ic, color=COLORS[model],
+                linewidth=2, linestyle="--", label=f"{model}  R²={r2:.2f}")
+    return sl, ic, r2
+
+
+def sq3_scalability_analysis(scale_data: dict):
+    section("SQ3_SCALE", "Scalability analysis — GPT-5.1 vs Qwen3.5-4B")
+
+    # ── 1. Graph size vs generation time ─────────────────────────────────────
+    section("SQ3-1", "Graph size vs generation time")
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=False)
+    fig.suptitle("Graph size vs LLM generation time", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        line_milestone_event(ax, {model: scale_data[model]},
+                             "llm_generation_time", "enrichment")
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.set_ylabel("Generation time (s)")
+    plt.tight_layout()
+    savefig("SQ3_1_graphsize_vs_gentime")
+    _scale_desc_milestone(scale_data, "enrichment", "llm_generation_time",
+                          "Generation time", "s")
+
+    # ── 2. Graph size vs retrieval time (3 strategies, models separate) ───────
+    section("SQ3-2", "Graph size vs retrieval time")
+    RETRIEVAL_COLS = [
+        ("neo4j_retrieval_time_window",        "Window",        "-"),
+        ("neo4j_retrieval_time_neighbourhood", "Neighbourhood", "--"),
+        ("neo4j_retrieval_time_vector",        "Vector",        ":"),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+    fig.suptitle("Graph size vs retrieval time (ms)", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        _line_milestone_multi(ax, scale_data, "enrichment",
+                              [(c, l, ls) for c, l, ls in RETRIEVAL_COLS],
+                              model, unit=1000)
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.set_ylabel("Retrieval time (ms)")
+    plt.tight_layout()
+    savefig("SQ3_2_graphsize_vs_retrieval_time")
+    for col, label, _ in RETRIEVAL_COLS:
+        _scale_desc_milestone(scale_data, "enrichment", col,
+                              f"Retrieval time {label}", "ms", mult=1000)
+
+    # ── 3. Graph size vs retrieved nodes (3 strategies, models separate) ──────
+    section("SQ3-3", "Graph size vs retrieved nodes")
+    NODE_COLS = [
+        ("window_nodes",        "Window",        "-"),
+        ("neighbourhood_nodes", "Neighbourhood", "--"),
+        ("vector_nodes",        "Vector",        ":"),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+    fig.suptitle("Graph size vs retrieved nodes", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        _line_milestone_multi(ax, scale_data, "logs",
+                              [(c, l, ls) for c, l, ls in NODE_COLS],
+                              model)
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.set_ylabel("Nodes retrieved")
+    plt.tight_layout()
+    savefig("SQ3_3_graphsize_vs_retrieved_nodes")
+    for col, label, _ in NODE_COLS:
+        _scale_desc_milestone(scale_data, "logs", col,
+                              f"Retrieved nodes {label}")
+
+    # ── 4. Graph size vs valid edges ──────────────────────────────────────────
+    section("SQ3-4", "Graph size vs valid edges")
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+    fig.suptitle("Graph size vs valid edges inserted", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        line_milestone_event(ax, {model: scale_data[model]},
+                             "llm_correct_generated_edges", "enrichment")
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.set_ylabel("Valid edges per enrichment")
+    plt.tight_layout()
+    savefig("SQ3_4_graphsize_vs_valid_edges")
+    _scale_desc_milestone(scale_data, "enrichment", "llm_correct_generated_edges",
+                          "Valid edges")
+
+    # ── 5. Graph size vs prompt tokens ────────────────────────────────────────
+    section("SQ3-5", "Graph size vs prompt tokens")
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+    fig.suptitle("Graph size vs prompt tokens (input)", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        line_milestone_event(ax, {model: scale_data[model]},
+                             "prompt_tokens", "logs")
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.set_ylabel("Prompt tokens")
+    plt.tight_layout()
+    savefig("SQ3_5_graphsize_vs_prompt_tokens")
+    _scale_desc_milestone(scale_data, "logs", "prompt_tokens", "Prompt tokens")
+
+    # ── 6. Graph size vs HTTP responses (bar chart per milestone) ─────────────
+    section("SQ3-6", "Graph size vs HTTP responses — bar chart")
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=False)
+    fig.suptitle("HTTP response distribution per milestone", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        df = scale_data[model].get("logs")
+        if df is None or "HTTP_response" not in df.columns:
+            ax.set_title(f"{model} (no data)", fontweight="bold")
+            continue
+        # Extract numeric status code
+        codes = df["HTTP_response"].astype(str).str.extract(r"(\d{3})")[0]
+        df    = df.copy()
+        df["status"] = pd.to_numeric(codes, errors="coerce")
+        # Group by milestone and status
+        summary = (df.groupby(["milestone", "status"])
+                     .size().unstack(fill_value=0)
+                     .reindex(SCALE_LABELS))
+        x      = np.arange(len(SCALE_LABELS))
+        width  = 0.35
+        status_colors = {200.0: "#16A34A", 500.0: "#EF4444",
+                         400.0: "#F97316", 503.0: "#6366F1"}
+        bottoms = np.zeros(len(SCALE_LABELS))
+        for status_code in sorted(summary.columns):
+            vals  = summary[status_code].fillna(0).values.astype(float)
+            color = status_colors.get(float(status_code), "#9CA3AF")
+            bars  = ax.bar(x, vals, width * 2, bottom=bottoms,
+                           color=color, edgecolor="white", linewidth=0.5,
+                           label=f"HTTP {int(status_code)}")
+            for bar, v in zip(bars, vals):
+                if v > 0:
+                    ax.text(bar.get_x() + bar.get_width() / 2,
+                            bar.get_y() + bar.get_height() / 2,
+                            f"{int(v)}", ha="center", va="center",
+                            fontsize=8, color="white", fontweight="bold")
+            bottoms += vals
+        ax.set_xticks(x)
+        ax.set_xticklabels(SCALE_LABELS, rotation=15, ha="right")
+        ax.set_ylabel("Count")
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.legend(fontsize=8)
+        ax.grid(axis="y", linestyle="--", alpha=0.3)
+
+        # Console summary
+        print(f"\n  {model} HTTP responses:")
+        print(summary.to_string())
+        summary.to_csv(FIGURES_DIR / f"SQ3_table_http_{model.replace('.','').replace(' ','_').replace('-','')}.csv")
+
+    plt.tight_layout()
+    savefig("SQ3_6_http_responses_by_milestone")
+
+    # ── 7. Prompt tokens vs generation time — one subplot per model ─────────────
+    section("SQ3-7", "Prompt tokens vs generation time — scatter (per model)")
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=False)
+    fig.suptitle("Prompt tokens vs generation time", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        res = _scatter_scale(ax, scale_data, "logs",
+                             "prompt_tokens", "generation_time", model)
+        if res:
+            sl, ic, r2 = res
+            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
+        ax.set_xlabel("Prompt tokens")
+        ax.set_ylabel("Generation time (s)")
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.legend(fontsize=8)
+        ax.grid(linestyle="--", alpha=0.3)
+    plt.tight_layout()
+    savefig("SQ3_7_prompt_tokens_vs_gentime")
+    _scale_desc(scale_data, "logs", "prompt_tokens", "Prompt tokens")
+    _scale_desc(scale_data, "logs", "generation_time", "Generation time", "s")
+
+    # ── 8. Prompt tokens vs output tokens (scatter) ───────────────────────────
+    section("SQ3-8", "Prompt tokens vs output tokens — scatter")
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for model in LLM_MODELS:
+        res = _scatter_scale(ax, scale_data, "logs",
+                             "prompt_tokens", "output_tokens", model)
+        if res:
+            sl, ic, r2 = res
+            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
+    ax.set_xlabel("Prompt tokens")
+    ax.set_ylabel("Output tokens")
+    ax.set_title("Prompt tokens vs output tokens", fontweight="bold")
+    ax.legend(fontsize=8, ncol=2)
+    ax.grid(linestyle="--", alpha=0.3)
+    plt.tight_layout()
+    savefig("SQ3_8_prompt_tokens_vs_output_tokens")
+    _scale_desc(scale_data, "logs", "output_tokens", "Output tokens")
+
+    # ── 9. Retrieved nodes vs generation time — one subplot per model ────────
+    section("SQ3-9", "Retrieved nodes (total) vs generation time — scatter (per model)")
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=False)
+    fig.suptitle("Total retrieved nodes vs generation time", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        logs = scale_data[model].get("logs")
+        if logs is None:
+            continue
+        ctx_cols = ["window_nodes", "neighbourhood_nodes", "vector_nodes"]
+        present  = [c for c in ctx_cols if c in logs.columns]
+        if not present or "generation_time" not in logs.columns:
+            print(f"  [SKIP] {model}: missing node cols or generation_time in logs")
+            continue
+        logs = logs.copy()
+        logs["_total_ctx"] = logs[present].sum(axis=1)
+        res = _scatter_scale(ax, {model: {"logs": logs}},
+                             "logs", "_total_ctx", "generation_time", model)
+        if res:
+            sl, ic, r2 = res
+            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
+        ax.set_xlabel("Total retrieved nodes (window + neighbourhood + vector)")
+        ax.set_ylabel("Generation time (s)")
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.legend(fontsize=8)
+        ax.grid(linestyle="--", alpha=0.3)
+    plt.tight_layout()
+    savefig("SQ3_9_retrieved_nodes_vs_gentime")
+
+    # ── 10. Retrieved nodes vs prompt tokens — one subplot per model ──────────
+    section("SQ3-10", "Retrieved nodes (total) vs prompt tokens — scatter (per model)")
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=False)
+    fig.suptitle("Total retrieved nodes vs prompt tokens", fontweight="bold")
+    for ax, model in zip(axes, LLM_MODELS):
+        logs = scale_data[model].get("logs")
+        if logs is None:
+            continue
+        ctx_cols = ["window_nodes", "neighbourhood_nodes", "vector_nodes"]
+        present  = [c for c in ctx_cols if c in logs.columns]
+        if not present or "prompt_tokens" not in logs.columns:
+            print(f"  [SKIP] {model}: missing node cols or prompt_tokens in logs")
+            continue
+        logs = logs.copy()
+        logs["_total_ctx"] = logs[present].sum(axis=1)
+        res = _scatter_scale(ax, {model: {"logs": logs}},
+                             "logs", "_total_ctx", "prompt_tokens", model)
+        if res:
+            sl, ic, r2 = res
+            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
+        ax.set_xlabel("Total retrieved nodes (window + neighbourhood + vector)")
+        ax.set_ylabel("Prompt tokens")
+        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.legend(fontsize=8)
+        ax.grid(linestyle="--", alpha=0.3)
+    plt.tight_layout()
+    savefig("SQ3_10_retrieved_nodes_vs_prompt_tokens")
+
 # ═════════════════════════════════════════════════════════════════════════════
 # R12 — Generation time vs graph size (line chart)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -2096,7 +2464,7 @@ def r13_retrieval_time_vs_size(scale_data: dict):
         ("neo4j_retrieval_time_vector",        "Vector"),
     ]
     strat_ls = ["-", "--", ":"]   # linestyle per strategy (within-event variation)
-    x = np.arange(len(SCALE_LABELS))
+    x = SCALE_NODECOUNTS
 
     # One figure per model: strategies as line styles, event types as marker shapes
     for model in LLM_MODELS:
@@ -2493,6 +2861,7 @@ def main():
     r11_runtime_breakdown(sim_data)
     r11b_simulation_analysis(sim_data)
     r11b_5c_nodes_vs_valid_edges(sim_data)
+    sq3_scalability_analysis(scale_data)
     r12_generation_time_vs_size(scale_data)
     r13_retrieval_time_vs_size(scale_data)
     r14_context_vs_retrieval(scale_data)
