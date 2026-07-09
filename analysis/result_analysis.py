@@ -79,7 +79,7 @@ PATHS = {
 # Scalability — only LLM models (no non-enriched scalability runs)
 # Per-milestone files; set any path to None to skip that milestone.
 SCALE_MILESTONES = [
-    {"label": "0-184",  "node_count":     0},
+    {"label": "0→184",  "node_count":     0},
     {"label": "1 000",  "node_count":  1000},
     {"label": "5 000",  "node_count":  5000},
     {"label": "10 000", "node_count": 10000},
@@ -139,7 +139,7 @@ SCALE_PATHS = {
     },
 }
 
-SURVEY_PATH       = "results/survey_results.csv"
+SURVEY_PATH       = "results/survey_value_results.csv"
 SURVEY_LABEL_PATH = "results/survey_label_results.csv"
 
 FIGURES_DIR = Path("figures_v2")
@@ -947,7 +947,7 @@ def scatter_reg(ax, x, y, model: str, label: str = "", jitter: float = 0):
     xr = np.linspace(np.nanmin(x), np.nanmax(x), 200)
     ax.plot(xr, sl * xr + ic, color=COLORS.get(model, "#888"),
             linewidth=2, linestyle="--",
-            label=f"{model}  R²={r2:.2f}" + (f"  {label}" if label else ""))
+            label=f"{model}" + (f"  {label}" if label else ""))
     return sl, ic, r2
 
 
@@ -1012,7 +1012,7 @@ def scatter_reg_event(ax, df: "pd.DataFrame", x_col: str, y_col: str,
                     color=COLORS.get(model, "#888"),
                     linewidth=1.8,
                     linestyle=EVENT_LINESTYLE[evt],
-                    label=f"{model} – {evt}  R²={r2:.2f}")
+                    label=f"{model} – {evt}")
         results[evt] = (sl, ic, r2)
     return results
 
@@ -1258,15 +1258,6 @@ def r01_perceived_quality(edge_ratings: pd.DataFrame):
     plt.tight_layout()
     savefig("R01_overview_all_dimensions")
 
-    # Exploratory Wilcoxon
-    for dim in DIMENSIONS:
-        a = edge_ratings[(edge_ratings["dimension"] == dim) &
-                         (edge_ratings["treatment"] == "GPT-5.1")]["rating"]
-        b = edge_ratings[(edge_ratings["dimension"] == dim) &
-                         (edge_ratings["treatment"] == "Qwen3.5-4B")]["rating"]
-        wilcoxon_pair(a, b, f"GPT vs Qwen – {DIM_LABELS[dim]}")
-
-
 # ═════════════════════════════════════════════════════════════════════════════
 # R02 — Quality per generated edge (grouped bar)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1375,7 +1366,6 @@ def r05_confidence_vs_perceived(edge_ratings: pd.DataFrame):
                 continue
             sl, ic, r2 = scatter_reg(ax, tdf["confidence"].values,
                                      tdf["rating"].values, t, jitter=0.02)
-            print(f"  {DIM_LABELS[dim]} – {t}: slope={sl:.3f} R²={r2:.3f}")
         ax.set_xlabel("LLM confidence score (0–1)")
         ax.set_ylabel("Perceived rating (1–4)")
         ax.set_title(DIM_LABELS[dim], fontweight="bold")
@@ -1405,7 +1395,6 @@ def r06_confidence_vs_objective(scale_data: dict):
             continue
         # TODO: if your log CSV has a confidence column per row, use it here.
         # Currently leaving as a placeholder awaiting per-run confidence column.
-        print(f"  ⚠ {model}: confidence column not yet in log CSV — add to enrichment_log_results")
 
     ax.set_xlabel("LLM confidence score (0–1)")
     ax.set_ylabel("Valid edges produced")
@@ -1458,15 +1447,6 @@ def r07_graph_ranking(rankings: pd.DataFrame):
     plt.tight_layout()
     savefig("R07_graph_ranking")
 
-    # Exploratory tests
-    friedman_test({t: rankings[rankings["treatment"] == t]["rank"] for t in TREATMENTS},
-                  "ranking")
-    for t1, t2 in combinations(TREATMENTS, 2):
-        wilcoxon_pair(rankings[rankings["treatment"] == t1]["rank"],
-                      rankings[rankings["treatment"] == t2]["rank"],
-                      f"{t1} vs {t2}")
-
-
 # ═════════════════════════════════════════════════════════════════════════════
 # R08 — Open responses (theme table)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1510,16 +1490,6 @@ def r09_r10_dir_ratings(graph_ratings: pd.DataFrame):
             data[t] = count_likert(sub)
         diverging_likert(data, title=title, name=f"{rid}_{gdim}",
                          scale_labels=scale_lbl)
-
-    # Exploratory tests
-    for gdim in ["usefulness", "completeness"]:
-        groups = {t: graph_ratings[(graph_ratings["graph_dim"] == gdim) &
-                                   (graph_ratings["treatment"] == t)]["rating"]
-                  for t in TREATMENTS}
-        friedman_test(groups, gdim)
-        for t1, t2 in combinations(TREATMENTS, 2):
-            wilcoxon_pair(groups[t1], groups[t2], f"{gdim}: {t1} vs {t2}")
-
 
 # ═════════════════════════════════════════════════════════════════════════════
 # R11 — Runtime breakdown (stacked bar)
@@ -1811,8 +1781,7 @@ def r11b_simulation_analysis(sim_data: dict):
             sl, ic, r2 = regression(x_v[:n], y_v[:n])
             xr = np.linspace(x_v.min(), x_v.max(), 200)
             ax.plot(xr, sl * xr + ic, color=COLORS[model],
-                    linewidth=2, linestyle="--", label=f"{model}  R²={r2:.2f}")
-            print(f"  {label} – {model}: slope={sl:.4f}  R²={r2:.3f}")
+                    linewidth=2, linestyle="--", label=f"{model}")
 
         # Clip y-axis at 99th percentile across all plotted points
         all_y_5a = ax.collections[0].get_offsets()[:, 1].tolist() if ax.collections else []
@@ -1883,8 +1852,7 @@ def r11b_simulation_analysis(sim_data: dict):
                 xr = np.linspace(x_v.min(), x_v.max(), 200)
                 ax.plot(xr, sl * xr + ic, color=COLORS[model],
                         linewidth=2, linestyle="--",
-                        label=f"{model}  R²={r2:.2f}")
-            print(f"  {ins_label} – {model}: slope={sl:.4f}  R²={r2:.3f}")
+                        label=f"{model}")
 
         ax.set_ylim(bottom=0, top=y_ceil * 1.05)
         ax.set_xlabel("Graph nodes")
@@ -2167,7 +2135,7 @@ def _scatter_scale(ax, scale_data: dict, src: str,
     if len(x_v) >= 3:
         xr = np.linspace(x_v.min(), x_v.max(), 200)
         ax.plot(xr, sl * xr + ic, color=COLORS[model],
-                linewidth=2, linestyle="--", label=f"{model}  R²={r2:.2f}")
+                linewidth=2, linestyle="--", label=f"{model}")
     return sl, ic, r2
 
 
@@ -2316,7 +2284,6 @@ def sq3_scalability_analysis(scale_data: dict):
                              "prompt_tokens", "generation_time", model)
         if res:
             sl, ic, r2 = res
-            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
         ax.set_xlabel("Prompt tokens")
         ax.set_ylabel("Generation time (s)")
         ax.set_title(model, color=COLORS[model], fontweight="bold")
@@ -2335,7 +2302,6 @@ def sq3_scalability_analysis(scale_data: dict):
                              "prompt_tokens", "output_tokens", model)
         if res:
             sl, ic, r2 = res
-            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
     ax.set_xlabel("Prompt tokens")
     ax.set_ylabel("Output tokens")
     ax.set_title("Prompt tokens vs output tokens", fontweight="bold")
@@ -2364,7 +2330,6 @@ def sq3_scalability_analysis(scale_data: dict):
                              "logs", "_total_ctx", "generation_time", model)
         if res:
             sl, ic, r2 = res
-            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
         ax.set_xlabel("Total retrieved nodes (window + neighbourhood + vector)")
         ax.set_ylabel("Generation time (s)")
         ax.set_title(model, color=COLORS[model], fontweight="bold")
@@ -2392,7 +2357,6 @@ def sq3_scalability_analysis(scale_data: dict):
                              "logs", "_total_ctx", "prompt_tokens", model)
         if res:
             sl, ic, r2 = res
-            print(f"  {model}: slope={sl:.4f}  R²={r2:.3f}")
         ax.set_xlabel("Total retrieved nodes (window + neighbourhood + vector)")
         ax.set_ylabel("Prompt tokens")
         ax.set_title(model, color=COLORS[model], fontweight="bold")
@@ -2428,8 +2392,6 @@ def r12_generation_time_vs_size(scale_data: dict):
             continue
         res = scatter_reg_event(ax, df, "node_count", "llm_generation_time",
                                 model, jitter_x=80)
-        for evt, (sl, ic, r2) in res.items():
-            print(f"  {model} – {evt}: slope={sl:.4f} R²={r2:.3f}")
         ax.set_xlabel("Graph size at milestone start (nodes)")
         ax.set_ylabel("Generation time (s)")
         ax.set_title(model, color=COLORS[model], fontweight="bold")
@@ -2519,8 +2481,6 @@ def r14_context_vs_retrieval(scale_data: dict):
             if df is None:
                 continue
             res = scatter_reg_event(ax, df, nodes_col, time_col, model, unit_y=1000)
-            for evt, (sl, ic, r2) in res.items():
-                print(f"  {label} – {model} – {evt}: slope={sl:.4f} R²={r2:.3f}")
         ax.set_xlabel("Nodes retrieved")
         ax.set_ylabel("Retrieval time (ms)")
         ax.set_title(label, fontweight="bold")
@@ -2551,8 +2511,6 @@ def r15_context_vs_generation(scale_data: dict):
         df = df.copy()
         df["_total_ctx"] = df[present].sum(axis=1)
         res = scatter_reg_event(ax, df, "_total_ctx", "llm_generation_time", model)
-        for evt, (sl, ic, r2) in res.items():
-            print(f"  {model} – {evt}: slope={sl:.4f} R²={r2:.3f}")
 
     ax.set_xlabel("Total nodes retrieved (window + neighbourhood + vector)")
     ax.set_ylabel("LLM generation time (s)")
@@ -2582,8 +2540,6 @@ def r16_context_vs_output_tokens(scale_data: dict):
         logs = logs.copy()
         logs["_total_ctx"] = logs[present].sum(axis=1)
         res = scatter_reg_event(ax, logs, "_total_ctx", "output_tokens", model)
-        for evt, (sl, ic, r2) in res.items():
-            print(f"  {model} – {evt}: slope={sl:.4f} R²={r2:.3f}")
 
     ax.set_xlabel("Total nodes in context")
     ax.set_ylabel("Output tokens")
@@ -2609,8 +2565,6 @@ def r17_output_tokens_vs_valid_edges(scale_data: dict):
         if "output_tokens" not in logs.columns or "valid_edges" not in logs.columns:
             continue
         res = scatter_reg_event(ax, logs, "output_tokens", "valid_edges", model)
-        for evt, (sl, ic, r2) in res.items():
-            print(f"  {model} – {evt}: slope={sl:.4f} R²={r2:.3f}")
 
     ax.set_xlabel("Output tokens")
     ax.set_ylabel("Valid edges produced")
@@ -2716,6 +2670,191 @@ def r20_r21_hardware_vs_size(scale_data: dict):
             for ms in SCALE_LABELS:
                 describe(df[df["milestone"] == ms][col], ms)
 
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SQ4 — Pairwise dimension correlation scatter plots
+# ═════════════════════════════════════════════════════════════════════════════
+
+def sq4_dimension_correlations(edge_ratings: "pd.DataFrame"):
+    """
+    All pairwise scatter plots between the four quality dimensions:
+      accuracy, word (clarity), explain (explainability), support (faithfulness)
+
+    6 pairs total (C(4,2)):
+      accuracy  × word       → sq4_01
+      accuracy  × explain    → sq4_02
+      accuracy  × support    → sq4_03
+      word      × explain    → sq4_04
+      word      × support    → sq4_05
+      explain   × support    → sq4_06
+
+    Each plot shows GPT-5.1 and Qwen3.5-4B as separate colours with
+    individual trend lines.
+    A combined overview grid of all 6 pairs is also saved.
+    """
+    section("SQ4", "Pairwise quality dimension correlations — scatter plots")
+
+    pairs = list(combinations(DIMENSIONS, 2))   # 6 pairs
+
+    # ── Per-pair pivot: one row per (participant, edge_num, treatment) ────────
+    # Pivot so each dimension is a column, then join pairs
+    pivot = (edge_ratings
+             .pivot_table(index=["participant", "edge_num", "flow", "treatment"],
+                          columns="dimension",
+                          values="rating",
+                          aggfunc="first")
+             .reset_index())
+    pivot.columns.name = None
+
+    def _spearman(x, y):
+        mask = ~(np.isnan(x) | np.isnan(y))
+        if mask.sum() < 3:
+            return np.nan, np.nan
+        rho, p = sp_stats.spearmanr(x[mask], y[mask])
+        return rho, p
+
+    # ── Overview grid (2 rows × 3 cols) ──────────────────────────────────────
+    fig_ov, axes_ov = plt.subplots(2, 3, figsize=(14, 9))
+    fig_ov.suptitle("Pairwise quality dimension correlations", fontweight="bold", fontsize=13)
+    axes_ov_flat = axes_ov.flat
+
+    print("\n  Spearman correlations (per treatment and combined):")
+
+    for pair_idx, (dim_x, dim_y) in enumerate(pairs):
+        pair_num  = f"{pair_idx + 1:02d}"
+        label_x   = DIM_LABELS[dim_x]
+        label_y   = DIM_LABELS[dim_y]
+        fig_name  = f"sq4_{pair_num}_{dim_x}_vs_{dim_y}"
+
+        # ── Individual figure ─────────────────────────────────────────────────
+        fig, ax = plt.subplots(figsize=(7, 5.5))
+
+        print(f"\n{label_x} × {label_y}:")
+
+        for model in ["GPT-5.1", "Qwen3.5-4B"]:
+            sub = pivot[pivot["treatment"] == model]
+            if dim_x not in sub.columns or dim_y not in sub.columns:
+                continue
+            x_v = sub[dim_x].values.astype(float)
+            y_v = sub[dim_y].values.astype(float)
+
+            # Jitter slightly so overlapping integer ratings separate visually
+            jit = 0.08
+            xj  = x_v + np.random.uniform(-jit, jit, len(x_v))
+            yj  = y_v + np.random.uniform(-jit, jit, len(y_v))
+
+            ax.scatter(xj, yj, color=COLORS[model], alpha=0.55,
+                       s=45, marker=MARKERS[model], label=model)
+
+            # OLS regression line
+            sl, ic, r2 = regression(x_v, y_v)
+            rho, p     = _spearman(x_v, y_v)
+            sig        = "*" if (not np.isnan(p) and p < ALPHA) else "ns"
+            if np.isfinite(sl):
+                xr = np.linspace(np.nanmin(x_v), np.nanmax(x_v), 200)
+                ax.plot(xr, sl * xr + ic, color=COLORS[model],
+                        linewidth=2, linestyle="--",
+                        label=f"{model}  ρ={rho:.2f} ({sig})")
+            print(f"    {model}: ρ={rho:.3f}  p={p:.4f} ({sig})  "
+                  f"n={int(np.isfinite(x_v).sum())}")
+
+        # Combined (all treatments pooled)
+        x_all = pivot[dim_x].values.astype(float)
+        y_all = pivot[dim_y].values.astype(float)
+        rho_all, p_all = _spearman(x_all, y_all)
+        sig_all = "*" if (not np.isnan(p_all) and p_all < ALPHA) else "ns"
+        print(f"    Combined: ρ={rho_all:.3f}  p={p_all:.4f} ({sig_all})  "
+              f"n={int(np.isfinite(x_all).sum())}")
+
+        ax.set_xlabel(f"{label_x} rating (1–4)", fontsize=10)
+        ax.set_ylabel(f"{label_y} rating (1–4)", fontsize=10)
+        ax.set_xticks([1, 2, 3, 4])
+        ax.set_yticks([1, 2, 3, 4])
+        ax.set_xlim(0.5, 4.5)
+        ax.set_ylim(0.5, 4.5)
+        ax.set_title(f"{label_x} vs {label_y}", fontweight="bold")
+        ax.legend(fontsize=8)
+        ax.grid(linestyle="--", alpha=0.3)
+        # Annotate combined Spearman in corner
+        ax.text(0.02, 0.97,
+                f"Overall ρ={rho_all:.2f} ({sig_all})",
+                transform=ax.transAxes, fontsize=8, va="top",
+                bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8))
+        plt.tight_layout()
+        savefig(fig_name)
+
+        # ── Copy to overview grid ─────────────────────────────────────────────
+        ax_ov = next(axes_ov_flat)
+        for model in ["GPT-5.1", "Qwen3.5-4B"]:
+            sub = pivot[pivot["treatment"] == model]
+            if dim_x not in sub.columns or dim_y not in sub.columns:
+                continue
+            x_v = sub[dim_x].values.astype(float)
+            y_v = sub[dim_y].values.astype(float)
+            xj  = x_v + np.random.uniform(-jit, jit, len(x_v))
+            yj  = y_v + np.random.uniform(-jit, jit, len(y_v))
+            ax_ov.scatter(xj, yj, color=COLORS[model], alpha=0.50,
+                          s=22, marker=MARKERS[model], label=model)
+            sl, ic, r2 = regression(x_v, y_v)
+            if np.isfinite(sl):
+                xr = np.linspace(np.nanmin(x_v), np.nanmax(x_v), 200)
+                ax_ov.plot(xr, sl * xr + ic, color=COLORS[model],
+                           linewidth=1.5, linestyle="--")
+        ax_ov.set_xlabel(label_x, fontsize=8)
+        ax_ov.set_ylabel(label_y, fontsize=8)
+        ax_ov.set_xticks([1, 2, 3, 4])
+        ax_ov.set_yticks([1, 2, 3, 4])
+        ax_ov.set_xlim(0.5, 4.5)
+        ax_ov.set_ylim(0.5, 4.5)
+        ax_ov.set_title(f"{label_x} vs {label_y}", fontsize=9, fontweight="bold")
+        ax_ov.text(0.03, 0.96, f"ρ={rho_all:.2f} ({sig_all})",
+                   transform=ax_ov.transAxes, fontsize=7, va="top",
+                   bbox=dict(boxstyle="round,pad=0.2", fc="white", alpha=0.8))
+        ax_ov.grid(linestyle="--", alpha=0.3)
+
+    # Shared legend on overview
+    handles = [
+        plt.Line2D([0], [0], marker=MARKERS[m], color=COLORS[m],
+                   linestyle="None", markersize=7, label=m)
+        for m in ["GPT-5.1", "Qwen3.5-4B"]
+    ]
+    fig_ov.legend(handles=handles, loc="lower center", ncol=2,
+                  bbox_to_anchor=(0.5, -0.02), fontsize=9)
+    fig_ov.tight_layout(rect=[0, 0.04, 1, 1])
+    savefig("sq4_00_overview_all_pairs")
+
+    # ── Correlation summary table ─────────────────────────────────────────────
+    print("\n  Correlation summary table (Spearman ρ, combined):")
+    corr_rows = []
+    for dim_x, dim_y in pairs:
+        x_all = pivot[dim_x].values.astype(float) if dim_x in pivot.columns else np.array([])
+        y_all = pivot[dim_y].values.astype(float) if dim_y in pivot.columns else np.array([])
+        rho, p = _spearman(x_all, y_all)
+        for model in ["GPT-5.1", "Qwen3.5-4B"]:
+            sub     = pivot[pivot["treatment"] == model]
+            x_m     = sub[dim_x].values.astype(float) if dim_x in sub.columns else np.array([])
+            y_m     = sub[dim_y].values.astype(float) if dim_y in sub.columns else np.array([])
+            rho_m, p_m = _spearman(x_m, y_m)
+            corr_rows.append({
+                "Pair":      f"{DIM_LABELS[dim_x]} × {DIM_LABELS[dim_y]}",
+                "Treatment": model,
+                "ρ":         round(rho_m, 3),
+                "p":         round(p_m, 4) if not np.isnan(p_m) else np.nan,
+                "sig":       "*" if (not np.isnan(p_m) and p_m < ALPHA) else "ns",
+            })
+        corr_rows.append({
+            "Pair":      f"{DIM_LABELS[dim_x]} × {DIM_LABELS[dim_y]}",
+            "Treatment": "Combined",
+            "ρ":         round(rho, 3),
+            "p":         round(p, 4) if not np.isnan(p) else np.nan,
+            "sig":       "*" if (not np.isnan(p) and p < ALPHA) else "ns",
+        })
+
+    tbl = pd.DataFrame(corr_rows)
+    print(tbl.to_string(index=False))
+    tbl.to_csv(FIGURES_DIR / "sq4_correlation_table.csv", index=False)
+    print("  → sq4_correlation_table.csv")
 
 # ═════════════════════════════════════════════════════════════════════════════
 # R22 — GPT vs Qwen summary table
@@ -2873,6 +3012,8 @@ def main():
     r20_r21_hardware_vs_size(scale_data)
 
     # ── Cross-cutting comparisons ─────────────────────────────────────────────
+    if edge_ratings is not None:
+        sq4_dimension_correlations(edge_ratings)
     r22_summary_table(sim_data, scale_data, edge_ratings)
     r23_overall_radar(sim_data, scale_data, edge_ratings)
 
