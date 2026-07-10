@@ -142,7 +142,7 @@ SCALE_PATHS = {
 SURVEY_PATH       = "results/survey_value_results.csv"
 SURVEY_LABEL_PATH = "results/survey_label_results.csv"
 
-FIGURES_DIR = Path("figures_v2")
+FIGURES_DIR = Path("figures")
 FIGURES_DIR.mkdir(exist_ok=True)
 
 # ── Domain constants ──────────────────────────────────────────────────────────
@@ -1322,31 +1322,6 @@ def r03_quality_radar(edge_ratings: pd.DataFrame):
                 title="Overall quality profile (mean per dimension)",
                 name="R03_quality_radar")
 
-
-# ═════════════════════════════════════════════════════════════════════════════
-# R04 — Objective vs perceived correctness (grouped bar)
-# ═════════════════════════════════════════════════════════════════════════════
-
-def r04_objective_vs_perceived(edge_ratings: pd.DataFrame, sim_data: dict):
-    section("R04", "Objective vs perceived correctness — grouped bar")
-    # TODO: requires joining survey edge_id → enrichment_results llm_correct_generated_edges
-    # Objective correctness (1 = correct, 0 = incorrect) must be mapped to the
-    # same edge_id used in question_mapping.
-    # Once that join is available, uncomment and adapt:
-    #
-    # perceived = edge_ratings[edge_ratings["dimension"] == "accuracy"] \
-    #     .groupby(["edge_id", "treatment"])["rating"].mean().reset_index()
-    # objective = ...  # load from enrichment_results, map edge_id
-    # merged = perceived.merge(objective, on=["edge_id", "treatment"])
-    #
-    # fig, ax = plt.subplots(figsize=(9, 5))
-    # for t in ["GPT-5.1", "Qwen3.5-4B"]:
-    #     sub = merged[merged["treatment"] == t]
-    #     ax.bar(...)
-    # savefig("R04_objective_vs_perceived")
-    print("  ⚠ TODO: requires edge_id join between survey and enrichment_results")
-
-
 # ═════════════════════════════════════════════════════════════════════════════
 # R05 — Confidence vs perceived quality (scatter)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1375,34 +1350,6 @@ def r05_confidence_vs_perceived(edge_ratings: pd.DataFrame):
 
     plt.tight_layout()
     savefig("R05_confidence_vs_perceived")
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-# R06 — Confidence vs objective correctness (scatter)
-# ═════════════════════════════════════════════════════════════════════════════
-
-def r06_confidence_vs_objective(scale_data: dict):
-    section("R06", "Confidence vs objective correctness — scatter")
-    # Proxy: use valid_edges from enrichment_log_results as objective quality signal
-    # confidence is per-edge from question_mapping; for scalability runs, only
-    # aggregate counts are available → this plot is best generated from the
-    # simulation run logs where confidence + valid_edges are on the same row.
-
-    fig, ax = plt.subplots(figsize=(7, 5))
-    for model in LLM_MODELS:  # scale_data only has LLM models
-        logs = scale_data[model].get("logs")
-        if logs is None or "valid_edges" not in logs.columns:
-            continue
-        # TODO: if your log CSV has a confidence column per row, use it here.
-        # Currently leaving as a placeholder awaiting per-run confidence column.
-
-    ax.set_xlabel("LLM confidence score (0–1)")
-    ax.set_ylabel("Valid edges produced")
-    ax.set_title("LLM confidence vs objective edge quality", fontweight="bold")
-    ax.grid(linestyle="--", alpha=0.3)
-    plt.tight_layout()
-    savefig("R06_confidence_vs_objective")
-
 
 # ═════════════════════════════════════════════════════════════════════════════
 # R07 — Graph preference ranking (stacked bar)
@@ -2984,12 +2931,9 @@ def main():
         r01_perceived_quality(edge_ratings)
         r02_quality_per_edge(edge_ratings)
         r03_quality_radar(edge_ratings)
-        #r04_objective_vs_perceived(edge_ratings, sim_data)
         r05_confidence_vs_perceived(edge_ratings)
     else:
         print("\n  [SKIP] Survey results not loaded — R01–R05 skipped")
-
-    #r06_confidence_vs_objective(scale_data)
 
     if rankings is not None:
         r07_graph_ranking(rankings)
