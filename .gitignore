@@ -15,3 +15,13 @@ results/scalability validation
 results/result_schema_validation_run.txt
 results/survey_value_results.csv
 results/survey_label_results.csv
+results
+neo4j
+neo4j.dump
+run_metrics.csv
+docker_performance.py
+shared_utils
+prompt engineering
+knowledge_graph_service
+event_engine_service
+enrichment_service

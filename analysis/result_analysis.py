@@ -79,7 +79,7 @@ PATHS = {
 # Scalability — only LLM models (no non-enriched scalability runs)
 # Per-milestone files; set any path to None to skip that milestone.
 SCALE_MILESTONES = [
-    {"label": "0→184",  "node_count":     0},
+    {"label": "0-184",  "node_count":     0},
     {"label": "1 000",  "node_count":  1000},
     {"label": "5 000",  "node_count":  5000},
     {"label": "10 000", "node_count": 10000},
@@ -2190,8 +2190,10 @@ def sq3_scalability_analysis(scale_data: dict):
         _line_milestone_multi(ax, scale_data, "logs",
                               [(c, l, ls) for c, l, ls in NODE_COLS],
                               model)
-        ax.set_title(model, color=COLORS[model], fontweight="bold")
+        #ax.set_title(model, color=COLORS[model], fontweight="bold")
+        ax.set_title("Graph size vs retrieved nodes", color="black", fontweight="bold")
         ax.set_ylabel("Nodes retrieved")
+        break
     plt.tight_layout()
     savefig("SQ3_3_graphsize_vs_retrieved_nodes")
     for col, label, _ in NODE_COLS:

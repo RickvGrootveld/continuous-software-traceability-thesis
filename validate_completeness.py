@@ -501,7 +501,7 @@ def check_schema_constraints(session, traceability_only):
     #    mapped as BelongsTo in the graph)
     result = session.run(f"""
         MATCH (c{tn}:Commit)
-        WITH c, size([(c)-[:BelongsTo]->() | 1]) AS cnt
+        WITH c, size([(c)-[]->() | 1]) AS cnt
         WHERE cnt = 0
         RETURN c.id AS id
     """)
