@@ -3,10 +3,6 @@ datasets
 test.sqlite3
 cassandra.db
 neo4j
-enrichment_service/__pycache__
-knowledge_graph_service/__pycache__
-event_engine_service/__pycache__
-shared_utils/__pycache__
 neo4j_dump_files
 neo4j.dump
 results/correctness_simulation/
@@ -16,7 +12,6 @@ results/result_schema_validation_run.txt
 results/survey_value_results.csv
 results/survey_label_results.csv
 results
-neo4j
 neo4j.dump
 run_metrics.csv
 docker_performance.py
