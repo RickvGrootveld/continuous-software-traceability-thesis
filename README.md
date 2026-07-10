@@ -1,4 +1,4 @@
-# continuous-software-traceability-thesis
+# Continuous Software Traceability Thesis
 
 This branch is the prompt engineering branch of the replication package of Rick van Grootveld his thesis. It contains the source code that has been used to produce the results of the prompt evolution document. The program can easily be ran by having Python and Docker installed. 
 
