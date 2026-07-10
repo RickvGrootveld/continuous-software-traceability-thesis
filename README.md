@@ -16,7 +16,8 @@ To run the program and to replicating the research:
 
 The branch has been set to the settings of using the Qwen model.To use the GPT API, you should have a OpenAI API key to run the GPT model and you should change the global variables in the llm.py file in the enrichment folder to set it to GPT. If you don't have the API key, you can still build the Qwen model using the following steps.
 
-1. After downloading Docker and Python, I used the following constraints for Docker to stabalize the environment. When the program starts without any constraints, Docker and Windows start fighting for resources, causing the program to crash. Therefore, you should add the file .wslconfig to your path: "C:\Users\/user_name\.wslconfig". Save this file with the following content.
+Another prerequisite is the dataset. The dataset has been modified and should be saved at datasets/validate/lucene.sqlite3. The modifications contain more tables to easy data lookups for the event engine. 
+Furthermore, the simulation runs from release of 6.0.1 till 6.1.0. To give the LLM context, a part of the graph should be given. Therefore, I used .dump files. They allow the neo4j container to load all the data back in. The preload data should contain all the commits from release 4.0.0 till the release time of 6.1.0. The release day has been set at 00.00 at the start of the release day. After downloading Docker and Python, I used the following constraints for Docker to stabalize the environment. When the program starts without any constraints, Docker and Windows start fighting for resources, causing the program to crash. Therefore, you should add the file .wslconfig to your path: "C:\Users\/user_name\.wslconfig". Save this file with the following content.
 the file .wslconfig to your path: "C:\Users\/<user>\.wslconfig"
 ```
 content: [wsl2] 
@@ -25,7 +26,7 @@ cores=6
 localhostForwarding=true
 ```
 
-I chose the processers to be 8 because I have 16 processors in total. Make sure that the constraints you save align with the requirements of your hardware. 
+I chose the processers to be 6 because I have 16 processors in total and six allow a lower amount of communication, which allows a more steady state.
 
 2. Then, open the terminal and navigate to the root folder of this project, use the following commands in your terminal to run the program in Docker:
 ```
@@ -35,7 +36,7 @@ I chose the processers to be 8 because I have 16 processors in total. Make sure 
 
 docker-compose up --build -d
 ```
-This builds the program first, downloads Qwen3.5 4B, and starts the program detached from the terminal. Downloading the model first prevents it from downloading the model at the start, which would run the program without enrichments for 10 minutes.
+This builds the program first, downloads Qwen3.5 4B, and starts the program detached from the terminal. Downloading the model first prevents it from downloading when the program starts, which would run the program without enrichments for 10 minutes.
 
 3. When the program starts, simultanuously run the docker_performance.py file. This file gathers information about the CPU and memory.
 
