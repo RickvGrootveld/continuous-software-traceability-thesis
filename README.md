@@ -11,6 +11,20 @@ Other branches in this replication package contain
 - prompt engineering
     - This branch contains the prompt engineering that has been done to end up with the prompt that has been used in the document.
 
+### Current branch
+This branch contains the source code of the code that has been used for the simulation. It has three services, the enrichment service, event engine service, and knowledge graph service.
+Architecture: 
+
+![image info](architecture_simulation.jpg)
+
+The event engine reads the dataset. It turns the records it reads from the dataset into nodes and edges according to a schema and sends them as events (issues and commits packages including also information about developers and code files) to the knowledge graph engine via Kafka. 
+
+The knowledge graph engine receives those messages and inserts them into the Neo4j knowledge graph, which is a docker container that runs. The KG service does also add the embeddings by using the very light semantic embedding model all-MiniLM-L6-v2. 
+
+The enrichment service does only talk with the Neo4j knowledge graph and not with the other services. It checks every second whether there have been a new incoming node or updated nodes. It receives the node if it is new, and a fixed window opens. This fixed window waits for 15 seconds (can be adjusted and depends on the model in the experiment) and checks if other events are being inserted into the graph (they might relate to each other). When it the time is over, the window is made empty before starting the retrieval of more relevant nodes. This allows to enrichment to also consider the events to enrich as the LLM is taken a long time. Then, the event engine goes to the following step of retrieving the context of the graph. This next retrieval step is to find the directly related neighbourhood nodes. These related nodes give more context about the node itself, making the LLM knowledgable of the surrounding nodes when the context of a node is minimal. Then, similar nodes from the window nodes are being retrieved. This is done using the vector similarity function provided by the Neo4j database. When all of the relevant nodes are being retrieved, the graph is fed to the LLM using a prompt. When the LLM responses, a function is applied to check the response on valid edges. This prevents the response from being invalid when there is only one special character that is missing to make it a valid response. Then the edges are inserted into the graph and the LLM starts over again. It depends on the duration it took for the next moment to enrich. If a new node was detected, during the enrichment and the window time has passed, the enrichment will enrich immediatly. However, if nothing has been detected, the enrichment service will wait till a new node is being inserted into the Neo4j database.
+
+
+
 ## Run the program
 To run the program and to replicating the research:
 
