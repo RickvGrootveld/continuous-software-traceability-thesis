@@ -1,4 +1,4 @@
-# continuous-software-traceability-thesis
+# Continuous Software Traceability Thesis
 
 This branch is the simulation branch of the replication package of Rick van Grootveld his thesis. It contains the source code that has been used to produce the results in his thesis. You can run the program by having Python and Docker installed. 
 
