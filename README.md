@@ -1,4 +1,4 @@
-# continuous-software-traceability-thesis
+# Continuous Software Traceability Thesis
 
 This branch is the scalability branch of the replication package of Rick van Grootveld his thesis. It contains the source code for the scalability tests. The program can easily be ran by having Python and Docker installed. The scalability contains a Redis messagner between the enrichment and the knowledge graph. This ensures more control over the input, which improves data analysis because the conditions are knwon and can therefore be explained.
 
