@@ -1,6 +1,6 @@
 # continuous-software-traceability-thesis
 
-This branch is the scalability branch of the replication package of Rick van Grootveld his thesis. It contains the source code for the scalability tests. The program can easily be ran by having Python and Docker installed. 
+This branch is the scalability branch of the replication package of Rick van Grootveld his thesis. It contains the source code for the scalability tests. The program can easily be ran by having Python and Docker installed. The scalability contains a Redis messagner between the enrichment and the knowledge graph. This ensures more control over the input, which improves data analysis because the conditions are knwon and can therefore be explained.
 
 ## Project overview
 Other branches in this replication package contain
@@ -15,6 +15,10 @@ Other branches in this replication package contain
 To run the program and replicating the research:
 
 The branch has been set to the settings of using the Qwen model.To use the GPT API, you should have a OpenAI API key to run the GPT model and you should change the global variables in the llm.py file in the enrichment folder to set it to GPT. If you don't have the API key, you can still build the Qwen model using the following steps.
+
+
+Another prerequisite is the dataset. The dataset has been modified and should be saved at datasets/validate/lucene.sqlite3. The modifications contain more tables to easy data lookups for the event engine. 
+Furthermore, the simulation runs from release of 6.0.1 till 6.1.0. To give the LLM context, a part of the graph should be given. Therefore, I used .dump files. They allow the neo4j container to load all the data back in. The preload data should contain all the commits from release 4.0.0 till the release time of 6.1.0. The release day has been set at 00.00 at the start of the release day.
 
 1. After downloading Docker and Python, I used the following constraints for Docker to stabalize the environment. When the program starts without any constraints, Docker and Windows start fighting for resources, causing the program to crash. Therefore, you should add the file .wslconfig to your path: "C:\Users\/user_name\.wslconfig". Save this file with the following content.
 ```
